@@ -4,43 +4,99 @@
  */
 package adt;
 
+import java.util.NoSuchElementException;
+
 /**
  *
  * @author user
  */
  public class LinkedQueue<T> implements QueueInterface<T> {
-    private Node firstNode, lastNode;
-    private int count;
+    private Node firstNode; // Front of the queue
+    private Node lastNode;  // Back of the queue
+    private int count;      // Track size for O(1) size() operation
 
     @Override
     public void enqueue(T item) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        Node newNode = new Node(item);
+        // to check if queue is empty
+        if (isEmpty()) {
+            // if queue is empty, new node (only node) becomes both first and last
+            firstNode = newNode;
+        } else {
+            // Add to end of queue (can only add to the end because it is a queue)
+            lastNode.next = newNode;
+        }
+        
+        lastNode = newNode;
+        count++;
     }
 
     @Override
     public T dequeue() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        if (isEmpty()) {
+            throw new NoSuchElementException("Queue is empty");
+        }
+        
+        // save data from front node
+        T data = firstNode.data;
+        
+        // Move firstNode pointer forward to the one beside it
+        firstNode = firstNode.next;
+        
+        // If queue is now empty, update lastNode
+        if (firstNode == null) {
+            lastNode = null;
+        }
+        
+        count--;
+        return data;
     }
 
     @Override
     public T getFront() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        if (isEmpty()) {
+            throw new NoSuchElementException("Queue is empty");
+        }
+        return firstNode.data;//just to display the most front data
     }
 
     @Override
     public boolean isEmpty() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return firstNode == null; // Could also use count == 0
     }
 
     @Override
-    public void clear() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public void clear() {//basically delete everything in queue
+        firstNode = null;
+        lastNode = null;
+        count = 0;
     }
 
     @Override
     public int size() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return count;
     }
+    
+    // Optional additional methods
+    @Override
+    public String toString() {//iterates through the whole LinkedQueue to display all data in queue
+        StringBuilder sb = new StringBuilder("[");
+        Node current = firstNode;
+        while (current != null) {
+            sb.append(current.data);
+            if (current.next != null) {
+                sb.append(", ");
+            }
+            current = current.next;
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+    
+    //TODO add more methods here
+    
+    
+    
     
     private class Node {
         T data;
@@ -55,6 +111,4 @@ package adt;
             this.next = next;
         }
     }
-    
-    // Implement all interface methods here...
 }
