@@ -234,17 +234,6 @@ public QueueInterface<T> filter(QueueInterface.Condition<T> condition) {
     }
 
     
-
-    
-    
-
-    
-
-    // Simple Condition interface for filtering
-    public interface Condition<T> {
-        boolean test(T item);
-    }
-    
     
     private class Node {
         T data;
