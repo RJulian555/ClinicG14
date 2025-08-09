@@ -4,6 +4,8 @@
  */
 package adt;
 
+import java.util.Comparator;
+
 /**
  *
  * @author user
@@ -15,4 +17,16 @@ public interface QueueInterface<T> {
     boolean isEmpty();
     void clear();
     int size();
+    
+    // additional methods
+    boolean contains(T item);
+    void sort(Comparator<T> comparator);
+    QueueInterface<T> filter(Condition<T> condition);
+    boolean hold(T item);
+    void release();
+    boolean sawp (T item1, T item2);
+    //for filtering conditions
+    interface Condition<T>{
+        boolean test(T item);
+    }
 }
