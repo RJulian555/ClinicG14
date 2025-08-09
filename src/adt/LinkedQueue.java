@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 
 /**
  *
+ * 
  * @G14
  */
  public class LinkedQueue<T> implements QueueInterface<T> {
@@ -98,6 +99,7 @@ import java.util.NoSuchElementException;
     //TODO add more methods here
     
         // Search for an item in the queue
+    @Override
     public boolean contains(T item) {
         Node current = firstNode;
         while (current != null) {
@@ -110,6 +112,7 @@ import java.util.NoSuchElementException;
     }
 
     // Sort the queue (simple bubble sort implementation)
+    @Override
     public void sort(Comparator<T> comparator) {
         if (isEmpty() || firstNode.next == null) return;
         
@@ -134,19 +137,20 @@ import java.util.NoSuchElementException;
     }
 
     // Filter the queue based on a condition
-    public LinkedQueue<T> filter(Condition<T> condition) {
-        LinkedQueue<T> filteredQueue = new LinkedQueue<>();
-        Node current = firstNode;
-        
-        while (current != null) {
-            if (condition.test(current.data)) {
-                filteredQueue.enqueue(current.data);
-            }
-            current = current.next;
+@Override
+public QueueInterface<T> filter(QueueInterface.Condition<T> condition) {
+    LinkedQueue<T> filteredQueue = new LinkedQueue<>();
+    Node current = firstNode;
+    
+    while (current != null) {
+        if (condition.test(current.data)) {
+            filteredQueue.enqueue(current.data);
         }
-        
-        return filteredQueue;
+        current = current.next;
     }
+    
+    return filteredQueue;
+}
 
     // Convert queue to array (alternative to List)
     public T[] toArray(T[] array) {
@@ -166,6 +170,7 @@ import java.util.NoSuchElementException;
     }
 
     // Hold an item (remove and store temporarily)
+    @Override
     public boolean hold(T item) {
         if (!contains(item)) return false;
         
@@ -191,6 +196,7 @@ import java.util.NoSuchElementException;
     }
 
     // Release held items back to queue
+    @Override
     public void release() {
         while (!holdQueue.isEmpty()) {
             enqueue(holdQueue.dequeue());
@@ -198,6 +204,7 @@ import java.util.NoSuchElementException;
     }
 
     // Swap two items in the queue
+    @Override
     public boolean swap(T item1, T item2) {
         if (item1.equals(item2)) return true;
         
@@ -225,6 +232,13 @@ import java.util.NoSuchElementException;
         
         return false;
     }
+
+    
+
+    
+    
+
+    
 
     // Simple Condition interface for filtering
     public interface Condition<T> {
