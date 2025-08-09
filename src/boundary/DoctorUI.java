@@ -25,12 +25,12 @@ public class DoctorUI {
         while (true) {
             System.out.println("\nDoctor Management System 🏥");
             System.out.println("1. Add New Doctor");
-            System.out.println("2.View All Doctors");
-            System.out.println("3.Search Doctor by ID");
-            System.out.println("4.Specialization Report");
-            System.out.println("5.Senior Doctors Report");
+            System.out.println("2. View All Doctors");
+            System.out.println("3. Search Doctor by ID");
+            System.out.println("4. Specialization Report");
+            System.out.println("5. Senior Doctors Report");
             System.out.println("6. Get Next Available Doctor");
-            System.out.println("7.Exit");
+            System.out.println("7. Exit");
             System.out.print("Choose an option: ");
 
             int choice = scanner.nextInt();
@@ -68,9 +68,14 @@ public class DoctorUI {
         System.out.println("\nAdd New Doctor (enter 'cancel' at any time to exit)");
     
     // Doctor ID
-    System.out.print("Enter Doctor ID: ");
-    String id = scanner.nextLine();
-    if (id.equalsIgnoreCase("cancel")) return null;
+    //System.out.print("Enter Doctor ID: ");
+    //String id = scanner.nextLine();
+    //if (id.equalsIgnoreCase("cancel")) return null;
+    //TODO make the id automatically assigned
+    // Automatically generate ID
+    String id = doctorManager.generateDoctorID();
+    System.out.println("Automatically assigned Doctor ID: " + id);
+    
     
     // Name
     System.out.print("Enter Name: ");
