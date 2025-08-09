@@ -65,37 +65,108 @@ public class DoctorUI {
     //-----------------------------------------------------------------------------------------------------------------//  
 
     private Doctor inputDoctorDetails() {
-        System.out.print("Enter Doctor ID: ");
-        String id = scanner.nextLine();
+        System.out.println("\nAdd New Doctor (enter 'cancel' at any time to exit)");
+    
+    // Doctor ID
+    System.out.print("Enter Doctor ID: ");
+    String id = scanner.nextLine();
+    if (id.equalsIgnoreCase("cancel")) return null;
+    
+    // Name
+    System.out.print("Enter Name: ");
+    String name = scanner.nextLine();
+    if (name.equalsIgnoreCase("cancel")) return null;
+    
+    // Specialization
+    System.out.print("Enter Specialization: ");
+    String specialization = scanner.nextLine();
+    if (specialization.equalsIgnoreCase("cancel")) return null;
+    
+    Doctor doctor = new Doctor(id, name, specialization);
+    
+    // Contact Number with validation
+    while (true) {
+        System.out.print("Contact Number (10 digits): ");
+        String contact = scanner.nextLine();
+        if (contact.equalsIgnoreCase("cancel")) return null;
         
-        System.out.print("Enter Name: ");
-        String name = scanner.nextLine();
-        
-        System.out.print("Enter Specialization: ");
-        String specialization = scanner.nextLine();
-        
-        Doctor doctor = new Doctor(id, name, specialization);
-        
-        System.out.print("Contact Number: ");
-        doctor.setContactNumber(scanner.nextLine());
-        
+        if (contact.matches("\\d{10}")) {
+            doctor.setContactNumber(contact);
+            break;
+        }
+        System.out.println("Invalid contact number. Please enter 10 digits.");
+    }
+    
+    // Years of Experience with validation
+    while (true) {
         System.out.print("Years of Experience: ");
-        doctor.setYearsOfExperience(scanner.nextInt());
-        scanner.nextLine();
+        String expInput = scanner.nextLine();
+        if (expInput.equalsIgnoreCase("cancel")) return null;
         
+        try {
+            int years = Integer.parseInt(expInput);
+            if (years >= 0) {
+                doctor.setYearsOfExperience(years);
+                break;
+            }
+            System.out.println("Please enter a positive number.");
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid number. Please try again.");
+        }
+    }
+    
+    // Consultation Fee with validation
+    while (true) {
         System.out.print("Consultation Fee: ");
-        doctor.setConsultationFee(scanner.nextDouble());
-        scanner.nextLine();
+        String feeInput = scanner.nextLine();
+        if (feeInput.equalsIgnoreCase("cancel")) return null;
         
+        try {
+            double fee = Double.parseDouble(feeInput);
+            if (fee >= 0) {
+                doctor.setConsultationFee(fee);
+                break;
+            }
+            System.out.println("Please enter a positive amount.");
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid amount. Please try again.");
+        }
+    }
+    
+    // Availability
+    while (true) {
         System.out.print("Is Available (true/false): ");
-        doctor.setAvailable(scanner.nextBoolean());
-        scanner.nextLine();
+        String availableInput = scanner.nextLine();
+        if (availableInput.equalsIgnoreCase("cancel")) return null;
         
+        if (availableInput.equalsIgnoreCase("true")) {
+            doctor.setAvailable(true);
+            break;
+        } else if (availableInput.equalsIgnoreCase("false")) {
+            doctor.setAvailable(false);
+            break;
+        }
+        System.out.println("Please enter 'true' or 'false'.");
+    }
+    
+    // On Leave status
+    while (true) {
         System.out.print("Is On Leave (true/false): ");
-        doctor.setOnLeave(scanner.nextBoolean());
-        scanner.nextLine();
+        String leaveInput = scanner.nextLine();
+        if (leaveInput.equalsIgnoreCase("cancel")) return null;
         
-        return doctor;
+        if (leaveInput.equalsIgnoreCase("true")) {
+            doctor.setOnLeave(true);
+            break;
+        } else if (leaveInput.equalsIgnoreCase("false")) {
+            doctor.setOnLeave(false);
+            break;
+        }
+        System.out.println("Please enter 'true' or 'false'.");
+    }
+    
+    System.out.println("Doctor added successfully!");
+    return doctor;
     }
     //-----------------------------------------------------------------------------------------------------------------//  
 
