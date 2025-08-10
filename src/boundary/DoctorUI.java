@@ -24,14 +24,15 @@ public class DoctorUI {
     
     public void displayMainMenu() {
         while (true) {
-            System.out.println("\nDoctor Management System 🏥");
+            System.out.println("\nDoctor Management System ");
             System.out.println("1. Add New Doctor");
             System.out.println("2. View All Doctors");
             System.out.println("3. View Senior Doctors");
             System.out.println("4. Search Doctor by ID");
             System.out.println("5. Doctor Specialization Report");
             System.out.println("6. Get Next Available Doctor");
-            System.out.println("7. Exit");
+            System.out.println("7. Manage Doctor Leaves");
+            System.out.println("8. Exit");
             System.out.print("Choose an option: ");
 
             int choice = scanner.nextInt();
@@ -44,7 +45,8 @@ public class DoctorUI {
                 case 4 -> searchDoctorUI();
                 case 5 -> displaySpecializationReportUI();
                 case 6 -> getNextAvailableDoctorUI();
-                case 7 -> { return; }
+                case 7 -> manageLeavesUI();
+                case 8 -> { return; }
                 default -> System.out.println("❌ Invalid choice!");
             }
         }
@@ -231,7 +233,7 @@ public class DoctorUI {
         
         for (Doctor doctor : doctors) {
             displayDoctorCard(doctor);
-            System.out.println("━━━━━━━━━━━━━━━━━━━━");
+            System.out.println("---------------------");
         }
     }
     //-----------------------------------------------------------------------------------------------------------------//  
@@ -303,14 +305,67 @@ public class DoctorUI {
         
         System.out.println(doctorManager.generateSeniorDoctorsReport(years));
     }
-    //-----------------------------------------------------------------------------------------------------------------//  
+    
+//-----------------------------------------------------------------------------------------------------------------//
+
+private void manageLeavesUI() {
+    while (true) {
+        System.out.println("\nDOCTOR LEAVE MANAGEMENT");
+        System.out.println("1. View All Leave Schedules");
+        System.out.println("2. Register New Leave");
+        System.out.println("3. End Leave Period");
+        System.out.println("4. Update Leave Statuses");
+        System.out.println("5. Back to Main Menu");
+        System.out.print("Choose option: ");
+        
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+        
+        switch (choice) {
+            case 1 -> {
+                System.out.println(doctorManager.viewAllLeaves());
+            }
+            case 2 -> {
+                System.out.print("Enter Doctor ID: ");
+                String id = scanner.nextLine();
+                System.out.print("Enter Leave Date (YYYY-MM-DD): ");
+                String date = scanner.nextLine();
+                if (doctorManager.registerLeave(id, date)) {
+                    System.out.println("Leave registered successfully!");
+                } else {
+                    System.out.println("Failed to register leave!");
+                }
+            }
+            case 3 -> {
+                System.out.print("Enter Doctor ID: ");
+                String endId = scanner.nextLine();
+                System.out.print("Enter Leave Date to End (YYYY-MM-DD): ");
+                String endDate = scanner.nextLine();
+                if (doctorManager.endLeave(endId, endDate)) {
+                    System.out.println("Leave ended successfully!");
+                } else {
+                    System.out.println("Failed to end leave!");
+                }
+            }
+            case 4 -> {
+                doctorManager.processLeaveStatusUpdates();
+                System.out.println("Leave statuses updated based on current date!");
+            }
+            case 5 -> { return; }
+            default -> System.out.println("Invalid choice!");
+        }
+    }
+}
+    
+    
+//-----------------------------------------------------------------------------------------------------------------//  
 
     private void getNextAvailableDoctorUI() {
         System.out.println("\n Finding next available doctor...");
         Doctor availableDoctor = doctorManager.getNextAvailableDoctorBySpecialization(scanner);
         
         if (availableDoctor != null) {
-            System.out.println(" \nAppointment booked with : "  +  availableDoctor.getName());
+            System.out.println(" \nThe next available doctor would be : "  +  availableDoctor.getName());
       
         } else {
             System.out.println("No available doctors at the moment!");

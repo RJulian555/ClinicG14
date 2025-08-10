@@ -235,6 +235,73 @@ private Doctor getDoctorBySelectionNumber(int selection, String specialization) 
         return getDoctorByID(doctorID) != null;
 
     }
+    
+ //-----------------------------------------------------------------------------------------------------------------//   
+    
+// In DoctorManager.java
+public String viewAllLeaves() {
+    StringBuilder report = new StringBuilder();
+    // Define the column widths
+    final int idWidth = 6;
+    final int nameWidth = 17;
+    final int specWidth = 20;
+    final int leaveWidth = 25;
+    
+    // Calculate total table width
+    int tableWidth = 3 + idWidth + 3 + nameWidth + 3 + specWidth + 3 + leaveWidth + 3;
+    String horizontalLine = new String(new char[tableWidth]).replace('\0', '=');
+    
+    report.append("\n\n\nDOCTOR LEAVE SCHEDULE\n");
+    report.append(horizontalLine).append("\n");
+    report.append(String.format("| %-" + idWidth + "s | %-" + nameWidth + "s | %-" + specWidth + "s | %-" + leaveWidth + "s |\n",
+        "ID", "Name", "Specialization", "Leave Dates"));
+    report.append(horizontalLine).append("\n");
+
+    for (Doctor doctor : doctorQueue.toArray(new Doctor[0])) {
+        report.append(String.format("| %-" + idWidth + "s | %-" + nameWidth + "s | %-" + specWidth + "s | %-" + leaveWidth + "s |\n",
+            doctor.getDoctorID(),
+            doctor.getName(),
+            doctor.getSpecialization(),
+            doctor.getFormattedLeaveDates()));
+    }
+    report.append(horizontalLine).append("\n");
+    return report.toString();
+}
+public boolean registerLeave(String doctorID, String leaveDate) {
+    Doctor doctor = getDoctorByID(doctorID);
+    if (doctor != null) {
+        doctor.addLeaveDate(leaveDate);
+        return true;
+    }
+    return false;
+}
+
+public boolean endLeave(String doctorID, String leaveDate) {
+    Doctor doctor = getDoctorByID(doctorID);
+    if (doctor != null) {
+        doctor.removeLeaveDate(leaveDate);
+        return true;
+    }
+    return false;
+}
+
+public void processLeaveStatusUpdates() {
+    String currentDate = java.time.LocalDate.now().toString();
+    for (Doctor doctor : doctorQueue.toArray(new Doctor[0])) {
+        if (doctor.getLeaveDates() != null) {
+            boolean onLeave = false;
+            for (String date : doctor.getLeaveDates()) {
+                if (date.equals(currentDate)) {
+                    onLeave = true;
+                    break;
+                }
+            }
+            doctor.setOnLeave(onLeave);
+            doctor.setAvailable(!onLeave);
+        }
+    }
+}    
+    
 //-----------------------------------------------------------------------------------------------------------------//  
     // Reports
     public String generateSpecializationReport() {
