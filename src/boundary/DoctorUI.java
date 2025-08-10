@@ -71,7 +71,8 @@ public class DoctorUI {
     //System.out.print("Enter Doctor ID: ");
     //String id = scanner.nextLine();
     //if (id.equalsIgnoreCase("cancel")) return null;
-    //TODO make the id automatically assigned
+    
+//TODO make the id automatically assigned
     // Automatically generate ID
     String id = doctorManager.generateDoctorID();
     System.out.println("Automatically assigned Doctor ID: " + id);
@@ -88,6 +89,8 @@ public class DoctorUI {
     if (specialization.equalsIgnoreCase("cancel")) return null;
     
     Doctor doctor = new Doctor(id, name, specialization);
+    //TODO :give choice for specialization so faster but also give choice to type it in
+    
     
     // Contact Number with validation
     while (true) {
