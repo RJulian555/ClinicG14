@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
     private Node firstNode; // Front of the queue
     private Node lastNode;  // Back of the queue
     private int count;      // Track size for O(1) size() operation
-    private LinkedQueue<T> holdQueue = new LinkedQueue<>(); // For hold/release functionality
+    private LinkedQueue<T> holdQueue; // For hold/release functionality
     
     @Override
     public void enqueue(T item) {
@@ -168,7 +168,13 @@ public QueueInterface<T> filter(QueueInterface.Condition<T> condition) {
         
         return array;
     }
-
+    
+    private LinkedQueue<T> getHoldQueue() {
+        if (holdQueue == null) {
+            holdQueue = new LinkedQueue<>();
+        }
+        return holdQueue;
+    }
     // Hold an item (remove and store temporarily)
     @Override
     public boolean hold(T item) {
@@ -180,7 +186,7 @@ public QueueInterface<T> filter(QueueInterface.Condition<T> condition) {
         while (!isEmpty()) {
             T current = dequeue();
             if (!found && current.equals(item)) {
-                holdQueue.enqueue(current);
+                getHoldQueue().enqueue(current); // Use getter
                 found = true;
             } else {
                 tempQueue.enqueue(current);
@@ -233,17 +239,6 @@ public QueueInterface<T> filter(QueueInterface.Condition<T> condition) {
         return false;
     }
 
-    
-
-    
-    
-
-    
-
-    // Simple Condition interface for filtering
-    public interface Condition<T> {
-        boolean test(T item);
-    }
     
     
     private class Node {

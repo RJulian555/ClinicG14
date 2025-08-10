@@ -21,7 +21,7 @@ public interface QueueInterface<T> {
     // additional methods
     boolean contains(T item);
     void sort(Comparator<T> comparator);
-    
+    T[] toArray(T[] array); 
     QueueInterface<T> filter(Condition<T> condition);
     
     boolean hold(T item);
