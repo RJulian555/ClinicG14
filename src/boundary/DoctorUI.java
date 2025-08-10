@@ -20,15 +20,16 @@ public class DoctorUI {
         this.doctorManager = manager;
         this.scanner = new Scanner(System.in);
     }
-
+    
+    
     public void displayMainMenu() {
         while (true) {
             System.out.println("\nDoctor Management System 🏥");
             System.out.println("1. Add New Doctor");
             System.out.println("2. View All Doctors");
-            System.out.println("3. Search Doctor by ID");
-            System.out.println("4. Specialization Report");
-            System.out.println("5. Senior Doctors Report");
+            System.out.println("3. View Senior Doctors");
+            System.out.println("4. Search Doctor by ID");
+            System.out.println("5. Doctor Specialization Report");
             System.out.println("6. Get Next Available Doctor");
             System.out.println("7. Exit");
             System.out.print("Choose an option: ");
@@ -39,9 +40,9 @@ public class DoctorUI {
             switch (choice) {
                 case 1 -> addDoctorUI();
                 case 2 -> displayAllDoctorsUI();
-                case 3 -> searchDoctorUI();
-                case 4 -> displaySpecializationReportUI();
-                case 5 -> displaySeniorDoctorsUI();
+                case 3 -> displaySeniorDoctorsUI();
+                case 4 -> searchDoctorUI();
+                case 5 -> displaySpecializationReportUI();
                 case 6 -> getNextAvailableDoctorUI();
                 case 7 -> { return; }
                 default -> System.out.println("❌ Invalid choice!");
@@ -84,13 +85,54 @@ public class DoctorUI {
     if (name.equalsIgnoreCase("cancel")) return null;
     
     // Specialization
-    System.out.print("Enter Specialization: ");
-    String specialization = scanner.nextLine();
-    if (specialization.equalsIgnoreCase("cancel")) return null;
-    
-    Doctor doctor = new Doctor(id, name, specialization);
     //TODO :give choice for specialization so faster but also give choice to type it in
-    
+    System.out.println("\nSelect Specialization:");
+    System.out.println(" 1. Cardiology");
+    System.out.println(" 2. Pediatrics");
+    System.out.println(" 3. Neurology");
+    System.out.println(" 4. Orthopedics");
+    System.out.println(" 5. Dermatology");
+    System.out.println(" 6. General Surgery");
+    System.out.println(" 7. Emergency Medicine");
+    System.out.println(" 8. Oncology");
+    System.out.println(" 9. Psychiatry");
+    System.out.println("10. Ophthalmology");
+    System.out.println("11. Other (enter custom)");
+    System.out.print("Enter choice (1-11): ");
+
+    String specialization;
+    while (true) {
+        String choice = scanner.nextLine();
+        if (choice.equalsIgnoreCase("cancel")) return null;
+
+        switch (choice) {
+            case "1": specialization = "Cardiology"; break;
+            case "2": specialization = "Pediatrics"; break;
+            case "3": specialization = "Neurology"; break;
+            case "4": specialization = "Orthopedics"; break;
+            case "5": specialization = "Dermatology"; break;
+            case "6": specialization = "General Surgery"; break;
+            case "7": specialization = "Emergency Medicine"; break;
+            case "8": specialization = "Oncology"; break;
+            case "9": specialization = "Psychiatry"; break;
+            case "10": specialization = "Ophthalmology"; break;
+            case "11":
+                System.out.print("Enter custom specialization: ");
+                specialization = scanner.nextLine();
+                if (specialization.trim().isEmpty()) {
+                    System.out.println("Specialization cannot be empty!");
+                    continue;
+                }
+                break;
+            default:
+                System.out.println("Invalid choice! Enter 1-11:");
+                continue;
+        }
+        break;
+    }
+
+    Doctor doctor = new Doctor(id, name, specialization);
+
     
     // Contact Number with validation
     while (true) {
@@ -265,14 +307,14 @@ public class DoctorUI {
 
     private void getNextAvailableDoctorUI() {
         System.out.println("\n Finding next available doctor...");
-        Doctor doctor = doctorManager.getNextAvailableDoctor();
+        Doctor availableDoctor = doctorManager.getNextAvailableDoctorBySpecialization(scanner);
         
-        if (doctor != null) {
-            System.out.println(" Next Available Doctor:");
-            displayDoctorCard(doctor);
+        if (availableDoctor != null) {
+            System.out.println(" \nAppointment booked with : "  +  availableDoctor.getName());
+      
         } else {
             System.out.println("No available doctors at the moment!");
-        }
+        } 
     }
 }
 
