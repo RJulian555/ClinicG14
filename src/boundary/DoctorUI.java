@@ -23,19 +23,29 @@ public class DoctorUI {
     
     
     public void displayMainMenu() {
-        while (true) {
-            System.out.println("\nDoctor Management System ");
-            System.out.println("1. Add New Doctor");
-            System.out.println("2. View All Doctors");
-            System.out.println("3. View Senior Doctors");
-            System.out.println("4. Search Doctor by ID");
-            System.out.println("5. Doctor Specialization Report");
-            System.out.println("6. Get Next Available Doctor");
-            System.out.println("7. Manage Doctor Leaves");
-            System.out.println("8. Exit");
-            System.out.print("Choose an option: ");
+    while (true) {
+        // Clear console (works for most terminals)
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+        
+        // Display dashboard first
+        //displayDashboard();
+        
+        System.out.println("\n|-------------------------------------|");
+        System.out.println("|          MAIN MENU OPTIONS          |");
+        System.out.println("|-------------------------------------|");
+        System.out.println("| 1. Add New Doctor                   |");
+        System.out.println("| 2. View All Doctors                 |");
+        System.out.println("| 3. View Senior Doctors              |");
+        System.out.println("| 4. Search Doctor by ID              |");
+        System.out.println("| 5. Doctor Specialization Report     |");
+        System.out.println("| 6. Get Next Available Doctor        |");
+        System.out.println("| 7. Manage Doctor Leaves             |");
+        System.out.println("| 8. Exit                             |");
+        System.out.println("|_____________________________________|");
+        System.out.print("Choose an option: ");
 
-            int choice = scanner.nextInt();
+        int choice = scanner.nextInt();
             scanner.nextLine(); // Consume newline
 
             switch (choice) {
@@ -215,6 +225,13 @@ public class DoctorUI {
             break;
         }
         System.out.println("Please enter 'true' or 'false'.");
+    }
+    
+    // In inputDoctorDetails() after setting onLeave status:
+    if (doctor.isOnLeave() && (doctor.getLeaveDates() == null || doctor.getLeaveDates().length == 0)) {
+        System.out.print("Enter leave date (YYYY-MM-DD): ");
+        String date = scanner.nextLine();
+        doctor.addLeaveDate(date);
     }
     
     System.out.println("Doctor added successfully!");

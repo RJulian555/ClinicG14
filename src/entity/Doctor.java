@@ -27,6 +27,9 @@ public class Doctor {
         this.name = name;
         this.specialization = specialization;
         // TODO: Initialize other default values
+        this.leaveDates = new String[0]; // Initialize empty array
+        this.isAvailable = true; // Default to available
+        this.isOnLeave = false; // Default to not on leave
     }
     
     // Getters and Setters for doctors
@@ -64,7 +67,7 @@ public class Doctor {
     }
     
     public String[] getLeaveDates() { 
-        return leaveDates.clone(); // Return copy for immutability
+          return leaveDates != null ? leaveDates.clone() : new String[0];
     }
     
     public String getWorkingHours() { 
@@ -111,7 +114,7 @@ public class Doctor {
     }
     
     public void setLeaveDates(String[] leaveDates) { 
-        this.leaveDates = leaveDates.clone(); // Store copy
+        this.leaveDates = leaveDates != null ? leaveDates.clone() : new String[0];
     }
     
     public void setWorkingHours(String workingHours) { 
