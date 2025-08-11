@@ -240,20 +240,40 @@ public class DoctorUI {
     //-----------------------------------------------------------------------------------------------------------------//  
 
     private void displayAllDoctorsUI() {
-        System.out.println("\nAll Doctors");
-        Doctor[] doctors = doctorManager.getAllDoctors();
-        
-        if (doctors.length == 0) {
-            System.out.println("No doctors found!");
-            return;
-        }
-        
-        for (Doctor doctor : doctors) {
-            displayDoctorCard(doctor);
-            System.out.println("---------------------");
-        }
+    System.out.println("\nALL DOCTORS LIST");
+    Doctor[] doctors = doctorManager.getAllDoctors();
+    
+    if (doctors.length == 0) {
+        System.out.println("No doctors found!");
+        return;
     }
-    //-----------------------------------------------------------------------------------------------------------------//  
+    
+    // Print table header
+    System.out.println("+--------+------------------+----------------------+--------------+-----------+-----------+------------+");
+    System.out.println("| ID     | Name             | Specialization       | Contact      | Exp (Yrs) | Fee (RM)  | Status     |");
+    System.out.println("+--------+------------------+----------------------+--------------+-----------+-----------+------------+");
+    
+    // Print each doctor's data
+    for (Doctor doctor : doctors) {
+        System.out.printf("| %-6s | %-16s | %-20s | %-12s | %-9d | %-9.2f | %-10s |\n",
+            doctor.getDoctorID(),
+            doctor.getName(),
+            doctor.getSpecialization(),
+            doctor.getContactNumber(),
+            doctor.getYearsOfExperience(),
+            doctor.getConsultationFee(),
+            getStatusString(doctor));
+    }
+    
+    // Print table footer
+    System.out.println("+--------+------------------+----------------------+--------------+-----------+-----------+------------+");
+    System.out.println("Total Doctors: " + doctors.length);
+}
+
+private String getStatusString(Doctor doctor) {
+    if (doctor.isOnLeave()) return "On Leave";
+    return doctor.isAvailable() ? "Available" : "Unavailable";
+}    //-----------------------------------------------------------------------------------------------------------------//  
 
     private void displayDoctorCard(Doctor doctor) {
         System.out.println("\nID: " + doctor.getDoctorID());
@@ -383,9 +403,14 @@ private void manageLeavesUI() {
         
         if (availableDoctor != null) {
             System.out.println(" \nThe next available doctor would be : "  +  availableDoctor.getName());
-      
+            // Whether single or multiple doctors were found
+                System.out.println("\nPress Enter to return to main menu...");
+                scanner.nextLine(); // Wait for Enter key
         } else {
             System.out.println("No available doctors at the moment!");
+            // Whether single or multiple doctors were found
+                System.out.println("\nPress Enter to return to main menu...");
+                scanner.nextLine(); // Wait for Enter key
         } 
     }
 }
