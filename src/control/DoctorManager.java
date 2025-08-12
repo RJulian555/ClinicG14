@@ -1,25 +1,18 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package control;
 
 import adt.LinkedQueue;
 import adt.QueueInterface;
 import entity.Doctor;
+import java.util.Scanner;
 
 /**
  *
  * @author user
  */
 public class DoctorManager {
-    private QueueInterface<Doctor> doctorQueue;
+    public QueueInterface<Doctor> doctorQueue = new LinkedQueue<>();
     
     
-    
-    public DoctorManager() {
-         this.doctorQueue = new LinkedQueue<>();;
-    }
     
   //-----------------------------------------------------------------------------------------------------------------//  
     public void addDoctor(Doctor doctor) {
@@ -99,21 +92,122 @@ public class DoctorManager {
         return found;
     }
 //-----------------------------------------------------------------------------------------------------------------//  
-    public Doctor getNextAvailableDoctor() {
-        LinkedQueue<Doctor> tempQueue = new LinkedQueue<>();
-        Doctor foundDoctor = null;
-        
-        while (!doctorQueue.isEmpty()) {
-            Doctor current = doctorQueue.dequeue();
-            if (foundDoctor == null && current.isAvailable() && !current.isOnLeave()) {
-                foundDoctor = current;
-            }
-            tempQueue.enqueue(current);
-        }
-        
-        doctorQueue = tempQueue;
-        return foundDoctor;
+    public Doctor getNextAvailableDoctorBySpecialization(Scanner scanner) {
+    // Display specialization menu
+    System.out.println("\nSelect needed specialization:");
+    System.out.println(" 1. Cardiology");
+    System.out.println(" 2. Pediatrics");
+    System.out.println(" 3. Neurology");
+    System.out.println(" 4. Orthopedics");
+    System.out.println(" 5. Dermatology");
+    System.out.println(" 6. General Surgery");
+    System.out.println(" 7. Emergency Medicine");
+    System.out.println(" 8. Oncology");
+    System.out.println(" 9. Psychiatry");
+    System.out.println("10. Ophthalmology");
+    System.out.println("11. Show all available doctors");
+    System.out.print("Enter choice (1-11): ");
+    
+    String targetSpecialization = null;
+    String choice = scanner.nextLine();
+    
+    switch(choice) {
+        case "1": targetSpecialization = "Cardiology"; break;
+        case "2": targetSpecialization = "Pediatrics"; break;
+        case "3": targetSpecialization = "Neurology"; break;
+        case "4": targetSpecialization = "Orthopedics"; break;
+        case "5": targetSpecialization = "Dermatology"; break;
+        case "6": targetSpecialization = "General Surgery"; break;
+        case "7": targetSpecialization = "Emergency Medicine"; break;
+        case "8": targetSpecialization = "Oncology"; break;
+        case "9": targetSpecialization = "Psychiatry"; break;
+        case "10": targetSpecialization = "Ophthalmology"; break;
+        case "11": targetSpecialization = null; break; // Show all
+        default: 
+            System.out.println("Invalid choice, showing all specialties");
     }
+
+    // Search and display available doctors
+    LinkedQueue<Doctor> tempQueue = new LinkedQueue<>();
+    Doctor foundDoctor = null;
+    int availableCount = 0;
+    
+    System.out.println("\nAvailable Doctors:");
+    System.out.println("==================================================================");
+    System.out.println("| No. | Doctor Name      | Specialization      | Yrs Exp | Fee    |");
+    System.out.println("==================================================================");
+    
+    while (!doctorQueue.isEmpty()) {
+        Doctor current = doctorQueue.dequeue();
+        boolean isAvailable = current.isAvailable() && !current.isOnLeave();
+        boolean matchesSpecialization = targetSpecialization == null || 
+                                     current.getSpecialization().equalsIgnoreCase(targetSpecialization);
+        
+        if (isAvailable && matchesSpecialization) {
+            availableCount++;
+            System.out.printf("| %-3d | %-15s | %-19s | %-7d | RM%-5.2f |\n",
+                availableCount,
+                current.getName(),
+                current.getSpecialization(),
+                current.getYearsOfExperience(),
+                current.getConsultationFee());
+            
+            if (foundDoctor == null) {
+                foundDoctor = current; // First available doctor
+            }
+        }
+        tempQueue.enqueue(current);
+    }
+    
+    doctorQueue = tempQueue;
+    System.out.println("==================================================================");
+    
+    if (availableCount == 0) {
+        System.out.println("No available doctors matching your criteria");
+        return null;
+    }
+    
+    // Let patient choose if multiple available
+    if (availableCount > 1) {
+        System.out.print("\nEnter doctor number to select (or 0 to cancel): ");
+        try {
+            int selection = Integer.parseInt(scanner.nextLine());
+            if (selection > 0 && selection <= availableCount) {
+                return getDoctorBySelectionNumber(selection, targetSpecialization);
+            }
+            return null; // If user chose 0 to cancel
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input, selecting first available");
+        }
+    }
+    
+    return foundDoctor;
+}
+
+private Doctor getDoctorBySelectionNumber(int selection, String specialization) {
+    LinkedQueue<Doctor> tempQueue = new LinkedQueue<>();
+    Doctor selectedDoctor = null;
+    int currentIndex = 0;
+    
+    while (!doctorQueue.isEmpty()) {
+        Doctor current = doctorQueue.dequeue();
+        boolean matches = current.isAvailable() && !current.isOnLeave() && 
+                        (specialization == null || 
+                         current.getSpecialization().equalsIgnoreCase(specialization));
+        
+        if (matches) {
+            currentIndex++;
+            if (currentIndex == selection) {
+                selectedDoctor = current;
+            }
+        }
+        tempQueue.enqueue(current);
+    }
+    
+    doctorQueue = tempQueue;
+    return selectedDoctor;
+}
+
 //-----------------------------------------------------------------------------------------------------------------//  
     // Query Methods
     public Doctor getDoctorByID(String doctorID) {
@@ -133,6 +227,73 @@ public class DoctorManager {
         return getDoctorByID(doctorID) != null;
 
     }
+    
+ //-----------------------------------------------------------------------------------------------------------------//   
+    
+// In DoctorManager.java
+public String viewAllLeaves() {
+    StringBuilder report = new StringBuilder();
+    // Define the column widths
+    final int idWidth = 6;
+    final int nameWidth = 17;
+    final int specWidth = 20;
+    final int leaveWidth = 25;
+    
+    // Calculate total table width
+    int tableWidth = 3 + idWidth + 3 + nameWidth + 3 + specWidth + 3 + leaveWidth + 3;
+    String horizontalLine = new String(new char[tableWidth]).replace('\0', '=');
+    
+    report.append("\n\n\nDOCTOR LEAVE SCHEDULE\n");
+    report.append(horizontalLine).append("\n");
+    report.append(String.format("| %-" + idWidth + "s | %-" + nameWidth + "s | %-" + specWidth + "s | %-" + leaveWidth + "s |\n",
+        "ID", "Name", "Specialization", "Leave Dates"));
+    report.append(horizontalLine).append("\n");
+
+    for (Doctor doctor : doctorQueue.toArray(new Doctor[0])) {
+        report.append(String.format("| %-" + idWidth + "s | %-" + nameWidth + "s | %-" + specWidth + "s | %-" + leaveWidth + "s |\n",
+            doctor.getDoctorID(),
+            doctor.getName(),
+            doctor.getSpecialization(),
+            doctor.getFormattedLeaveDates()));
+    }
+    report.append(horizontalLine).append("\n");
+    return report.toString();
+}
+public boolean registerLeave(String doctorID, String leaveDate) {
+    Doctor doctor = getDoctorByID(doctorID);
+    if (doctor != null) {
+        doctor.addLeaveDate(leaveDate);
+        return true;
+    }
+    return false;
+}
+
+public boolean endLeave(String doctorID, String leaveDate) {
+    Doctor doctor = getDoctorByID(doctorID);
+    if (doctor != null) {
+        doctor.removeLeaveDate(leaveDate);
+        return true;
+    }
+    return false;
+}
+
+public void processLeaveStatusUpdates() {
+    String currentDate = java.time.LocalDate.now().toString();
+    for (Doctor doctor : doctorQueue.toArray(new Doctor[0])) {
+        if (doctor.getLeaveDates() != null) {
+            boolean onLeave = false;
+            for (String date : doctor.getLeaveDates()) {
+                if (date.equals(currentDate)) {
+                    onLeave = true;
+                    break;
+                }
+            }
+            doctor.setOnLeave(onLeave);
+            doctor.setAvailable(!onLeave);
+        }
+    }
+}    
+    
 //-----------------------------------------------------------------------------------------------------------------//  
     // Reports
     public String generateSpecializationReport() {
