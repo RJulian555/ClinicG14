@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package control;
 
 import adt.LinkedQueue;
@@ -14,13 +10,9 @@ import java.util.Scanner;
  * @author user
  */
 public class DoctorManager {
-    private QueueInterface<Doctor> doctorQueue;
+    public QueueInterface<Doctor> doctorQueue = new LinkedQueue<>();
     
     
-    
-    public DoctorManager() {
-         this.doctorQueue = new LinkedQueue<>();;
-    }
     
   //-----------------------------------------------------------------------------------------------------------------//  
     public void addDoctor(Doctor doctor) {
