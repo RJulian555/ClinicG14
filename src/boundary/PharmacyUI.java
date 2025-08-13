@@ -5,7 +5,7 @@
 package boundary;
 
 import adt.QueueInterface;
-import control.PharmacyControl;
+import control.*;
 import entity.Pharmacy;
 import java.util.Date;
 import java.util.Scanner;
@@ -51,7 +51,8 @@ public class PharmacyUI {
                     displayTotalStockValue();
                     break;
                 case 0:
-                    System.out.println("\nReturning to Main Menu...");
+                   
+                    
                     break;
                 default:
                     System.out.println("Invalid choice. Please try again.");
