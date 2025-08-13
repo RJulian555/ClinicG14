@@ -27,9 +27,6 @@ public class Doctor {
         this.name = name;
         this.specialization = specialization;
         // TODO: Initialize other default values
-        this.leaveDates = new String[0]; // Initialize empty array
-        this.isAvailable = true; // Default to available
-        this.isOnLeave = false; // Default to not on leave
     }
     
     // Getters and Setters for doctors
@@ -67,7 +64,7 @@ public class Doctor {
     }
     
     public String[] getLeaveDates() { 
-          return leaveDates != null ? leaveDates.clone() : new String[0];
+        return leaveDates.clone(); // Return copy for immutability
     }
     
     public String getWorkingHours() { 
@@ -114,7 +111,7 @@ public class Doctor {
     }
     
     public void setLeaveDates(String[] leaveDates) { 
-        this.leaveDates = leaveDates != null ? leaveDates.clone() : new String[0];
+        this.leaveDates = leaveDates.clone(); // Store copy
     }
     
     public void setWorkingHours(String workingHours) { 
@@ -126,41 +123,4 @@ public class Doctor {
     public String toString() {
         return "Doctor ID: " + doctorID + " | Name: " + name + " | Specialization: " + specialization;
     }
-    
-    public void addLeaveDate(String date) {
-    if (leaveDates == null) {
-        leaveDates = new String[]{date};
-    } else {
-        String[] newDates = new String[leaveDates.length + 1];
-        System.arraycopy(leaveDates, 0, newDates, 0, leaveDates.length);
-        newDates[leaveDates.length] = date;
-        leaveDates = newDates;
-    }
-    this.isOnLeave = true;
-    this.isAvailable = false;
-}
-
-public void removeLeaveDate(String date) {
-    if (leaveDates != null) {
-        String[] newDates = new String[leaveDates.length - 1];
-        int index = 0;
-        for (String d : leaveDates) {
-            if (!d.equals(date)) {
-                newDates[index++] = d;
-            }
-        }
-        leaveDates = newDates.length > 0 ? newDates : null;
-        this.isOnLeave = (leaveDates != null && leaveDates.length > 0);
-        this.isAvailable = !this.isOnLeave;
-    }
-}
-
-public String getFormattedLeaveDates() {
-    if (leaveDates == null || leaveDates.length == 0) {
-        return "No leave scheduled";
-    }
-    return String.join(", ", leaveDates);
-}
-
-    
 }
