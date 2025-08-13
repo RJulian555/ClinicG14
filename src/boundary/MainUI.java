@@ -58,6 +58,8 @@ public class MainUI {
                     // Create and launch the PharmacyUI, passing the control object to it.
                     PharmacyUI pharmacyUI = new PharmacyUI(this.pharmacyControl);
                     pharmacyUI.runPharmacyModule();
+                    pressEnterToContinue();
+                    
                     break;
                 case 6:
                     System.out.println("\nExiting system...");
