@@ -12,11 +12,11 @@ import java.util.Scanner;
 
 public class PharmacyUI {
 
-    private PharmacyControl pharmacyControl;
-    private Scanner scanner;
+    private final PharmacyControl pharmacyControl;
+    private final Scanner scanner;
 
-    public PharmacyUI() {
-        this.pharmacyControl = new PharmacyControl();
+     public PharmacyUI(PharmacyControl pharmacyControl) {
+        this.pharmacyControl = pharmacyControl;
         this.scanner = new Scanner(System.in);
     }
 
@@ -51,7 +51,7 @@ public class PharmacyUI {
                     displayTotalStockValue();
                     break;
                 case 0:
-                    System.out.println("Exiting Pharmacy Module...");
+                    System.out.println("\nReturning to Main Menu...");
                     break;
                 default:
                     System.out.println("Invalid choice. Please try again.");
@@ -68,7 +68,7 @@ public class PharmacyUI {
         System.out.println("5. Delete Medication");
         System.out.println("6. Generate Low Stock Report");
         System.out.println("7. Generate Total Stock Value Report");
-        System.out.println("0. Exit");
+        System.out.println("0. Return to Main Menu"); 
         System.out.println("----------------------------------");
     }
 
@@ -210,8 +210,8 @@ public class PharmacyUI {
         System.out.printf("The total value of all medication in stock is: RM %.2f\n", totalValue);
     }
     
-    public static void main(String[] args) {
-        PharmacyUI pharmacyUI = new PharmacyUI();
-        pharmacyUI.runPharmacyModule();
-    }
+    
 }
+
+
+

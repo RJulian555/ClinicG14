@@ -7,6 +7,7 @@ package control;
 import adt.QueueInterface;
 import adt.LinkedQueue;
 import entity.Pharmacy;
+import boundary.*;
 import java.util.Comparator;
 import java.util.Date;
 
@@ -17,13 +18,14 @@ public class PharmacyControl {
     public PharmacyControl() {
         // Initialize the queue and add some sample data
         medicationStock = new LinkedQueue<>();
-        medicationStock.enqueue(new Pharmacy("M001", "Paracetamol", "Pain reliever", 10.50, 100, "Tablet", new Date()));
-        medicationStock.enqueue(new Pharmacy("M002", "Ibuprofen", "Anti-inflammatory", 15.00, 50, "Tablet", new Date()));
-        medicationStock.enqueue(new Pharmacy("M003", "Cough Syrup", "Soothes cough", 25.00, 30, "Liquid", new Date()));
-        medicationStock.enqueue(new Pharmacy("M004", "Antacid", "Relieves heartburn", 12.75, 80, "Liquid", new Date()));
-        medicationStock.enqueue(new Pharmacy("M005", "Aspirin", "Blood thinner", 8.00, 20, "Tablet", new Date()));
+       
     }
 
+     // The Initializer will call this method.
+    public void addMedication(Pharmacy pharmacy) {
+        medicationStock.enqueue(pharmacy);
+    }
+    
     // Corresponds to +addNewMedication()
     public void addNewMedication(Pharmacy newMed) {
         medicationStock.enqueue(newMed);
