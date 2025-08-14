@@ -1,7 +1,7 @@
 package boundary;
 
 import dao.ClinicInitializer;
-import control.DoctorManager;
+import control.*;
 import java.util.Scanner;
 
 /**
@@ -9,65 +9,71 @@ import java.util.Scanner;
  * @author user
  */
 public class MainUI {
-    private static Scanner scanner = new Scanner(System.in);
     
-    public static void main(String[] args) {
-        // Initialize all managers
-        DoctorManager doctorManager = new DoctorManager();
-        // Other managers would be initialized here
-        // PatientManager patientManager = new PatientManager();
-        // PharmacyManager pharmacyManager = new PharmacyManager();
-        
-        // Load sample data
-        initializeAllData(doctorManager /*, other managers */);
-        
-        // Main system loop
+     // --- All variables are now non-static instance variables ---
+    private final Scanner scanner;
+    private final DoctorManager doctorManager;
+    private final PharmacyControl pharmacyControl;
+    
+    
+     /**
+     * The constructor now receives the necessary manager objects.
+     * It no longer creates them itself.
+     */
+    public MainUI(DoctorManager doctorManager, PharmacyControl pharmacyControl) {
+        this.doctorManager = doctorManager;
+        this.pharmacyControl = pharmacyControl;
+        this.scanner = new Scanner(System.in);
+    }
+    
+     /**
+     * The main loop is now in a public "launch" method instead of main().
+     */
+    public void launch() {
         while (true) {
             displayMainMenu();
             int choice = getMenuChoice();
             
             switch (choice) {
                 case 1:
+                    // new DoctorUI(doctorManager).displayMainMenu(); // This remains the same
                     new DoctorUI(doctorManager).displayMainMenu();
+                    System.out.println("\nDoctor Module UI would launch here");
+                    pressEnterToContinue();
                     break;
                 case 2:
                     System.out.println("\nPatient Module UI would launch here");
-                    // new PatientUI(patientManager).displayMainMenu();
                     pressEnterToContinue();
                     break;
                 case 3:
                     System.out.println("\nConsultation Module UI would launch here");
-                    // new ConsultationUI().displayMainMenu();
                     pressEnterToContinue();
                     break;
                 case 4:
                     System.out.println("\nMedical Records Module UI would launch here");
-                    // new MedicalRecordsUI().displayMainMenu();
                     pressEnterToContinue();
                     break;
                 case 5:
-                    System.out.println("\nPharmacy Module UI would launch here");
-                    // new PharmacyUI(pharmacyManager).displayMainMenu();
+                    // **THIS IS THE INTEGRATION POINT**
+                    // Create and launch the PharmacyUI, passing the control object to it.
+                    PharmacyUI pharmacyUI = new PharmacyUI(this.pharmacyControl);
+                    pharmacyUI.runPharmacyModule();
                     pressEnterToContinue();
+                    
                     break;
                 case 6:
                     System.out.println("\nExiting system...");
-                    System.exit(0);
+                    return; // Return from the launch method to exit cleanly
                 default:
                     System.out.println("Invalid choice! Please try again.");
             }
         }
     }
     
-    private static void initializeAllData(DoctorManager doctorManager /*, other managers */) {
-        System.out.println("Initializing sample data...");
-        ClinicInitializer.initializeSampleDoctors(doctorManager);
-        System.out.println("Doctor data initialized successfully!");
-        
-        // Placeholder for other modules' initialization
-        System.out.println("[Other modules would initialize their sample data here]");
-        pressEnterToContinue();
-    }
+    
+    
+    
+   
     
     private static void displayMainMenu() {
         System.out.println("\n|------------------------------|");
@@ -83,7 +89,7 @@ public class MainUI {
         System.out.print("Select module to access: ");
     }
     
-    private static int getMenuChoice() {
+    private int getMenuChoice() {
         while (true) {
             try {
                 return Integer.parseInt(scanner.nextLine());
@@ -93,8 +99,12 @@ public class MainUI {
         }
     }
     
-    private static void pressEnterToContinue() {
+    private void pressEnterToContinue() {
         System.out.println("\nPress Enter to return to main menu...");
         scanner.nextLine();
     }
+    
+    
+    
+    
 }

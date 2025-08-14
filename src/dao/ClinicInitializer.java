@@ -1,7 +1,9 @@
 package dao;
 
-import control.DoctorManager;
-import entity.Doctor;
+import adt.*;
+import control.*;
+import entity.*;
+import java.util.Date;
 /**
  *
  * @author user
@@ -77,6 +79,8 @@ public class ClinicInitializer {
         }
     }
 
+  
+     
     private static void addSampleDoctor(DoctorManager manager, String id, String name, 
             String specialization, String contact, int experience, double fee, 
             String[] leaveDates, String hours) {
@@ -92,4 +96,30 @@ public class ClinicInitializer {
         
         manager.addDoctor(doctor);
     }
+    
+    
+    public static void initializeSamplePharmacyStock(PharmacyControl pharmacyControl) {
+        try {
+            addSampleMedication(pharmacyControl, "M001", "Paracetamol", "Pain reliever", 10.50, 100, "Tablet");
+            addSampleMedication(pharmacyControl, "M002", "Ibuprofen", "Anti-inflammatory", 15.00, 50, "Tablet");
+            addSampleMedication(pharmacyControl, "M003", "Cough Syrup", "Soothes cough", 25.00, 30, "Liquid");
+            addSampleMedication(pharmacyControl, "M004", "Antacid", "Relieves heartburn", 12.75, 80, "Liquid");
+            addSampleMedication(pharmacyControl, "M005", "Aspirin", "Blood thinner", 8.00, 20, "Tablet");
+            addSampleMedication(pharmacyControl, "M006", "Amoxicillin", "Antibiotic", 35.20, 60, "Capsule");
+            addSampleMedication(pharmacyControl, "M007", "Vitamin C", "Supplement", 18.00, 150, "Tablet");
+        } catch (Exception e) {
+            System.out.println("Error loading sample pharmacy data: " + e.getMessage());
+        }
+    }
+    
+    private static void addSampleMedication(PharmacyControl pharmacyControl, String id, String name, 
+            String description, double price, int quantity, String type) {
+
+        // Here we create the entity object within the DAO layer
+        Pharmacy medication = new Pharmacy(id, name, description, price, quantity, type, new Date());
+        
+        // And pass the complete object to the control layer's new method
+        pharmacyControl.addMedication(medication);
+    }
+    
 }
