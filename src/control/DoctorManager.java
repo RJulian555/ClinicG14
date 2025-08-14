@@ -11,7 +11,8 @@ import java.util.Scanner;
  */
 public class DoctorManager {
     public QueueInterface<Doctor> doctorQueue = new LinkedQueue<>();
-   
+    
+    
     
   //-----------------------------------------------------------------------------------------------------------------//  
     public void addDoctor(Doctor doctor) {
