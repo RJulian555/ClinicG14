@@ -67,30 +67,57 @@ public class DoctorManager {
     }
 //-----------------------------------------------------------------------------------------------------------------//  
     public boolean updateDoctor(String doctorID, Doctor newDetails) {
-        LinkedQueue<Doctor> tempQueue = new LinkedQueue<>();
-        boolean found = false;
-        
-        while (!doctorQueue.isEmpty()) {
-            Doctor current = doctorQueue.dequeue();
-            if (current.getDoctorID().equals(doctorID)) {
-                // Update all fields except ID
-                current.setName(newDetails.getName());
-                current.setSpecialization(newDetails.getSpecialization());
-                current.setContactNumber(newDetails.getContactNumber());
-                current.setYearsOfExperience(newDetails.getYearsOfExperience());
-                current.setAvailable(newDetails.isAvailable());
-                current.setConsultationFee(newDetails.getConsultationFee());
-                current.setOnLeave(newDetails.isOnLeave());
-                current.setLeaveDates(newDetails.getLeaveDates());
-                current.setWorkingHours(newDetails.getWorkingHours());
-                found = true;
-            }
-            tempQueue.enqueue(current);
-        }
-        
-        doctorQueue = tempQueue;
-        return found;
+    // Null check
+    if (newDetails == null || doctorID == null) {
+        return false;
     }
+    
+    LinkedQueue<Doctor> tempQueue = new LinkedQueue<>();
+    boolean found = false;
+    
+    while (!doctorQueue.isEmpty()) {
+        Doctor current = doctorQueue.dequeue();
+        if (current.getDoctorID().equals(doctorID)) {
+            // Update only non-null fields (except primitives)
+            if (newDetails.getName() != null) {
+                current.setName(newDetails.getName());
+            }
+            if (newDetails.getSpecialization() != null) {
+                current.setSpecialization(newDetails.getSpecialization());
+            }
+            if (newDetails.getContactNumber() != null) {
+                current.setContactNumber(newDetails.getContactNumber());
+            }
+            
+            // Primitive fields don't need null checks
+            current.setYearsOfExperience(newDetails.getYearsOfExperience());
+            current.setAvailable(newDetails.isAvailable());
+            current.setConsultationFee(newDetails.getConsultationFee());
+            current.setOnLeave(newDetails.isOnLeave());
+            
+            // Handle leave dates - only update if being set to on leave
+            if (newDetails.isOnLeave() && newDetails.getLeaveDates() != null 
+                && newDetails.getLeaveDates().length > 0) {
+                current.setLeaveDates(newDetails.getLeaveDates());
+            } else if (!newDetails.isOnLeave()) {
+                current.setLeaveDates(null);
+            }
+            
+            // Working hours can be null
+            if (newDetails.getWorkingHours() != null) {
+                current.setWorkingHours(newDetails.getWorkingHours());
+            } else {
+                current.setWorkingHours(null);
+            }
+            
+            found = true;
+        }
+        tempQueue.enqueue(current);
+    }
+    
+    doctorQueue = tempQueue;
+    return found;
+}
 //-----------------------------------------------------------------------------------------------------------------//  
     public Doctor getNextAvailableDoctorBySpecialization(Scanner scanner) {
     // Display specialization menu

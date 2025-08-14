@@ -318,15 +318,32 @@ private String getStatusString(Doctor doctor) {
     //-----------------------------------------------------------------------------------------------------------------//  
 
     private void updateDoctorUI(Doctor oldDoctor) {
-        System.out.println("\n Update Doctor Details");
-        Doctor newDetails = inputDoctorDetails();
-        
-        if (doctorManager.updateDoctor(oldDoctor.getDoctorID(), newDetails)) {
-            System.out.println("Doctor updated successfully!");
-        } else {
-            System.out.println("Failed to update doctor!");
-        }
+    System.out.println("\nUpdate Doctor Details");
+    System.out.println("Current details:");
+    displayDoctorCard(oldDoctor);
+    System.out.println("\nEnter new details (or 'cancel' at any prompt):");
+    
+    Doctor newDetails = inputDoctorDetails();
+    
+    // Handle cancellation
+    if (newDetails == null) {
+        System.out.println("\nUpdate cancelled. No changes made.");
+        return;
     }
+    
+    // Preserve the original ID regardless of what was entered
+    newDetails.setDoctorID(oldDoctor.getDoctorID());
+    
+    if (doctorManager.updateDoctor(oldDoctor.getDoctorID(), newDetails)) {
+        System.out.println("\nDoctor updated successfully! New details:");
+        displayDoctorCard(newDetails);
+    } else {
+        System.out.println("Failed to update doctor!");
+    }
+    
+    System.out.println("\nPress Enter to return to main menu...");
+    scanner.nextLine(); // Wait for user
+}
     //-----------------------------------------------------------------------------------------------------------------//  
 
     private void displaySpecializationReportUI() {
