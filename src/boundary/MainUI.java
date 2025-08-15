@@ -14,15 +14,16 @@ public class MainUI {
     private final Scanner scanner;
     private final DoctorManager doctorManager;
     private final PharmacyControl pharmacyControl;
-    
+    private final MedicalTreatmentControl medicalTreatmentControl;
     
      /**
      * The constructor now receives the necessary manager objects.
      * It no longer creates them itself.
      */
-    public MainUI(DoctorManager doctorManager, PharmacyControl pharmacyControl) {
+    public MainUI(DoctorManager doctorManager, PharmacyControl pharmacyControl, MedicalTreatmentControl medicalTreatmentControl) {
         this.doctorManager = doctorManager;
         this.pharmacyControl = pharmacyControl;
+        this.medicalTreatmentControl = medicalTreatmentControl; // Store the new control object
         this.scanner = new Scanner(System.in);
     }
     
@@ -50,6 +51,9 @@ public class MainUI {
                     pressEnterToContinue();
                     break;
                 case 4:
+                    MedicalTreatmentUI medicalTreatmentUI = new MedicalTreatmentUI(this.medicalTreatmentControl);
+                    // 2. Call the correct method to start the module's loop.
+                    medicalTreatmentUI.runModule();
                     System.out.println("\nMedical Records Module UI would launch here");
                     pressEnterToContinue();
                     break;
@@ -82,7 +86,7 @@ public class MainUI {
         System.out.println("| 1. Doctor Module             |");
         System.out.println("| 2. Patient Module            |");
         System.out.println("| 3. Consultation Module       |");
-        System.out.println("| 4. Medical Records Module    |");
+        System.out.println("| 4. Medical Treatment Module    |");
         System.out.println("| 5. Pharmacy Module           |");
         System.out.println("| 6. Exit System               |");
         System.out.println("|------------------------------|");
