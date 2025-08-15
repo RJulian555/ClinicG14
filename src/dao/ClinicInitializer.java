@@ -122,4 +122,245 @@ public class ClinicInitializer {
         pharmacyControl.addMedication(medication);
     }
     
+    private static int patientCounter = 1;
+    private static int queueCounter = 1;
+    
+    
+
+
+    
+ 
+    
+    public static void initializeSamplePatients(PatientManager patientManager) {
+        try {
+            // Patients in queue
+            addSamplePatient(patientManager, "Ali Bin Abu", "990101014321", "0123456789", "01/01/1999", 
+                "M", "A+", "Peanuts", 70.5, 170.0, true, "15/03/2024");
+            addSamplePatient(patientManager, "Siti Aminah", "000202023456", "0139876543", "02/02/2000", 
+                "F", "O-", "", 55.0, 160.0, true, "18/03/2024");
+            addSamplePatient(patientManager, "John Tan", "981010104321", "0112233445", "10/10/1998", 
+                "M", "B+", "Seafood", 68.0, 175.0, true, "20/03/2024");
+            addSamplePatient(patientManager, "Nur Izzati", "010303035432", "0199988776", "03/03/2001", 
+                "F", "AB-", "", 60.0, 162.0, true, "22/03/2024");
+            addSamplePatient(patientManager, "Raj Kumar", "970707074321", "0105678901", "07/07/1997", 
+                "M", "O+", "Dust", 72.3, 180.0, true, "25/03/2024");
+            
+            // Patients not in queue
+            addSamplePatient(patientManager, "Lim Mei Ling", "960606062222", "0143322110", "06/06/1996", 
+                "F", "A-", "Lactose", 50.0, 155.0, false, "05/01/2024");
+            addSamplePatient(patientManager, "Ahmad Fauzi", "950505051234", "0176543210", "05/05/1995", 
+                "M", "B-", "Penicillin", 80.0, 178.0, false, "10/01/2024");
+            addSamplePatient(patientManager, "Sarah Chong", "940404043210", "0167890123", "04/04/1994", 
+                "F", "AB+", "", 58.0, 165.0, false, "15/01/2024");
+            addSamplePatient(patientManager, "Mohd Razak", "930303032345", "0156789012", "03/03/1993", 
+                "M", "A+", "Shellfish", 75.0, 172.0, false, "20/01/2024");
+            addSamplePatient(patientManager, "Tan Wei Ling", "920202021234", "0198765432", "02/02/1992", 
+                "F", "O+", "Nuts", 52.0, 158.0, false, "25/01/2024");
+            
+            // More patients
+            addSamplePatient(patientManager, "Kumar Selvam", "910101013456", "0134567890", "01/01/1991", 
+                "M", "B+", "", 82.0, 182.0, false, "01/02/2024");
+            addSamplePatient(patientManager, "Fatimah Binti Abdullah", "891212123456", "0123456780", "12/12/1989", 
+                "F", "O-", "Eggs", 65.0, 168.0, false, "05/02/2024");
+            addSamplePatient(patientManager, "Lee Chong Wei", "881010102345", "0112345678", "10/10/1988", 
+                "M", "A-", "", 70.0, 175.0, true, "10/02/2024");
+            addSamplePatient(patientManager, "Nurul Syafiqah", "870707073210", "0190123456", "07/07/1987", 
+                "F", "AB-", "Soy", 54.0, 160.0, false, "15/02/2024");
+            addSamplePatient(patientManager, "Ramesh Naidu", "860606062345", "0178901234", "06/06/1986", 
+                "M", "O+", "", 78.0, 180.0, true, "20/02/2024");
+            
+            // Additional patients
+            addSamplePatient(patientManager, "Wong Mei Chen", "850505051234", "0167890123", "05/05/1985", 
+                "F", "B+", "Dairy", 56.0, 163.0, false, "01/03/2024");
+            addSamplePatient(patientManager, "Ahmad Hakimi", "840404043456", "0156789012", "04/04/1984", 
+                "M", "A+", "", 85.0, 185.0, false, "05/03/2024");
+            addSamplePatient(patientManager, "Norhayati Binti Osman", "830303032345", "0145678901", "03/03/1983", 
+                "F", "O-", "Wheat", 62.0, 170.0, true, "10/03/2024");
+            addSamplePatient(patientManager, "Chan Kok Leong", "820202021234", "0134567890", "02/02/1982", 
+                "M", "AB+", "", 76.0, 178.0, false, "15/03/2024");
+            addSamplePatient(patientManager, "Siti Nurhaliza", "810101013456", "0123456789", "01/01/1981", 
+                "F", "B-", "Peanuts", 60.0, 165.0, false, "20/03/2024");
+            
+            // More diverse patients
+            addSamplePatient(patientManager, "Muthu Samy", "791212123456", "0198765432", "12/12/1979", 
+                "M", "O+", "", 90.0, 182.0, true, "01/04/2024");
+            addSamplePatient(patientManager, "Lim Siew Ling", "781010102345", "0187654321", "10/10/1978", 
+                "F", "A+", "Shellfish", 58.0, 162.0, false, "05/04/2024");
+            addSamplePatient(patientManager, "Abdul Rahman", "770707073210", "0176543210", "07/07/1977", 
+                "M", "B+", "", 82.0, 178.0, false, "10/04/2024");
+            addSamplePatient(patientManager, "Tan Bee Lian", "760606062345", "0165432109", "06/06/1976", 
+                "F", "AB-", "Latex", 63.0, 168.0, true, "15/04/2024");
+            addSamplePatient(patientManager, "Krishnan A/L Muthu", "750505051234", "0154321098", "05/05/1975", 
+                "M", "O-", "Eggs", 88.0, 183.0, false, "20/04/2024");
+            
+            // Older patients
+            addSamplePatient(patientManager, "Ong Swee Lin", "740404043456", "0143210987", "04/04/1974", 
+                "F", "A-", "", 65.0, 170.0, false, "01/05/2024");
+            addSamplePatient(patientManager, "Mohd Faisal", "730303032345", "0132109876", "03/03/1973", 
+                "M", "B-", "Penicillin", 92.0, 185.0, true, "05/05/2024");
+            addSamplePatient(patientManager, "Yusuf Bin Ismail", "720202021234", "0121098765", "02/02/1972", 
+                "M", "AB+", "", 84.0, 180.0, false, "10/05/2024");
+            addSamplePatient(patientManager, "Noraini Binti Ali", "710101013456", "0110987654", "01/01/1971", 
+                "F", "O+", "Nuts", 70.0, 175.0, false, "15/05/2024");
+            addSamplePatient(patientManager, "Robert Chan", "691212123456", "0198765432", "12/12/1969", 
+                "M", "A+", "", 95.0, 188.0, true, "20/05/2024");
+            
+            // Senior patients
+            addSamplePatient(patientManager, "Maimunah Binti Ahmad", "681010102345", "0187654321", "10/10/1968", 
+                "F", "B+", "Dairy", 68.0, 172.0, false, "01/06/2024");
+            addSamplePatient(patientManager, "Ravi Shankar", "670707073210", "0176543210", "07/07/1967", 
+                "M", "O-", "", 87.0, 182.0, false, "05/06/2024");
+            addSamplePatient(patientManager, "Lily Wong", "660606062345", "0165432109", "06/06/1966", 
+                "F", "AB+", "Wheat", 72.0, 178.0, true, "10/06/2024");
+            addSamplePatient(patientManager, "Hassan Bin Omar", "650505051234", "0154321098", "05/05/1965", 
+                "M", "A-", "", 90.0, 185.0, false, "15/06/2024");
+            addSamplePatient(patientManager, "Susila Devi", "640404043456", "0143210987", "04/04/1964", 
+                "F", "B-", "Peanuts", 75.0, 180.0, false, "20/06/2024");
+            
+            // More senior patients
+            addSamplePatient(patientManager, "Goh Peng Lim", "630303032345", "0132109876", "03/03/1963", 
+                "M", "O+", "Shellfish", 92.0, 188.0, true, "01/07/2024");
+            addSamplePatient(patientManager, "Zainab Binti Yusof", "620202021234", "0121098765", "02/02/1962", 
+                "F", "AB-", "", 78.0, 175.0, false, "05/07/2024");
+            addSamplePatient(patientManager, "Arunachalam Muthu", "610101013456", "0110987654", "01/01/1961", 
+                "M", "A+", "Latex", 85.0, 182.0, false, "10/07/2024");
+            addSamplePatient(patientManager, "Lim Siew Hong", "591212123456", "0198765432", "12/12/1959", 
+                "F", "B+", "Eggs", 80.0, 178.0, true, "15/07/2024");
+            addSamplePatient(patientManager, "Ismail Bin Ahmad", "581010102345", "0187654321", "10/10/1958", 
+                "M", "O-", "", 95.0, 185.0, false, "20/07/2024");
+            
+            // Elderly patients
+            addSamplePatient(patientManager, "Chong Mei Fong", "570707073210", "0176543210", "07/07/1957", 
+                "F", "AB+", "", 82.0, 180.0, false, "01/08/2024");
+            addSamplePatient(patientManager, "Muthu Palanisamy", "560606062345", "0165432109", "06/06/1956", 
+                "M", "A-", "Penicillin", 98.0, 188.0, true, "05/08/2024");
+            addSamplePatient(patientManager, "Aishah Binti Mohd", "550505051234", "0154321098", "05/05/1955", 
+                "F", "B-", "Nuts", 85.0, 175.0, false, "10/08/2024");
+            addSamplePatient(patientManager, "Tan Kok Wai", "540404043456", "0143210987", "04/04/1954", 
+                "M", "O+", "", 100.0, 185.0, false, "15/08/2024");
+            addSamplePatient(patientManager, "Norhayati Binti Ali", "530303032345", "0132109876", "03/03/1953", 
+                "F", "AB-", "Dairy", 88.0, 178.0, true, "20/08/2024");
+            
+            // Final set of patients
+            addSamplePatient(patientManager, "Raja Kumar", "520202021234", "0121098765", "02/02/1952", 
+                "M", "A+", "", 92.0, 182.0, false, "01/09/2024");
+            addSamplePatient(patientManager, "Lim Siew Chin", "510101013456", "0110987654", "01/01/1951", 
+                "F", "B+", "Wheat", 78.0, 175.0, false, "05/09/2024");
+            addSamplePatient(patientManager, "Ahmad Bin Hassan", "491212123456", "0198765432", "12/12/1949", 
+                "M", "O-", "Peanuts", 102.0, 188.0, true, "10/09/2024");
+            addSamplePatient(patientManager, "Wong Mei Yee", "481010102345", "0187654321", "10/10/1948", 
+                "F", "AB+", "", 85.0, 180.0, false, "15/09/2024");
+            addSamplePatient(patientManager, "Muthu Samynathan", "470707073210", "0176543210", "07/07/1947", 
+                "M", "A-", "Shellfish", 95.0, 185.0, false, "20/09/2024");
+            
+            // Additional patients - Group 1
+            addSamplePatient(patientManager, "Chen Wei Liang", "961111115678", "0144556677", "11/11/1996", 
+            "M", "B+", "Pollen", 72.0, 176.0, true, "22/03/2024");
+            addSamplePatient(patientManager, "Nur Syakirah", "970909094321", "0133445566", "09/09/1997", 
+            "F", "A-", "Shellfish", 58.5, 163.0, false, "12/02/2024");
+            addSamplePatient(patientManager, "David Ng", "950808083456", "0122334455", "08/08/1995", 
+            "M", "O+", "", 81.0, 179.0, true, "18/04/2024");
+            addSamplePatient(patientManager, "Aisyah Binti Mohd", "980707072345", "0199887766", "07/07/1998", 
+            "F", "AB+", "Dust mites", 62.0, 167.0, false, "05/03/2024");
+            addSamplePatient(patientManager, "Karthik Murugan", "940606061234", "0188776655", "06/06/1994", 
+            "M", "B-", "Penicillin", 76.0, 177.0, true, "28/04/2024");
+
+// Additional patients - Group 2
+            addSamplePatient(patientManager, "Lim Jia Hui", "990505054321", "0177665544", "05/05/1999", 
+            "F", "O-", "Nuts", 54.0, 161.0, false, "15/01/2024");
+            addSamplePatient(patientManager, "Amirul Hafiz", "930404043210", "0166554433", "04/04/1993", 
+            "M", "A+", "", 83.5, 181.0, true, "02/05/2024");
+            addSamplePatient(patientManager, "Priya Devi", "910303032345", "0155443322", "03/03/1991", 
+            "F", "B+", "Latex", 59.0, 164.0, false, "22/02/2024");
+            addSamplePatient(patientManager, "Tan Kok Ming", "900202021456", "0144332211", "02/02/1990", 
+            "M", "AB-", "Eggs", 77.0, 178.0, true, "08/05/2024");
+            addSamplePatient(patientManager, "Siti Aishah", "880101013456", "0133221100", "01/01/1988", 
+            "F", "O+", "Soy", 63.5, 169.0, false, "18/01/2024");
+
+// Additional patients - Group 3
+            addSamplePatient(patientManager, "Rahman Bin Ali", "871212123210", "0122110099", "12/12/1987", 
+            "M", "A-", "", 85.0, 182.0, true, "12/05/2024");
+            addSamplePatient(patientManager, "Chong Mei Ling", "861010102345", "0111009988", "10/10/1986", 
+            "F", "B-", "Dairy", 60.0, 165.0, false, "25/02/2024");
+            addSamplePatient(patientManager, "Manoj Kumar", "850909093456", "0199887766", "09/09/1985", 
+            "M", "AB+", "Peanuts", 79.0, 180.0, true, "15/05/2024");
+            addSamplePatient(patientManager, "Nor Azlina", "840808082345", "0188776655", "08/08/1984", 
+            "F", "O-", "", 64.0, 168.0, false, "08/03/2024");
+            addSamplePatient(patientManager, "Goh Seng Choon", "830707071234", "0177665544", "07/07/1983", 
+            "M", "A+", "Wheat", 87.0, 183.0, true, "18/05/2024");
+
+// Additional patients - Group 4
+            addSamplePatient(patientManager, "Yap Mei Fong", "820606062345", "0166554433", "06/06/1982", 
+            "F", "B+", "Shellfish", 61.5, 166.0, false, "15/03/2024");
+            addSamplePatient(patientManager, "Hafiz Bin Osman", "810505051456", "0155443322", "05/05/1981", 
+            "M", "AB-", "", 90.0, 184.0, true, "22/05/2024");
+            addSamplePatient(patientManager, "Lai Yee Ling", "800404043210", "0144332211", "04/04/1980", 
+            "F", "O+", "Pollen", 66.0, 170.0, false, "22/03/2024");
+            addSamplePatient(patientManager, "Rajendran A/L Muthu", "790303032345", "0133221100", "03/03/1979", 
+            "M", "A-", "Penicillin", 92.5, 185.0, true, "25/05/2024");
+            addSamplePatient(patientManager, "Wong Siew Peng", "780202021234", "0122110099", "02/02/1978", 
+            "F", "B-", "", 68.0, 172.0, false, "28/03/2024");
+
+// Additional patients - Group 5
+            addSamplePatient(patientManager, "Ahmad Firdaus", "771111113456", "0111009988", "11/11/1977", 
+            "M", "AB+", "Dust", 94.0, 186.0, true, "28/05/2024");
+            addSamplePatient(patientManager, "Norlela Binti Samad", "761010102345", "0199887766", "10/10/1976", 
+            "F", "O-", "Latex", 70.5, 173.0, false, "05/04/2024");
+            addSamplePatient(patientManager, "Lim Chee Beng", "750909091234", "0188776655", "09/09/1975", 
+            "M", "A+", "", 96.0, 187.0, true, "01/06/2024");
+            addSamplePatient(patientManager, "Saraswathy Devi", "740808082345", "0177665544", "08/08/1974", 
+            "F", "B+", "Eggs", 72.0, 174.0, false, "12/04/2024");
+            addSamplePatient(patientManager, "Omar Bin Hussain", "730707073210", "0166554433", "07/07/1973", 
+            "M", "AB-", "Soy", 98.0, 188.0, true, "05/06/2024");
+
+// Additional patients - Group 6
+            addSamplePatient(patientManager, "Tan Bee Choo", "720606061234", "0155443322", "06/06/1972", 
+            "F", "O+", "", 74.0, 175.0, false, "18/04/2024");
+            addSamplePatient(patientManager, "Krishnan A/L Palani", "710505053456", "0144332211", "05/05/1971", 
+            "M", "A-", "Nuts", 100.0, 189.0, true, "08/06/2024");
+           addSamplePatient(patientManager, "Chan Mei Yee", "700404042345", "0133221100", "04/04/1970", 
+           "F", "B-", "Dairy", 76.0, 176.0, false, "25/04/2024");
+           addSamplePatient(patientManager, "Ismail Bin Ibrahim", "691212123210", "0122110099", "12/12/1969", 
+           "M", "AB+", "", 102.0, 190.0, true, "12/06/2024");
+           addSamplePatient(patientManager, "Lim Siew Mei", "681010101234", "0111009988", "10/10/1968", 
+           "F", "O-", "Wheat", 78.0, 177.0, false, "02/05/2024");
+
+        } catch (Exception e) {
+            System.out.println("Error loading sample patients: " + e.getMessage());
+        }
+    }
+    
+    private static void addSamplePatient(PatientManager patientManager, String name, String ic, 
+    String contact, String dob, String gender, String bloodType, String allergies, 
+    double weight, double height, boolean inQueue, String registrationDateStr) {
+    
+    try {
+        String patientID = patientManager.generatePatientID();
+        String queueID = inQueue ? patientManager.generateQueueID() : null;
+        
+        Patient patient = new Patient(
+            patientID,
+            name, 
+            ic, 
+            contact, 
+            dob, 
+            gender, 
+            bloodType, 
+            allergies, 
+            weight, 
+            height, 
+            queueID,
+            registrationDateStr
+        );
+        
+        patientManager.addSamplePatient(patient, inQueue);
+    } catch (IllegalArgumentException e) {
+        System.err.println("Failed to add patient " + name + ": " + e.getMessage());
+        // Don't increment counters for failed additions
+        patientManager.rollbackCounters();
+    }
+}
+
+
+    
 }
