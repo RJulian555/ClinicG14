@@ -9,6 +9,11 @@
             <file>file:/C:/Users/user/Documents/GitHub/ClinicG14/src/boundary/PharmacyUI.java</file>
             <file>file:/C:/Users/user/Documents/GitHub/ClinicG14/src/control/PharmacyControl.java</file>
             <file>file:/C:/Users/user/Documents/GitHub/ClinicG14/src/adt/QueueInterface.java</file>
+            <file>file:/C:/Users/user/Documents/GitHub/ClinicG14/src/boundary/DoctorUI.java</file>
+            <file>file:/C:/Users/user/Documents/GitHub/ClinicG14/src/entity/Doctor.java</file>
+            <file>file:/C:/Users/user/Documents/GitHub/ClinicG14/src/control/DoctorManager.java</file>
+            <file>file:/C:/Users/user/Documents/GitHub/ClinicG14/src/entity/Pharmacy.java</file>
+            <file>file:/C:/Users/user/Documents/GitHub/ClinicG14/src/adt/LinkedQueue.java</file>
         </group>
     </open-files>
 </project-private>
