@@ -15,9 +15,14 @@ public class PharmacyControl {
 
     // Here is my ADT. It's a private variable, hidden from the UI.
     private QueueInterface<Pharmacy> medicationStock;
+    // **NEW QUEUES FOR THE PRESCRIPTION WORKFLOW**
+    private QueueInterface<Prescription> pendingPrescriptions;
+    private QueueInterface<Prescription> heldPrescriptions;
 
      public PharmacyControl() {
         this.medicationStock = new LinkedQueue<>();
+        this.pendingPrescriptions = new LinkedQueue<>();
+        this.heldPrescriptions = new LinkedQueue<>();
     }
 
       // This method is called by the DAO initializer
@@ -214,4 +219,127 @@ public class PharmacyControl {
     public boolean isStockEmpty() {
         return medicationStock.isEmpty();
     }
+    
+     // **NEW METHODS FOR PRESCRIPTION MANAGEMENT**
+
+    /**
+     * Called by MedicalTreatmentControl to add a new prescription to the approval queue.
+     */
+    public void requestPrescriptionApproval(Prescription prescription) {
+        pendingPrescriptions.enqueue(prescription);
+    }
+
+    /**
+     * Gets the next pending prescription for the UI to display, without removing it.
+     * @return A string array with prescription details, or null if the queue is empty.
+     */
+    public String[] getNextPrescriptionForApproval() {
+        if (pendingPrescriptions.isEmpty()) {
+            return null;
+        }
+        Prescription p = pendingPrescriptions.getFront();
+        Pharmacy med = findMedicationById(p.getMedicationID());
+        return new String[]{
+            p.getTreatmentID(),
+            p.getPatientID(),
+            p.getMedicationID(),
+            med != null ? med.getMedicationName() : "Unknown Medication",
+            String.valueOf(p.getQuantity()),
+            med != null ? String.valueOf(med.getMedicationQuantity()) : "N/A"
+        };
+    }
+
+    /**
+     * Approves the prescription at the front of the queue, reducing medication stock.
+     * @return A status message.
+     */
+    public String approveNextPrescription() {
+        if (pendingPrescriptions.isEmpty()) {
+            return "No pending prescriptions to approve.";
+        }
+        Prescription p = pendingPrescriptions.dequeue();
+        boolean success = this.dispenseMedication(p.getMedicationID(), p.getQuantity());
+        if (success) {
+            return "Prescription " + p.getTreatmentID() + " approved. Stock updated.";
+        } else {
+            // If dispensing fails (e.g., insufficient stock), put it on hold.
+            heldPrescriptions.enqueue(p);
+            return "Error: Insufficient stock for " + p.getMedicationID() + ". Prescription " + p.getTreatmentID() + " has been put on hold.";
+        }
+    }
+
+    /**
+     * Declines the prescription at the front of the queue and moves it to the "held" queue.
+     * @return A status message.
+     */
+    public String declineNextPrescription() {
+        if (pendingPrescriptions.isEmpty()) {
+            return "No pending prescriptions to decline.";
+        }
+        Prescription p = pendingPrescriptions.dequeue();
+        heldPrescriptions.enqueue(p);
+        return "Prescription " + p.getTreatmentID() + " declined and moved to the held list.";
+    }
+
+    // **NEW METHODS FOR MANAGING HELD PRESCRIPTIONS**
+
+    public String[][] getHeldPrescriptionsForDisplay() {
+        Prescription[] heldArray = new Prescription[heldPrescriptions.size()];
+        heldArray = heldPrescriptions.toArray(heldArray);
+        String[][] displayData = new String[heldArray.length][4];
+        for(int i=0; i<heldArray.length; i++){
+            displayData[i][0] = heldArray[i].getTreatmentID();
+            displayData[i][1] = heldArray[i].getPatientID();
+            displayData[i][2] = heldArray[i].getMedicationID();
+            displayData[i][3] = String.valueOf(heldArray[i].getQuantity());
+        }
+        return displayData;
+    }
+
+    /**
+     * Releases a held prescription by moving it back to the pending approval queue.
+     */
+    public String releaseHeldPrescription(String treatmentID) {
+        Prescription toRelease = findAndRemoveHeld(treatmentID);
+        if (toRelease != null) {
+            pendingPrescriptions.enqueue(toRelease);
+            return "Prescription " + treatmentID + " has been released back to the approval queue.";
+        }
+        return "Error: Held prescription with ID " + treatmentID + " not found.";
+    }
+
+    /**
+     * Permanently deletes a held prescription.
+     */
+    public String deleteHeldPrescription(String treatmentID) {
+        Prescription toDelete = findAndRemoveHeld(treatmentID);
+        if (toDelete != null) {
+            return "Prescription " + treatmentID + " has been permanently deleted.";
+        }
+        return "Error: Held prescription with ID " + treatmentID + " not found.";
+    }
+    
+    // Private helper to find and remove from the hold queue
+    private Prescription findAndRemoveHeld(String treatmentID){
+        if(heldPrescriptions.isEmpty()) return null;
+        
+        QueueInterface<Prescription> tempQueue = new LinkedQueue<>();
+        Prescription found = null;
+
+        while(!heldPrescriptions.isEmpty()){
+            Prescription current = heldPrescriptions.dequeue();
+            if(current.getTreatmentID().equalsIgnoreCase(treatmentID) && found == null){
+                found = current;
+            } else {
+                tempQueue.enqueue(current);
+            }
+        }
+        // Restore the hold queue
+        while(!tempQueue.isEmpty()){
+            heldPrescriptions.enqueue(tempQueue.dequeue());
+        }
+        return found;
+    }
+    
+    
 }

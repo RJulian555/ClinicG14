@@ -48,6 +48,13 @@ public class PharmacyUI {
                 case 7:
                     displayTotalStockValue();
                     break;
+                case 8:
+                    doReviewPendingPrescriptions();
+                    break;
+                case 9:
+                    doManageHeldPrescriptions();
+                    break;
+                    
                 case 0:
                    
                     
@@ -60,15 +67,19 @@ public class PharmacyUI {
     
     private void displayMenu() {
         System.out.println("\n--- Pharmacy Management Module ---");
+        System.out.println("--- Medication Stock ---");
         System.out.println("1. List All Medication Stock");
         System.out.println("2. Add New Medication");
         System.out.println("3. Edit Medication Details");
-        System.out.println("4. Dispense Medication");
-        System.out.println("5. Delete Medication");
-        System.out.println("6. Generate Low Stock Report");
-        System.out.println("7. Generate Total Stock Value Report");
-        System.out.println("0. Return to Main Menu"); 
+        System.out.println("4. Delete Medication");
+        System.out.println("--- Reports ---");
+        System.out.println("5. Generate Low Stock Report");
+        System.out.println("6. Generate Total Stock Value Report");
+        System.out.println("--- Prescription Workflow ---");
+        System.out.println("8. Review Pending Prescriptions");
+        System.out.println("9. Manage Held Prescriptions");
         System.out.println("----------------------------------");
+        System.out.println("0. Return to Main Menu");
     }
 
     private void displayAllMedication() {
@@ -324,7 +335,72 @@ public class PharmacyUI {
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
     
+    // **NEW UI METHOD FOR APPROVALS**
+    private void doReviewPendingPrescriptions() {
+        System.out.println("\n--- Review Pending Prescriptions ---");
+        while(true) {
+            String[] p = pharmacyControl.getNextPrescriptionForApproval();
+            if (p == null) {
+                System.out.println("There are no more pending prescriptions to review.");
+                break;
+            }
+
+            System.out.println("\nNext Prescription for Approval:");
+            System.out.println("  Treatment ID: " + p[0]);
+            System.out.println("  Patient ID:   " + p[1]);
+            System.out.println("  Medication:   " + p[2] + " (" + p[3] + ")");
+            System.out.println("  Qty Required: " + p[4]);
+            System.out.println("  Stock on Hand:" + p[5]);
+            System.out.print("\nChoose an action: (1-Approve, 2-Decline, 0-Stop Reviewing): ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            String result = "";
+            if (choice == 1) {
+                result = pharmacyControl.approveNextPrescription();
+            } else if (choice == 2) {
+                result = pharmacyControl.declineNextPrescription();
+            } else {
+                System.out.println("Stopping review process.");
+                break;
+            }
+            System.out.println("Result: " + result);
+        }
+    }
+
+    // **NEW UI METHOD FOR MANAGING HELD ITEMS**
+    private void doManageHeldPrescriptions() {
+        System.out.println("\n--- Manage Held Prescriptions ---");
+        String[][] heldData = pharmacyControl.getHeldPrescriptionsForDisplay();
+
+        if (heldData.length == 0) {
+            System.out.println("There are no held prescriptions.");
+            return;
+        }
+
+        System.out.printf("%-12s | %-12s | %-15s | %s\n", "Treatment ID", "Patient ID", "Medication ID", "Qty");
+        System.out.println(new String(new char[55]).replace('\0', '-'));
+        for(String[] row : heldData){
+            System.out.printf("%-12s | %-12s | %-15s | %s\n", row[0], row[1], row[2], row[3]);
+        }
+        
+        System.out.print("\nEnter Treatment ID to action (or 0 to cancel): ");
+        String id = scanner.nextLine().toUpperCase();
+        if(id.equals("0")) return;
+
+        System.out.print("Choose action (1-Release to queue, 2-Delete permanently): ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        String result = "";
+        if (choice == 1) {
+            result = pharmacyControl.releaseHeldPrescription(id);
+        } else if (choice == 2) {
+            result = pharmacyControl.deleteHeldPrescription(id);
+        } else {
+            result = "Invalid action choice.";
+        }
+        System.out.println("Result: " + result);
+    }
+    
 }
-
-
-
