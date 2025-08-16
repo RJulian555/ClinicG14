@@ -17,6 +17,9 @@ public class ConsultationManager {
  
     private QueueInterface<Consultation> consultationQueue;
     
+    public Consultation[] getAllConsultations() {
+    return consultationQueue.toArray(new Consultation[0]);
+}
     public ConsultationManager() {
    
         this.consultationQueue = new LinkedQueue<>();
@@ -81,9 +84,38 @@ public class ConsultationManager {
 //==============================================================================
     
     // getConsultationsByDoctor()
+    public QueueInterface<Consultation> getConsultationsByDoctor(int doctorId) {
+    QueueInterface<Consultation> resultQueue = new LinkedQueue<>();
+
+    for (Consultation consultation : consultationQueue.toArray(new Consultation[0])) {
+        if (consultation.getDoctorId() == doctorId) {
+            resultQueue.enqueue(consultation);
+        }
+    }
+    return resultQueue;
+}
     // getConsultationsByPatient()
+    public QueueInterface<Consultation> getConsultationsByPatient(int patientId) {
+    QueueInterface<Consultation> resultQueue = new LinkedQueue<>();
+
+    for (Consultation consultation : consultationQueue.toArray(new Consultation[0])) {
+        if (consultation.getPatientId() == patientId) {
+            resultQueue.enqueue(consultation);
+        }
+    }
+    return resultQueue;
+}
     // getConsultationsByDate()
- 
+ public QueueInterface<Consultation> getConsultationsByDate(LocalDate date) {
+    QueueInterface<Consultation> resultQueue = new LinkedQueue<>();
+
+    for (Consultation consultation : consultationQueue.toArray(new Consultation[0])) {
+        if (consultation.getConsultationDate().equals(date)) {
+            resultQueue.enqueue(consultation);
+        }
+    }
+    return resultQueue;
+}
     
 //Update Consultation Notes=====================================================    
     public boolean updateConsultationNotes(int consultationId, String notes) {

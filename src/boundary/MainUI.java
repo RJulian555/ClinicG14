@@ -2,6 +2,7 @@ package boundary;
 
 import dao.ClinicInitializer;
 import control.DoctorManager;
+import control.ConsultationManager;
 import java.util.Scanner;
 
 /**
@@ -14,6 +15,7 @@ public class MainUI {
     public static void main(String[] args) {
         // Initialize all managers
         DoctorManager doctorManager = new DoctorManager();
+        ConsultationManager consultationManager = new ConsultationManager();
         // Other managers would be initialized here
         // PatientManager patientManager = new PatientManager();
         // PharmacyManager pharmacyManager = new PharmacyManager();
@@ -37,7 +39,7 @@ public class MainUI {
                     break;
                 case 3:
                     System.out.println("\nConsultation Module UI would launch here");
-                    // new ConsultationUI().displayMainMenu();
+                    new ConsultationUI(consultationManager).displayMainMenu();
                     pressEnterToContinue();
                     break;
                 case 4:

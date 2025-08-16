@@ -2,6 +2,11 @@ package dao;
 
 import control.DoctorManager;
 import entity.Doctor;
+import entity.Consultation;
+import control.ConsultationManager;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 /**
  *
  * @author user
@@ -92,4 +97,6 @@ public class ClinicInitializer {
         
         manager.addDoctor(doctor);
     }
+    
+    
 }
