@@ -14,15 +14,17 @@ public class MainUI {
     private final Scanner scanner;
     private final DoctorManager doctorManager;
     private final PharmacyControl pharmacyControl;
+    private final PatientManager patientManager; 
     
     
      /**
      * The constructor now receives the necessary manager objects.
      * It no longer creates them itself.
      */
-    public MainUI(DoctorManager doctorManager, PharmacyControl pharmacyControl) {
+    public MainUI(DoctorManager doctorManager, PharmacyControl pharmacyControl, PatientManager patientManager) {
         this.doctorManager = doctorManager;
         this.pharmacyControl = pharmacyControl;
+        this.patientManager = patientManager;
         this.scanner = new Scanner(System.in);
     }
     
@@ -42,6 +44,7 @@ public class MainUI {
                     pressEnterToContinue();
                     break;
                 case 2:
+                    new PatientUI(patientManager).displayMainMenu();
                     System.out.println("\nPatient Module UI would launch here");
                     pressEnterToContinue();
                     break;
