@@ -122,4 +122,17 @@ public class ClinicInitializer {
         pharmacyControl.addMedication(medication);
     }
     
+    public static void initializeSampleDiagnoses(MedicalTreatmentControl treatmentControl) {
+        try {
+            treatmentControl.addDiagnosisTemplate("DIAG01", "Common Flu", "Viral infection of the upper respiratory tract. Recommend rest and hydration.");
+            treatmentControl.addDiagnosisTemplate("DIAG02", "Strep Throat", "Bacterial infection causing a severe sore throat. Requires antibiotics.");
+            treatmentControl.addDiagnosisTemplate("DIAG03", "Minor Sprain", "Stretching or tearing of ligaments. Apply RICE method (Rest, Ice, Compression, Elevation).");
+            treatmentControl.addDiagnosisTemplate("DIAG04", "Tension Headache", "Mild to moderate pain in the head, often described as a tight band. Suggest pain relievers.");
+            treatmentControl.addDiagnosisTemplate("DIAG05", "Migraine", "Severe, recurring headache, often accompanied by nausea and light sensitivity.");
+            treatmentControl.addDiagnosisTemplate("DIAG06", "Indigestion", "Discomfort in the upper abdomen, often after eating. Recommend antacids.");
+        } catch (Exception e) {
+            System.out.println("Error loading sample diagnoses: " + e.getMessage());
+        }
+    }
+    
 }

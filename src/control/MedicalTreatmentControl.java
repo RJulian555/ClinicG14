@@ -1,234 +1,157 @@
 package control;
 
-import adt.LinkedQueue;
 import adt.QueueInterface;
-import boundary.MedicalTreatmentUI;
+import adt.LinkedQueue;
 import entity.MedicalTreatment;
+import entity.Prescription;
+import entity.DiagnosisTemplate; // Correctly changed from entity.*
 import java.util.Date;
 
 public class MedicalTreatmentControl {
 
-    private QueueInterface<MedicalTreatment> treatmentQueue;
+    private QueueInterface<MedicalTreatment> treatmentHistory;
+    private QueueInterface<DiagnosisTemplate> diagnosisTemplates;
+    private PharmacyControl pharmacyControl;
 
-    public MedicalTreatmentControl() {
-        treatmentQueue = new LinkedQueue<>();
+    public MedicalTreatmentControl(PharmacyControl pharmacyControl) {
+        this.treatmentHistory = new LinkedQueue<>();
+        this.diagnosisTemplates = new LinkedQueue<>();
+        this.pharmacyControl = pharmacyControl;
     }
 
-    // === CRUD Operations ===
-    public void addTreatment(String diagnosisID, String patientID, String doctorID, String medicationID,
-                         String sicknessDescription, String sickType, String diagnosisDescription, Date createdDate) {
-    MedicalTreatment treatment = new MedicalTreatment(
-            diagnosisID, patientID, doctorID, medicationID,
-            diagnosisDescription, sickType, sicknessDescription, createdDate
-    );
-    treatmentQueue.enqueue(treatment);
-    System.out.println("Treatment added successfully.");
-}
+    // --- Template Management Methods (Correct) ---
+    public void addDiagnosisTemplate(String id, String name, String desc) {
+        diagnosisTemplates.enqueue(new DiagnosisTemplate(id, name, desc));
+    }
 
-
-    public MedicalTreatment removeTreatment() {
-        if (treatmentQueue.isEmpty()) {
-            System.out.println("No treatments to remove.");
-            return null;
+    public String[][] getDiagnosisTemplatesForDisplay() {
+        DiagnosisTemplate[] templates = new DiagnosisTemplate[diagnosisTemplates.size()];
+        templates = diagnosisTemplates.toArray(templates);
+        String[][] displayData = new String[templates.length][3];
+        for (int i = 0; i < templates.length; i++) {
+            displayData[i][0] = String.valueOf(i + 1);
+            displayData[i][1] = templates[i].getTemplateId();
+            displayData[i][2] = templates[i].getDiagnosisName();
         }
-        MedicalTreatment removed = treatmentQueue.dequeue();
-        System.out.println("Removed treatment for patient ID: " + removed.getPatientID());
-        return removed;
+        return displayData;
     }
 
-    private String[] wrapText(String text, int width) {
-    if (text == null) return new String[]{""};
-    return text.replaceAll("(.{1," + width + "})(\\s+|$)", "$1\n").split("\n");
-}
-
-public void displayAllTreatments() {
-    if (treatmentQueue.isEmpty()) {
-        System.out.println("No treatments recorded.");
-        return;
-    }
-
-    System.out.println("\n--- All Treatments ---");
-
-    int sicknessWidth = 30;
-    int diagnosisWidth = 20;
-    int dateWidth = 28;
-
-    // Table border + header
-    System.out.printf("+--------------+--------------+--------------+--------------+--------------------------------+--------------+----------------------+------------------------------+\n");
-    System.out.printf("| %-12s | %-12s | %-12s | %-12s | %-30s | %-12s | %-20s | %-28s |\n",
-        "DiagnosisID", "PatientID", "DoctorID", "MedID",
-        "Sickness Description", "Sick Type", "Diagnosis", "Created Date");
-    System.out.printf("+--------------+--------------+--------------+--------------+--------------------------------+--------------+----------------------+------------------------------+\n");
-
-    QueueInterface<MedicalTreatment> tempQueue = new LinkedQueue<>();
-
-    while (!treatmentQueue.isEmpty()) {
-        MedicalTreatment t = treatmentQueue.dequeue();
-
-        // Wrap text for sickness, diagnosis, and date
-        String[] sicknessLines = wrapText(t.getSicknessDescription(), sicknessWidth);
-        String[] diagnosisLines = wrapText(t.getDiagnosisDescription(), diagnosisWidth);
-        String[] dateLines = wrapText(t.getCreatedDate().toString(), dateWidth);
-
-        // Find the max lines needed for this row
-        int maxLines = Math.max(sicknessLines.length,
-                        Math.max(diagnosisLines.length, dateLines.length));
-
-        // Print each wrapped line
-        for (int i = 0; i < maxLines; i++) {
-            System.out.printf("| %-12s | %-12s | %-12s | %-12s | %-30s | %-12s | %-20s | %-28s |\n",
-                (i == 0 ? t.getDiagnosisID() : ""),
-                (i == 0 ? t.getPatientID() : ""),
-                (i == 0 ? t.getDoctorID() : ""),
-                (i == 0 ? t.getMedicationID() : ""),
-                (i < sicknessLines.length ? sicknessLines[i] : ""),
-                (i == 0 ? t.getSickType() : ""),
-                (i < diagnosisLines.length ? diagnosisLines[i] : ""),
-                (i < dateLines.length ? dateLines[i] : "")
-            );
-        }
-
-        // Row separator
-        System.out.printf("+--------------+--------------+--------------+--------------+--------------------------------+--------------+----------------------+------------------------------+\n");
-
-        tempQueue.enqueue(t);
-    }
-
-    // Restore the queue
-    while (!tempQueue.isEmpty()) {
-        treatmentQueue.enqueue(tempQueue.dequeue());
-    }
-}
-public void updateDispensedMedicationQuantity(String medicationID, int quantity) {
-    if (treatmentQueue.isEmpty()) {
-        System.out.println("No treatments recorded.");
-        return;
-    }
-
-    boolean found = false;
-    QueueInterface<MedicalTreatment> tempQueue = new LinkedQueue<>();
-
-    while (!treatmentQueue.isEmpty()) {
-        MedicalTreatment t = treatmentQueue.dequeue();
-
-        if (t.getMedicationID().equalsIgnoreCase(medicationID)) {
-            // Here we set/update quantity in the entity
-            t.setDispensedQuantity(quantity);
-            System.out.println("Medication quantity for Medical ID " + medicationID +
-                               " updated to reduce " + quantity + " units");
-            found = true;
-        }
-
-        tempQueue.enqueue(t);
-    }
-
-    // Restore the queue
-    while (!tempQueue.isEmpty()) {
-        treatmentQueue.enqueue(tempQueue.dequeue());
-    }
-
-    if (!found) {
-        System.out.println("Medication ID " + medicationID + " not found.");
-    }
-}
-
-
-    public int getTotalTreatments() {
-        return treatmentQueue.size();
-    }
-
-    public int getFollowUpNeededCount() {
-        int count = 0;
-        QueueInterface<MedicalTreatment> tempQueue = new LinkedQueue<>();
-
-        while (!treatmentQueue.isEmpty()) {
-            MedicalTreatment t = treatmentQueue.dequeue();
-            if (t.getSickType().equalsIgnoreCase("Follow-up")) {
-                count++;
+    private DiagnosisTemplate findTemplateById(String templateId) {
+        DiagnosisTemplate[] templates = new DiagnosisTemplate[diagnosisTemplates.size()];
+        templates = diagnosisTemplates.toArray(templates);
+        for (DiagnosisTemplate template : templates) {
+            if (template.getTemplateId().equalsIgnoreCase(templateId)) {
+                return template;
             }
-            tempQueue.enqueue(t);
         }
+        return null;
+    }
 
-        // Restore
-        while (!tempQueue.isEmpty()) {
-            treatmentQueue.enqueue(tempQueue.dequeue());
+    // --- CRUD Operations ---
+
+    // CREATE (This is correct from the last version)
+   public String createTreatment(String patientID, String doctorID, String patientSicknessDesc, String sickType,
+                                  String chosenTemplateID, String medicationID, int quantity) {
+
+        // **STEP 1: INTERACTION WITH PHARMACY MODULE**
+        // Ask the PharmacyControl if the requested medication ID is valid by checking
+        // against the data loaded by the ClinicInitializer.
+        // **FIX: Corrected the typo from "medicationIdIdExists" to "medicationIdExists"**
+        if (!pharmacyControl.medicationIdExists(medicationID)) {
+            return "Error: Medication ID '" + medicationID + "' does not exist in the pharmacy stock.";
         }
-
-        return count;
-    }
-
-    // === Reporting Feature 1 ===
-    public void generatePrescription() {
-    if (treatmentQueue.isEmpty()) {
-        System.out.println("No prescriptions to generate.");
-        return;
-    }
-
-    System.out.println("\n--- Prescription List ---");
-
-    // Table header
-    System.out.printf("%-15s %-15s %-15s %-30s%n",
-        "Diagnosis ID", "Patient ID", "Medication ID", "DispensedQuantity" , "Diagnosis");
-
-    System.out.println("--------------------------------------------------------------------------");
-
-    QueueInterface<MedicalTreatment> tempQueue = new LinkedQueue<>();
-
-    while (!treatmentQueue.isEmpty()) {
-        MedicalTreatment t = treatmentQueue.dequeue();
-        System.out.printf("%-15s %-15s %-15s %-30s%n",
-            t.getDiagnosisID(),
-            t.getPatientID(),
-            t.getMedicationID(),
-            t.getDispensedQuantity(),
-            t.getDiagnosisDescription());
-        tempQueue.enqueue(t);
-    }
-
-    // Restore original queue
-    while (!tempQueue.isEmpty()) {
-        treatmentQueue.enqueue(tempQueue.dequeue());
-    }
-}
-    // === Reporting Feature 2 ===
-    public void patientSickTrendReport() {
-        if (treatmentQueue.isEmpty()) {
-            System.out.println("No treatments recorded for trend report.");
-            return;
+        
+        // Find the chosen diagnosis template
+        DiagnosisTemplate template = findTemplateById(chosenTemplateID);
+        if (template == null) {
+            return "Error: Invalid Diagnosis Template ID selected.";
         }
-        System.out.println("\n--- Patient Sick Type Trend Report ---");
+        
+        // Generate a unique ID for this treatment record
+        String newTreatmentID = "T" + String.format("%03d", treatmentHistory.size() + 1);
 
-        int acuteCount = 0, chronicCount = 0, followUpCount = 0;
-        QueueInterface<MedicalTreatment> tempQueue = new LinkedQueue<>();
+        // Create the full medical treatment record
+        MedicalTreatment newTreatment = new MedicalTreatment(
+            newTreatmentID, template.getTemplateId(), patientID, doctorID, medicationID,
+            patientSicknessDesc, sickType, template.getDefaultDescription(), new Date()
+        );
+        newTreatment.setDispensedQuantity(quantity);
+        treatmentHistory.enqueue(newTreatment);
 
-        while (!treatmentQueue.isEmpty()) {
-            MedicalTreatment t = treatmentQueue.dequeue();
-            String type = t.getSickType().toLowerCase();
-            switch (type) {
-                case "acute" -> acuteCount++;
-                case "chronic" -> chronicCount++;
-                case "follow-up" -> followUpCount++;
+        // **STEP 2: INTERACTION WITH PHARMACY MODULE**
+        // Create a prescription object to send to the pharmacy's approval queue.
+        Prescription newPrescription = new Prescription(newTreatmentID, patientID, medicationID, quantity);
+        
+        // Send the request to the PharmacyControl.
+        pharmacyControl.requestPrescriptionApproval(newPrescription);
+
+        return "Medical Treatment " + newTreatmentID + " created successfully. Prescription sent to pharmacy for approval.";
+    }
+
+    // READ (This is now the only "get history" method)
+    public String[][] getTreatmentHistoryForDisplay() {
+        MedicalTreatment[] history = new MedicalTreatment[treatmentHistory.size()];
+        history = treatmentHistory.toArray(history);
+        String[][] displayData = new String[history.length][8];
+        for (int i = 0; i < history.length; i++) {
+            MedicalTreatment t = history[i];
+            displayData[i][0] = t.getTreatmentID();
+            displayData[i][1] = t.getPatientID();
+            displayData[i][2] = t.getDoctorID();
+            displayData[i][3] = t.getPatientSicknessDescription();
+            displayData[i][4] = t.getDiagnosisDescription();
+            displayData[i][5] = t.getMedicationID();
+            displayData[i][6] = String.valueOf(t.getDispensedQuantity());
+            displayData[i][7] = t.getCreatedDate().toString();
+        }
+        return displayData;
+    }
+
+    // UPDATE (Now uses treatmentID as the key)
+    public boolean updateTreatment(String treatmentID, String newSicknessDesc, String newDiagnosisDesc) {
+        MedicalTreatment treatmentToUpdate = findTreatmentById(treatmentID);
+        if (treatmentToUpdate != null) {
+            treatmentToUpdate.setPatientSicknessDescription(newSicknessDesc);
+            treatmentToUpdate.setDiagnosisDescription(newDiagnosisDesc);
+            return true;
+        }
+        return false;
+    }
+
+    // DELETE (Now uses treatmentID as the key)
+    public boolean deleteTreatment(String treatmentID) {
+        MedicalTreatment treatmentToDelete = findTreatmentById(treatmentID);
+        if (treatmentToDelete != null) {
+            QueueInterface<MedicalTreatment> tempQueue = new LinkedQueue<>();
+            while (!treatmentHistory.isEmpty()) {
+                MedicalTreatment current = treatmentHistory.dequeue();
+                if (!current.getTreatmentID().equals(treatmentID)) {
+                    tempQueue.enqueue(current);
+                }
             }
-            tempQueue.enqueue(t);
+            this.treatmentHistory = tempQueue;
+            return true;
         }
-
-        // Restore
-        while (!tempQueue.isEmpty()) {
-            treatmentQueue.enqueue(tempQueue.dequeue());
-        }
-
-        System.out.printf("Acute cases: %d%n", acuteCount);
-        System.out.printf("Chronic cases: %d%n", chronicCount);
-        System.out.printf("Follow-up cases: %d%n", followUpCount);
+        return false;
     }
 
-    // Optional Helper
-    public void queueListPrescription() {
-        generatePrescription(); // reuse reporting
+    // --- Helper Methods ---
+
+    // Safe check for the UI, now using treatmentID
+    public boolean treatmentIdExists(String treatmentID) {
+        return findTreatmentById(treatmentID) != null;
     }
-    
-    public static void main(String[] args) {
-        MedicalTreatmentUI ui = new MedicalTreatmentUI();
-        ui.run();
+
+    // Private helper, now finds by treatmentID
+    private MedicalTreatment findTreatmentById(String treatmentID) {
+        if (treatmentHistory.isEmpty()) return null;
+        MedicalTreatment[] historyArray = new MedicalTreatment[treatmentHistory.size()];
+        historyArray = treatmentHistory.toArray(historyArray);
+        for (MedicalTreatment treat : historyArray) {
+            if (treat.getTreatmentID().equalsIgnoreCase(treatmentID)) {
+                return treat;
+            }
+        }
+        return null;
     }
 }

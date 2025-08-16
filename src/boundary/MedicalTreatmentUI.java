@@ -1,165 +1,263 @@
 package boundary;
 
 import control.MedicalTreatmentControl;
-import java.util.Date;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class MedicalTreatmentUI {
 
-    private MedicalTreatmentControl control;
-    private Scanner scanner;
+    private final MedicalTreatmentControl medicalTreatmentControl;
+    private final Scanner scanner;
 
-    public MedicalTreatmentUI() {
-        control = new MedicalTreatmentControl();
-        scanner = new Scanner(System.in);
+    // Constructor receives the existing scanner from MainUI
+    public MedicalTreatmentUI(MedicalTreatmentControl medicalTreatmentControl, Scanner scanner) {
+        this.medicalTreatmentControl = medicalTreatmentControl;
+        this.scanner = scanner;
     }
 
-    public void run() {
+    // Main loop
+    public void runModule() {
         int choice;
         do {
-            System.out.println("\n=== Medical Treatment Module ===");
-            System.out.println("1. Add Treatment");
-            System.out.println("2. Remove Treatment");
-            System.out.println("3. Display All Treatments");
-            System.out.println("4. Show Total Treatments");
-            System.out.println("5. Show Follow-Up Needed Count");
-            System.out.println("6. Generate Prescription List");
-            System.out.println("7. Sick Type Trend Report");
-            System.out.println("0. Exit");
-            System.out.print("Enter choice: ");
+            System.out.println("\n--- Medical Treatment & Diagnosis Module ---");
+            System.out.println("1. Create New Medical Treatment");
+            System.out.println("2. View Treatment History");
+            System.out.println("3. Update a Treatment Record");
+            System.out.println("4. Delete a Treatment Record");
+            System.out.println("0. Return to Main Menu");
+            System.out.print("Enter your choice: ");
 
-            while (!scanner.hasNextInt()) {
+            try {
+                choice = Integer.parseInt(scanner.nextLine());
+
+                switch (choice) {
+                    case 1 -> doCreateTreatment();
+                    case 2 -> doViewHistory();
+                    case 3 -> doUpdateTreatment();
+                    case 4 -> doDeleteTreatment();
+                    case 0 -> System.out.println("Returning to main menu...");
+                    default -> System.out.println("Invalid choice.");
+                }
+            } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Please enter a number.");
-                scanner.nextLine();
-                System.out.print("Enter choice: ");
+                choice = -1;
             }
-
-            choice = scanner.nextInt();
-            scanner.nextLine(); // consume newline
-
-            switch (choice) {
-                case 1 -> addTreatmentUI();
-                case 2 -> control.removeTreatment();
-                case 3 -> control.displayAllTreatments();
-                case 4 -> System.out.println("Total treatments: " + control.getTotalTreatments());
-                case 5 -> System.out.println("Follow-up needed count: " + control.getFollowUpNeededCount());
-                case 6 -> control.generatePrescription();
-                case 7 -> control.patientSickTrendReport();
-                case 0 -> System.out.println("Thank You and Have a Nice Day!");
-                default -> System.out.println("Invalid choice. Try again.");
-            }
-
         } while (choice != 0);
     }
 
-    private void addTreatmentUI() {
-    System.out.print("Diagnosis ID: ");
-    String diagnosisID = scanner.nextLine();
+    // --- CREATE ---
+    private void doCreateTreatment() {
+        System.out.println("\n--- Create New Medical Treatment ---");
 
-    System.out.print("Patient ID: ");
-    String patientID = scanner.nextLine();
+        System.out.print("Enter Patient ID: ");
+        String patientID = scanner.nextLine().toUpperCase();
+        System.out.print("Enter Doctor ID: ");
+        String doctorID = scanner.nextLine().toUpperCase();
 
-    System.out.print("Doctor ID: ");
-    String doctorID = scanner.nextLine();
+        System.out.print("Enter Patient's Sickness Description: ");
+        String patientSicknessDesc = scanner.nextLine();
 
-    System.out.print("Medication ID: ");
-    String medicationID = scanner.nextLine();
-    
-    // ===== Quantity Input =====
-    System.out.print("Enter quantity of medication to dispense: ");
-    int quantity = Integer.parseInt(scanner.nextLine());
-    System.out.println("Medication quantity for Medical ID " + medicationID +
-                       " updated to reduce " + quantity + " units");
+        String sickType = selectSickType();
+        if (sickType == null) return;
 
-    // ===== Sickness Description (Free Text) =====
-    System.out.println("Enter sickness description (press Enter when done):");
-    String sicknessDescription = scanner.nextLine();
+        String chosenTemplateID = selectDiagnosisTemplate();
+        if (chosenTemplateID == null) return;
 
-    // ===== Sick Type Selection =====
-    String sickType = "";
-    System.out.println("Select Sick Type:");
-    System.out.println("1. Acute");
-    System.out.println("2. Chronic");
-    System.out.println("3. Follow-up");
-    System.out.print("Enter choice: ");
-    int sickChoice = Integer.parseInt(scanner.nextLine());
+        System.out.print("Enter Medication ID to Prescribe(e.g., M001): ");
+        String medID = scanner.nextLine().toUpperCase();
+        System.out.print("Enter Quantity to Dispense: ");
+        int quantity = -1;
+        while (quantity < 0) {
+            try {
+                quantity = Integer.parseInt(scanner.nextLine());
+                if (quantity < 0) System.out.println("Quantity cannot be negative.");
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
+            }
+        }
 
-    switch (sickChoice) {
-        case 1 -> sickType = "Acute";
-        case 2 -> sickType = "Chronic";
-        case 3 -> sickType = "Follow-up";
-        default -> {
-            System.out.println("Invalid choice, defaulting to 'Acute'.");
-            sickType = "Acute";
+        String result = medicalTreatmentControl.createTreatment(patientID, doctorID, patientSicknessDesc,
+                sickType, chosenTemplateID, medID, quantity);
+        System.out.println("\n" + result);
+    }
+
+    // --- SELECTION HELPERS ---
+    private String selectSickType() {
+        int typeChoice;
+        do {
+            System.out.println("\nPlease select the Sickness Type:");
+            System.out.println("1. Acute");
+            System.out.println("2. Chronic");
+            System.out.println("3. Follow-up");
+            System.out.println("0. Cancel");
+            System.out.print("Enter your choice: ");
+            try {
+                typeChoice = Integer.parseInt(scanner.nextLine());
+                switch (typeChoice) {
+                    case 1: return "Acute";
+                    case 2: return "Chronic";
+                    case 3: return "Follow-up";
+                    case 0: System.out.println("Operation cancelled."); return null;
+                    default: System.out.println("Invalid choice. Try again.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
+            }
+        } while (true);
+    }
+
+    private String selectDiagnosisTemplate() {
+        String[][] templates = medicalTreatmentControl.getDiagnosisTemplatesForDisplay();
+        if (templates.length == 0) {
+            System.out.println("Error: No diagnosis templates configured.");
+            return null;
+        }
+
+        int diagChoice;
+        do {
+            System.out.println("\nPlease select a formal Diagnosis:");
+            System.out.printf("%-5s | %-10s | %s\n", "No.", "ID", "Diagnosis Name");
+            System.out.println(new String(new char[50]).replace('\0', '-'));
+            for (String[] row : templates) {
+                System.out.printf("%-5s | %-10s | %s\n", row[0], row[1], row[2]);
+            }
+            System.out.println("0. Cancel");
+            System.out.print("Enter your choice: ");
+
+            try {
+                diagChoice = Integer.parseInt(scanner.nextLine());
+                if (diagChoice == 0) {
+                    System.out.println("Operation cancelled.");
+                    return null;
+                }
+                if (diagChoice > 0 && diagChoice <= templates.length) {
+                    return templates[diagChoice - 1][1];
+                } else {
+                    System.out.println("Invalid choice. Please select a number from the list.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
+            }
+        } while (true);
+    }
+
+    // --- VIEW HISTORY ---
+    private void doViewHistory() {
+        System.out.println("\n--- Full Medical Treatment History ---");
+        String[][] historyData = medicalTreatmentControl.getTreatmentHistoryForDisplay();
+
+        if (historyData.length == 0) {
+            System.out.println("No treatment history found.");
+            return;
+        }
+
+        // Table header
+        System.out.printf("%-12s | %-10s | %-10s | %-20s | %-42s | %-12s | %-5s | %-50s\n",
+                "DiagnosisID", "PatientID", "DoctorID", "Sickness", "Diagnosis", "Medication", "Qty", "Date");
+        System.out.println(new String(new char[170]).replace('\0', '-'));
+
+        // Table rows with wrapped text
+        for (String[] row : historyData) {
+            String[] wrappedSickness = wrapText(row[3], 20);
+            String[] wrappedDiagnosis = wrapText(row[4], 40);
+            int maxLines = Math.max(wrappedSickness.length, wrappedDiagnosis.length);
+
+            for (int i = 0; i < maxLines; i++) {
+                System.out.printf("%-12s | %-10s | %-10s | %-20s | %-42s | %-12s | %-5s | %-50s\n",
+                        i == 0 ? row[0] : "",
+                        i == 0 ? row[1] : "",
+                        i == 0 ? row[2] : "",
+                        i < wrappedSickness.length ? wrappedSickness[i] : "",
+                        i < wrappedDiagnosis.length ? wrappedDiagnosis[i] : "",
+                        i == 0 ? row[5] : "",
+                        i == 0 ? row[6] : "",
+                        i == 0 ? row[7] : "");
+            }
+            System.out.println(new String(new char[170]).replace('\0', '-'));
         }
     }
 
-    // ===== Diagnosis Selection =====
-String diagnosisDescription = "";
-System.out.println("Select Diagnosis:");
-System.out.println("1. Flu");
-System.out.println("2. Diabetes");
-System.out.println("3. Hypertension");
-System.out.println("4. Fracture");
-System.out.println("5. Cancer");
-System.out.println("6. Asthma");
-System.out.println("7. Migraine");
-System.out.println("8. Pneumonia");
-System.out.println("9. Tuberculosis");
-System.out.println("10. COVID-19");
-System.out.println("11. Arthritis");
-System.out.println("12. Gastritis");
-System.out.println("13. Stroke");
-System.out.println("14. Kidney Failure");
-System.out.println("15. Heart Disease");
-System.out.println("16. Anemia");
-System.out.println("17. Hepatitis");
-System.out.println("18. Malaria");
-System.out.println("19. Dengue Fever");
-System.out.println("20. Allergies");
-System.out.println("21. Other");
-System.out.print("Enter choice: ");
-int diagChoice = Integer.parseInt(scanner.nextLine());
+    // --- UPDATE ---
+    private void doUpdateTreatment() {
+        System.out.println("\n--- Update a Treatment Record ---");
+        doViewHistory();
 
-switch (diagChoice) {
-    case 1 -> diagnosisDescription = "Flu";
-    case 2 -> diagnosisDescription = "Diabetes";
-    case 3 -> diagnosisDescription = "Hypertension";
-    case 4 -> diagnosisDescription = "Fracture";
-    case 5 -> diagnosisDescription = "Cancer";
-    case 6 -> diagnosisDescription = "Asthma";
-    case 7 -> diagnosisDescription = "Migraine";
-    case 8 -> diagnosisDescription = "Pneumonia";
-    case 9 -> diagnosisDescription = "Tuberculosis";
-    case 10 -> diagnosisDescription = "COVID-19";
-    case 11 -> diagnosisDescription = "Arthritis";
-    case 12 -> diagnosisDescription = "Gastritis";
-    case 13 -> diagnosisDescription = "Stroke";
-    case 14 -> diagnosisDescription = "Kidney Failure";
-    case 15 -> diagnosisDescription = "Heart Disease";
-    case 16 -> diagnosisDescription = "Anemia";
-    case 17 -> diagnosisDescription = "Hepatitis";
-    case 18 -> diagnosisDescription = "Malaria";
-    case 19 -> diagnosisDescription = "Dengue Fever";
-    case 20 -> diagnosisDescription = "Allergies";
-    case 21 -> {
-        System.out.print("Enter other diagnosis: ");
-        diagnosisDescription = scanner.nextLine();
+        System.out.print("\nEnter Diagnosis ID to update (or 0 to cancel): ");
+        String id = scanner.nextLine().toUpperCase();
+        if (id.equals("0")) return;
+
+        if (!medicalTreatmentControl.treatmentIdExists(id)) {
+            System.out.println("Error: Diagnosis ID not found.");
+            return;
+        }
+
+        System.out.print("Enter NEW Sickness Description: ");
+        String newSickness = capitalizeFirstLetter(scanner.nextLine());
+        System.out.print("Enter NEW Diagnosis Description: ");
+        String newDiagnosis = capitalizeFirstLetter(scanner.nextLine());
+
+        if (medicalTreatmentControl.updateTreatment(id, newSickness, newDiagnosis)) {
+            System.out.println("Record updated successfully.");
+        } else {
+            System.out.println("Error: Could not update the record.");
+        }
     }
-    default -> {
-        System.out.println("Invalid choice, defaulting to 'Flu'.");
-        diagnosisDescription = "Flu";
+
+    // --- DELETE ---
+    private void doDeleteTreatment() {
+        System.out.println("\n--- Delete a Treatment Record ---");
+        doViewHistory();
+
+        System.out.print("\nEnter Diagnosis ID to DELETE (or 0 to cancel): ");
+        String id = scanner.nextLine().toUpperCase();
+        if (id.equals("0")) return;
+
+        if (!medicalTreatmentControl.treatmentIdExists(id)) {
+            System.out.println("Error: Diagnosis ID not found.");
+            return;
+        }
+
+        System.out.print("Are you sure you want to permanently delete record " + id + "? (Y/N): ");
+        String confirm = scanner.nextLine();
+        if (confirm.equalsIgnoreCase("Y")) {
+            if (medicalTreatmentControl.deleteTreatment(id)) {
+                System.out.println("Record deleted successfully.");
+            } else {
+                System.out.println("Error: Could not delete the record.");
+            }
+        } else {
+            System.out.println("Deletion cancelled.");
+        }
     }
-}
 
-    // ===== Date Created =====
-    Date createdDate = new Date();
+    // --- HELPER: Capitalize first letter ---
+    private String capitalizeFirstLetter(String str) {
+        if (str == null || str.isEmpty()) return str;
+        return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
+    }
 
-    // Add treatment
-    control.addTreatment(
-        diagnosisID, patientID, doctorID, medicationID,
-        sicknessDescription, sickType, diagnosisDescription, createdDate
-    );
+    // --- Word-based wrap text helper ---
+private String[] wrapText(String text, int width) {
+    if (text == null || text.isEmpty()) return new String[]{""};
+
+    text = text.trim();
+    String[] words = text.split(" ");
+    StringBuilder line = new StringBuilder();
+    java.util.List<String> lines = new java.util.ArrayList<>();
+
+    for (String word : words) {
+        if (line.length() + word.length() + 1 > width) {
+            // Save current line and start a new one
+            lines.add(line.toString());
+            line = new StringBuilder(word);
+        } else {
+            if (line.length() > 0) line.append(" ");
+            line.append(word);
+        }
+    }
+
+    if (line.length() > 0) lines.add(line.toString());
+
+    return lines.toArray(new String[0]);
 }
 }
-
