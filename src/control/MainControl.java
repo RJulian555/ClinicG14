@@ -19,19 +19,20 @@ public class MainControl {
         // 1. Create all control-layer managers
         DoctorManager doctorManager = new DoctorManager();
         PharmacyControl pharmacyControl = new PharmacyControl();
+        MedicalTreatmentControl medicalTreatmentControl = new MedicalTreatmentControl(pharmacyControl);
         // As you add more modules, you would create their control objects here.
 
         // 2. Initialize all system data using the DAO Initializer
         System.out.println("Initializing sample data...");
         ClinicInitializer.initializeSampleDoctors(doctorManager);
         ClinicInitializer.initializeSamplePharmacyStock(pharmacyControl);
+        ClinicInitializer.initializeSampleDiagnoses(medicalTreatmentControl);
         System.out.println("All sample data loaded successfully!");
         
         // 3. Create the main UI, passing the control objects to it
-        MainUI mainUI = new MainUI(doctorManager, pharmacyControl);
+        MainUI mainUI = new MainUI(doctorManager, pharmacyControl, medicalTreatmentControl);
 
         // 4. Launch the main user interface loop
         mainUI.launch();
     }
 }
-
