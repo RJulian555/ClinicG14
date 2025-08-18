@@ -3,6 +3,7 @@ package boundary;
 import dao.ClinicInitializer;
 import control.DoctorManager;
 import control.ConsultationManager;
+import control.PatientManager;
 import java.util.Scanner;
 
 /**
@@ -17,11 +18,11 @@ public class MainUI {
         DoctorManager doctorManager = new DoctorManager();
         ConsultationManager consultationManager = new ConsultationManager();
         // Other managers would be initialized here
-        // PatientManager patientManager = new PatientManager();
+        PatientManager patientManager = new PatientManager();
         // PharmacyManager pharmacyManager = new PharmacyManager();
         
         // Load sample data
-        initializeAllData(doctorManager /*, other managers */);
+        initializeAllData(doctorManager , patientManager, consultationManager/*, other managers */);
         
         // Main system loop
         while (true) {
@@ -61,11 +62,12 @@ public class MainUI {
         }
     }
     
-    private static void initializeAllData(DoctorManager doctorManager /*, other managers */) {
+    private static void initializeAllData(DoctorManager doctorManager, PatientManager patientManager, ConsultationManager consultationManager) {
         System.out.println("Initializing sample data...");
         ClinicInitializer.initializeSampleDoctors(doctorManager);
         System.out.println("Doctor data initialized successfully!");
-        
+        ClinicInitializer.initializeSamplePatients(patientManager);
+        ClinicInitializer.initializeSampleConsultations(consultationManager,doctorManager,patientManager);
         // Placeholder for other modules' initialization
         System.out.println("[Other modules would initialize their sample data here]");
         pressEnterToContinue();

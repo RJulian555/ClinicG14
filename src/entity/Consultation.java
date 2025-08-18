@@ -11,26 +11,27 @@ import java.time.LocalTime;
  */
 public class Consultation {
     // attributes 
+    private String doctorId;
+    private String patientId;
     private String consultationStatus;
     private String consultationType;
     private String consultationNotes;
-    private int consultationId;
-    private int doctorId;
-    private int patientId;
+    private String consultationId;
     private LocalTime consultationTime;
     private LocalDate consultationDate;
     private boolean followUpRequired;
     
     // Constructor
-    public Consultation(int consultationId, int patientId, int doctorId, LocalDate consultationDate, LocalTime consultationTime, String consultationStatus, String consultationType, boolean followUpRequired) {
+    public Consultation(String consultationId, String doctorId, String patientId, LocalDate consultationDate, LocalTime consultationTime, String consultationStatus, String consultationType, boolean followUpRequired, String consultationNotes) {
     this.consultationId = consultationId;
-    this.patientId = patientId;
     this.doctorId = doctorId;
+    this.patientId = patientId;
     this.consultationDate = consultationDate;
     this.consultationTime = consultationTime;
     this.consultationStatus = consultationStatus;
     this.consultationType = consultationType;
     this.followUpRequired = followUpRequired;
+    this.consultationNotes = consultationNotes;
 }
     //Getters and Setters
 
@@ -58,27 +59,27 @@ public class Consultation {
         this.consultationNotes = consultationNotes;
     }
 
-    public int getConsultationId() {
+    public String getConsultationId() {
         return consultationId;
     }
 
-    public void setConsultationId(int consultationId) {
+    public void setConsultationId(String consultationId) {
         this.consultationId = consultationId;
     }
 
-    public int getDoctorId() {
+    public String getDoctorId() {
         return doctorId;
     }
 
-    public void setDoctorId(int doctorId) {
+    public void setDoctorId(String doctorId) {
         this.doctorId = doctorId;
     }
 
-    public int getPatientId() {
+    public String getPatientId() {
         return patientId;
     }
 
-    public void setPatientId(int patientId) {
+    public void setPatientId(String patientId) {
         this.patientId = patientId;
     }
 

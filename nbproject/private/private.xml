@@ -10,10 +10,13 @@
             <file>file:/C:/Users/LESTER/NetBeansProjects/ClinicG14/src/dao/ClinicInitializer.java</file>
             <file>file:/C:/Users/LESTER/NetBeansProjects/ClinicG14/src/boundary/MainUI.java</file>
             <file>file:/C:/Users/LESTER/NetBeansProjects/ClinicG14/src/boundary/README_BOUNDARY.txt</file>
+            <file>file:/C:/Users/LESTER/NetBeansProjects/ClinicG14/src/boundary/DoctorUI.java</file>
+            <file>file:/C:/Users/LESTER/NetBeansProjects/ClinicG14/src/entity/Patient.java</file>
+            <file>file:/C:/Users/LESTER/NetBeansProjects/ClinicG14/src/control/PatientManager.java</file>
+            <file>file:/C:/Users/LESTER/NetBeansProjects/ClinicG14/src/boundary/PatientUI.java</file>
+            <file>file:/C:/Users/LESTER/NetBeansProjects/ClinicG14/src/boundary/ConsultationUI.java</file>
             <file>file:/C:/Users/LESTER/NetBeansProjects/ClinicG14/src/entity/Consultation.java</file>
             <file>file:/C:/Users/LESTER/NetBeansProjects/ClinicG14/src/control/ConsultationManager.java</file>
-            <file>file:/C:/Users/LESTER/NetBeansProjects/ClinicG14/src/boundary/DoctorUI.java</file>
-            <file>file:/C:/Users/LESTER/NetBeansProjects/ClinicG14/src/boundary/ConsultationUI.java</file>
         </group>
     </open-files>
 </project-private>
