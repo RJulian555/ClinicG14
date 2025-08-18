@@ -86,7 +86,7 @@ public class MainUI {
         System.out.println("| 1. Doctor Module             |");
         System.out.println("| 2. Patient Module            |");
         System.out.println("| 3. Consultation Module       |");
-        System.out.println("| 4. Medical Treatment Module    |");
+        System.out.println("| 4. Medical Treatment Module  |");
         System.out.println("| 5. Pharmacy Module           |");
         System.out.println("| 6. Exit System               |");
         System.out.println("|------------------------------|");

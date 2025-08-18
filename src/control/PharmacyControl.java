@@ -70,6 +70,18 @@ public class PharmacyControl {
         // 5. Return the simple data structure to the UI
         return displayData;
     }
+     
+     //This method contains the business logic to calculate the next available Medication ID.
+      public String getNextMedicationID() {
+        // The next ID number will be the current size of the stock + 1.
+        // If you have 100 items (M001 to M100), the size is 100, and the next number is 101.
+        int nextNumber = medicationStock.size() + 1;
+        
+        // Format the number as a three-digit string with leading zeros (e.g., 8 -> "008", 101 -> "101").
+        String formattedNumber = String.format("%03d", nextNumber);
+        
+        return "M" + formattedNumber;
+    }
    
      /**
      * **NEW, SAFE METHOD FOR THE UI**
@@ -83,6 +95,8 @@ public class PharmacyControl {
         // It uses the private helper method to do the actual search.
         return findMedicationById(id) != null;
     }
+    
+    
      
     // Helper method to find a medication by its ID
      //change private to prevent the UI from accessing entities directly
@@ -143,8 +157,46 @@ public class PharmacyControl {
         return false;
     }
 
-    
+    // This method scans the entire medication stock and returns a list of unique medication types.
+     public String[] getDistinctMedicationTypes() {
+        if (medicationStock.isEmpty()) {
+            return new String[0]; // Return an empty array if there's no stock
+        }
 
+        // --- Logic to find unique types without using Java Collections ---
+        
+        // 1. Get all medications
+        Pharmacy[] allMeds = new Pharmacy[medicationStock.size()];
+        allMeds = medicationStock.toArray(allMeds);
+
+        // 2. Use a temporary array to store the unique types found so far
+        String[] tempUniqueTypes = new String[allMeds.length];
+        int uniqueCount = 0;
+
+        // 3. Loop through every medication
+        for (Pharmacy med : allMeds) {
+            String currentType = med.getMedicationType();
+            boolean isFound = false;
+            // Check if we have already added this type
+            for (int i = 0; i < uniqueCount; i++) {
+                if (tempUniqueTypes[i].equalsIgnoreCase(currentType)) {
+                    isFound = true;
+                    break;
+                }
+            }
+            // If it's a new type, add it to our temporary array
+            if (!isFound) {
+                tempUniqueTypes[uniqueCount] = currentType;
+                uniqueCount++;
+            }
+        }
+
+        // 4. Create a final array of the exact size and copy the unique types into it
+        String[] finalUniqueTypes = new String[uniqueCount];
+        System.arraycopy(tempUniqueTypes, 0, finalUniqueTypes, 0, uniqueCount);
+
+        return finalUniqueTypes;
+    }
 
     // Corresponds to +deleteMedication()
     public boolean deleteMedication(String id) {
@@ -202,6 +254,36 @@ public class PharmacyControl {
      */
     private QueueInterface<Pharmacy> generateLowStockReport(int threshold) {
         return medicationStock.filter(med -> med.getMedicationQuantity() < threshold);
+    }
+    
+    
+    //Prepares the low stock data specifically for visualization in a bar chart.
+    public String[][] getTopNLowStockDataForChart(int threshold, int topN) {
+        // 1. Get the complete list of low-stock items.
+        QueueInterface<Pharmacy> lowStockQueue = this.generateLowStockReport(threshold);
+        if (lowStockQueue.isEmpty()) {
+            return new String[0][0]; // Return an empty array if nothing is low
+        }
+
+        // 2. Convert to an array so we can sort it.
+        Pharmacy[] medsArray = new Pharmacy[lowStockQueue.size()];
+        medsArray = lowStockQueue.toArray(medsArray);
+
+        // 3. **CRITICAL STEP: Sort the array by quantity, from lowest to highest.**
+        // We use java.util.Arrays.sort, a standard utility.
+        java.util.Arrays.sort(medsArray, Comparator.comparingInt(Pharmacy::getMedicationQuantity));
+
+        // 4. Determine how many items to show (e.g., if only 3 items are low, show 3, not 10).
+        int limit = Math.min(topN, medsArray.length);
+
+        // 5. Create the final data array with only the top N items.
+        String[][] chartData = new String[limit][2];
+        for (int i = 0; i < limit; i++) {
+            Pharmacy med = medsArray[i]; // Get the item from the sorted array
+            chartData[i][0] = med.getMedicationName();
+            chartData[i][1] = String.valueOf(med.getMedicationQuantity());
+        }
+         return chartData;
     }
 
     // Report 2: +medicationTrentReport() -> Renamed to generateTotalStockValueReport
@@ -340,6 +422,7 @@ public class PharmacyControl {
         }
         return found;
     }
+    
     
     
 }
