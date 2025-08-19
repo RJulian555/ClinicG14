@@ -16,16 +16,18 @@ public class MainUI {
     private final PharmacyControl pharmacyControl;
     private final MedicalTreatmentControl medicalTreatmentControl;
     private final PatientManager patientManager; 
+    private final ConsultationManager consultationManager;
     
      /**
      * The constructor now receives the necessary manager objects.
      * It no longer creates them itself.
      */
-    public MainUI(DoctorManager doctorManager, PharmacyControl pharmacyControl, MedicalTreatmentControl medicalTreatmentControl, PatientManager patientManager) {
+    public MainUI(DoctorManager doctorManager, PharmacyControl pharmacyControl, MedicalTreatmentControl medicalTreatmentControl, PatientManager patientManager, ConsultationManager consultationManager) {
         this.doctorManager = doctorManager;
         this.pharmacyControl = pharmacyControl;
         this.medicalTreatmentControl = medicalTreatmentControl; // Store the new control object
         this.patientManager = patientManager;
+        this.consultationManager = consultationManager;
         this.scanner = new Scanner(System.in);
     }
     
@@ -50,6 +52,7 @@ public class MainUI {
                     pressEnterToContinue();
                     break;
                 case 3:
+                    new ConsultationUI(consultationManager).displayMainMenu();
                     System.out.println("\nConsultation Module UI would launch here");
                     pressEnterToContinue();
                     break;
