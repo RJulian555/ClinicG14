@@ -4,6 +4,8 @@ import adt.*;
 import control.*;
 import entity.*;
 import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalTime;
 /**
  *
  * @author user
@@ -364,5 +366,132 @@ public class ClinicInitializer {
         patientManager.rollbackCounters();
     }
 }
-    
+    // Main sample consultation initializer
+    public static void initializeSampleConsultations(
+    ConsultationManager consultationManager,
+    DoctorManager doctorManager,
+    PatientManager patientManager) {
+
+    try {
+        // ===== 1. HARDCODE REQUIRED PATIENTS (P001-P008) =====
+        // (If they don't exist, this creates them on the spot)
+        addSamplePatient(patientManager, "Ali Bin Abu", "990101014321", "0123456789",
+            "01/01/1999", "M", "A+", "Peanuts", 70.5, 170.0, true, "01/01/2023");
+
+        addSamplePatient(patientManager, "Siti Aminah", "000202023456", "0139876543",
+            "02/02/2000", "F", "O-", "", 55.0, 160.0, true, "02/01/2023");
+
+        addSamplePatient(patientManager, "John Tan", "981010104321", "0112233445",
+            "10/10/1998", "M", "B+", "Seafood", 68.0, 175.0, true, "03/01/2023");
+
+        addSamplePatient(patientManager, "Nur Izzati", "010303035432", "0199988776",
+            "03/03/2001", "F", "AB-", "", 60.0, 162.0, true, "04/01/2023");
+
+        addSamplePatient(patientManager, "Raj Kumar", "970707074321", "0105678901",
+            "07/07/1997", "M", "O+", "Dust", 72.3, 180.0, true, "05/01/2023");
+
+        addSamplePatient(patientManager, "Lim Mei Ling", "960606062222", "0143322110",
+            "06/06/1996", "F", "A-", "Lactose", 50.0, 155.0, true, "06/01/2023");
+
+        addSamplePatient(patientManager, "Ahmad Fauzi", "950505051234", "0176543210",
+            "05/05/1995", "M", "B-", "Penicillin", 80.0, 178.0, true, "07/01/2023");
+
+        addSamplePatient(patientManager, "Sarah Chong", "940404043210", "0167890123",
+            "04/04/1994", "F", "AB+", "", 58.0, 165.0, true, "08/01/2023");
+
+        addSamplePatient(patientManager, "Hafiz Rahman", "930303033333", "0121112233",
+            "03/03/1993", "M", "O+", "Shellfish", 74.0, 176.0, true, "09/01/2023");
+
+        addSamplePatient(patientManager, "Chong Wei", "920202022222", "0185556677",
+            "02/02/1992", "M", "A+", "", 65.0, 170.0, true, "10/01/2023");
+
+        addSamplePatient(patientManager, "Amira Yusuf", "910101011111", "0178889990",
+            "01/01/1991", "F", "B-", "Gluten", 59.0, 162.0, true, "11/01/2023");
+
+        addSamplePatient(patientManager, "Michael Lee", "890909099876", "0134445566",
+            "09/09/1989", "M", "AB+", "", 82.0, 185.0, true, "12/01/2023");
+
+        addSamplePatient(patientManager, "Farah Zain", "880808088765", "0192233445",
+            "08/08/1988", "F", "O-", "Nuts", 52.0, 158.0, true, "13/01/2023");
+
+        addSamplePatient(patientManager, "Daniel Wong", "870707077654", "0123344556",
+            "07/07/1987", "M", "A-", "", 75.0, 172.0, true, "14/01/2023");
+
+        addSamplePatient(patientManager, "Aisyah Karim", "860606066543", "0166677788",
+            "06/06/1986", "F", "B+", "Eggs", 54.0, 160.0, true, "15/01/2023");
+
+        // ===== 2. ADD CONSULTATIONS (FORCE ALL 8) =====
+        // Cardiology
+        consultationManager.addConsultation(new Consultation(
+            "C001", "D101", "P001", LocalDate.of(2025, 3, 15), LocalTime.of(10, 0),
+            "Scheduled", "General", false, ""
+        ));
+        consultationManager.addConsultation(new Consultation(
+            "C002", "D102", "P002", LocalDate.of(2025, 3, 18), LocalTime.of(14, 0),
+            "Scheduled", "General", false, ""
+        ));
+        consultationManager.addConsultation(new Consultation(
+            "C003", "D103", "P003", LocalDate.of(2025, 3, 20), LocalTime.of(11, 30),
+            "Scheduled", "General", false, ""
+        ));
+        consultationManager.addConsultation(new Consultation(
+            "C004", "D104", "P004", LocalDate.of(2025, 3, 22), LocalTime.of(15, 0),
+            "Scheduled", "General", false, ""
+        ));
+
+        // Pediatrics
+        consultationManager.addConsultation(new Consultation(
+            "C005", "D201", "P005", LocalDate.of(2025, 3, 25), LocalTime.of(9, 30),
+            "Scheduled", "General", false, ""
+        ));
+        consultationManager.addConsultation(new Consultation(
+            "C006", "D202", "P006", LocalDate.of(2025, 3, 26), LocalTime.of(13, 0),
+            "Scheduled", "General", false, ""
+        ));
+        consultationManager.addConsultation(new Consultation(
+            "C007", "D203", "P007", LocalDate.of(2025, 3, 27), LocalTime.of(10, 30),
+            "Scheduled", "General", false, ""
+        ));
+        consultationManager.addConsultation(new Consultation(
+            "C008", "D204", "P008", LocalDate.of(2025, 3, 28), LocalTime.of(14, 0),
+            "Scheduled", "General", false, ""
+        ));
+                
+        consultationManager.addConsultation(new Consultation(
+                "C009", "D301", "P009", LocalDate.of(2025, 3, 29), LocalTime.of(11, 0),
+                "Scheduled", "Skin Check", false, ""
+        ));
+        consultationManager.addConsultation(new Consultation(
+                "C010", "D302", "P010", LocalDate.of(2025, 3, 30), LocalTime.of(15, 30),
+                "Scheduled", "Skin Check", false, ""
+        ));
+
+        consultationManager.addConsultation(new Consultation(
+                "C011", "D401", "P011", LocalDate.of(2025, 4, 1), LocalTime.of(9, 0),
+                "Scheduled", "Bone/Joint", false, ""
+        ));
+        consultationManager.addConsultation(new Consultation(
+                "C012", "D402", "P012", LocalDate.of(2025, 4, 2), LocalTime.of(14, 30),
+                "Scheduled", "Bone/Joint", false, ""
+        ));
+
+        consultationManager.addConsultation(new Consultation(
+                "C013", "D501", "P013", LocalDate.of(2025, 4, 3), LocalTime.of(10, 15),
+                "Scheduled", "Neuro", false, ""
+        ));
+        consultationManager.addConsultation(new Consultation(
+                "C014", "D502", "P014", LocalDate.of(2025, 4, 4), LocalTime.of(13, 45),
+                "Scheduled", "Neuro", false, ""
+        ));
+
+        consultationManager.addConsultation(new Consultation(
+                "C015", "D103", "P015", LocalDate.of(2025, 4, 5), LocalTime.of(11, 30),
+                "Scheduled", "General Follow-up", true, "Follow-up for routine check" // General follow-up
+        ));
+
+       
+    } catch (Exception e) {
+        System.out.println("CRITICAL ERROR: " + e.getMessage());
+     }
+    }
 }
