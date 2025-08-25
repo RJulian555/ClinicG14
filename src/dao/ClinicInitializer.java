@@ -87,7 +87,8 @@ public class ClinicInitializer {
             String specialization, String contact, int experience, double fee, 
             String[] leaveDates, String hours) {
         
-        Doctor doctor = new Doctor(id, name, specialization);
+        Doctor doctor = new Doctor(id, name, specialization, contact, experience, fee, 
+                leaveDates.length == 0, leaveDates.length > 0);
         doctor.setContactNumber(contact);
         doctor.setYearsOfExperience(experience);
         doctor.setConsultationFee(fee);
