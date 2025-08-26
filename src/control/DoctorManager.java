@@ -6,6 +6,7 @@ import entity.Consultation;
 import entity.Doctor;
 import entity.Patient;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 import java.util.Comparator;
@@ -228,7 +229,74 @@ public class DoctorManager {
             d.setAvailable(!onLeave);
         }
     }
-    /* ----------  UTILITIES  ---------- */
+        /* ----------  Duty-Schedule & Availability (Doctor + Consultation + Patient) ---------- */
+
+            public boolean addDutyShift(String doctorID, String shiftPattern) {
+                Doctor d = getDoctorByID(doctorID);
+                if (d == null) return false;
+                d.setWorkingHours(shiftPattern);   // reuse existing field
+                return true;
+            }
+
+            public boolean isDoctorAvailable(String doctorID, LocalDate date, LocalTime slot) {
+                Doctor d = getDoctorByID(doctorID);
+                if (d == null || d.isOnLeave()) return false;
+
+                /* 1. Check leave  */
+                for (String leave : d.getLeaveDates()) {
+                    if (LocalDate.parse(leave, DateTimeFormatter.ISO_LOCAL_DATE).isEqual(date))
+                        return false;
+                }
+
+                /* 2. Check duty window (simple HH:MM-HH:MM pattern) */
+                String pattern = d.getWorkingHours();
+                if (pattern == null || pattern.isEmpty()) return false;
+
+                String[] parts = pattern.split("-");
+                if (parts.length != 2) return false;
+                LocalTime start = LocalTime.parse(parts[0].trim());
+                LocalTime end   = LocalTime.parse(parts[1].trim());
+                if (slot.isBefore(start) || slot.isAfter(end)) return false;
+
+                /* 3. Check existing consultations */
+                for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
+                    if (c.getDoctorId().equals(doctorID) &&
+                        c.getConsultationDate().equals(date) &&
+                        c.getConsultationTime().equals(slot))
+                        return false;
+                }
+                return true;
+            }
+
+            public String generateDutyAvailabilityReport(String doctorID) {
+    Doctor d = getDoctorByID(doctorID);
+    if (d == null) return "Doctor not found";
+
+    StringBuilder sb = new StringBuilder("DUTY & AVAILABILITY\n");
+    sb.append("Doctor: ").append(d.getName()).append("\n");
+    sb.append("Shift: ").append(d.getWorkingHours()).append("\n");
+    sb.append("Leave: ").append(d.getFormattedLeaveDates()).append("\n");
+
+    int booked = 0;
+    for (Consultation c : consultationQueue.toArray(new Consultation[0]))
+        if (c.getDoctorId().equals(doctorID)) booked++;
+    sb.append("Booked Slots: ").append(booked).append("\n");
+
+    // Add more detailed information about booked slots
+    sb.append("Booked Slots Details:\n");
+    for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
+        if (c.getDoctorId().equals(doctorID)) {
+            sb.append("  Date: ").append(c.getConsultationDate())
+              .append(", Time: ").append(c.getConsultationTime())
+              .append(", Patient ID: ").append(c.getPatientId())
+              .append("\n");
+        }
+    }
+
+    return sb.toString();
+}
+
+/* ----------  UTILITIES  ---------- */
     public String generateDoctorID() {
         int max = 0;
         for (Doctor d : doctorQueue.toArray(new Doctor[0]))
@@ -250,4 +318,7 @@ public class DoctorManager {
     public boolean doctorExists(String id) {
         return getDoctorByID(id) != null;
     }
+    
+
+    
 }

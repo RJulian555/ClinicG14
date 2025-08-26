@@ -75,7 +75,57 @@ public class ClinicInitializer {
             addSampleDoctor(manager, "DC03", "Dr. David", "Psychiatry", "+60109334455", 22, 240.00, new String[]{"2024-02-10"}, "8am-4pm");
             addSampleDoctor(manager, "DC04", "Dr. Zara", "Psychiatry", "+60119445566", 10, 180.00, new String[]{}, "10am-6pm");    
             
-            
+            // === EXTRA DUTY SHIFTS (Doctor + Schedule + Consultation) ===
+                manager.addDutyShift("D101", "08:00-16:00");
+                manager.addDutyShift("D102", "12:00-20:00");
+                manager.addDutyShift("D103", "07:00-15:00");
+                manager.addDutyShift("D104", "14:00-22:00");
+                
+                manager.addDutyShift("D201", "08:30-16:30");
+                manager.addDutyShift("D202", "10:00-18:00");
+                manager.addDutyShift("D203", "09:00-17:00");
+                manager.addDutyShift("D204", "16:00-00:00");
+                
+                manager.addDutyShift("D301", "07:30-15:30");
+                manager.addDutyShift("D302", "13:00-21:00");
+                manager.addDutyShift("D303", "06:00-14:00");
+                manager.addDutyShift("D304", "15:00-23:00");
+                
+                manager.addDutyShift("D401", "08:00-16:00");
+                manager.addDutyShift("D402", "12:00-20:00");
+                manager.addDutyShift("D403", "09:00-17:00");
+                manager.addDutyShift("D404", "14:00-22:00");
+                
+                manager.addDutyShift("D501", "07:00-15:00");
+                manager.addDutyShift("D502", "10:00-18:00");
+                manager.addDutyShift("D503", "08:00-16:00");
+                manager.addDutyShift("D504", "15:00-23:00");
+                
+                manager.addDutyShift("D601", "08:30-16:30");
+                manager.addDutyShift("D602", "12:00-20:00");
+                manager.addDutyShift("D603", "09:00-17:00");
+                manager.addDutyShift("D604", "16:00-00:00");
+                
+                manager.addDutyShift("D701", "07:00-15:00");
+                manager.addDutyShift("D702", "10:00-18:00");
+                manager.addDutyShift("D703", "08:00-16:00");
+                manager.addDutyShift("D704", "15:00-23:00");
+                
+                manager.addDutyShift("D801", "08:30-16:30");
+                manager.addDutyShift("D802", "12:00-20:00");
+                manager.addDutyShift("D803", "09:00-17:00");
+                manager.addDutyShift("D804", "14:00-22:00");
+                
+                manager.addDutyShift("D901", "06:00-14:00");
+                manager.addDutyShift("D902", "14:00-22:00");
+                manager.addDutyShift("D903", "22:00-06:00");
+                manager.addDutyShift("D904", "08:00-16:00");
+                
+                manager.addDutyShift("DC01", "08:00-16:00");
+                manager.addDutyShift("DC02", "16:00-00:00");
+                manager.addDutyShift("DC03", "08:00-16:00");
+                manager.addDutyShift("DC04", "12:00-20:00");
+                
         } catch (Exception e) {
             System.out.println("Error loading sample data: " + e.getMessage());
         }
@@ -99,6 +149,7 @@ public class ClinicInitializer {
         
         manager.addDoctor(doctor);
     }
+    
     
     
     public static void initializeSamplePharmacyStock(PharmacyControl pharmacyControl) {

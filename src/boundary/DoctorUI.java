@@ -3,6 +3,8 @@ package boundary;
 import adt.QueueInterface;
 import control.DoctorManager;
 import entity.Doctor;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Scanner;
 
 public class DoctorUI {
@@ -31,7 +33,9 @@ public class DoctorUI {
             System.out.println("| 6. Doctor Workload Report           |");
             System.out.println("| 7. Filter Doctors by Workload       |");
             System.out.println("| 8. Manage Doctor Leaves             |");
-            System.out.println("| 9. Exit                             |");
+            System.out.println("| 9. Check Slot Availability          |");
+            System.out.println("| 10. Set Duty Shift                  |");
+            System.out.println("| 11. Exit                            |");
             System.out.println("|_____________________________________|");
             System.out.print("Choose an option: ");
 
@@ -47,7 +51,9 @@ public class DoctorUI {
                 case 6 -> displayWorkloadReportUI();
                 case 7 -> filterDoctorsByWorkloadUI();
                 case 8 -> manageLeavesUI();
-                case 9 -> { return; }
+                case 9 -> checkSlotAvailabilityUI();
+                case 10 -> setDutyShiftUI();
+                case 11 -> { return; }
                 default -> System.out.println("❌ Invalid choice!");
             }
         }
@@ -292,5 +298,37 @@ public class DoctorUI {
             }
         }
     }
+    
+    private void setDutyShiftUI() {
+    System.out.print("Doctor ID: ");
+    String id = scanner.nextLine();
+    System.out.print("Shift pattern (HH:MM-HH:MM): ");
+    String shift = scanner.nextLine();
+    if (doctorManager.addDutyShift(id, shift))
+        System.out.println("Shift updated.");
+    else
+        System.out.println("Doctor not found.");
+}
+
+private void checkSlotAvailabilityUI() {
+    System.out.print("Doctor ID: ");
+    String id = scanner.nextLine();
+    System.out.print("Date (YYYY-MM-DD): ");
+    LocalDate date = LocalDate.parse(scanner.nextLine());
+    System.out.print("Time (HH:MM): ");
+    LocalTime slot = LocalTime.parse(scanner.nextLine());
+
+    if (doctorManager.isDoctorAvailable(id, date, slot)) {
+        System.out.println("Available");
+        // Display the doctor's schedule
+        String report = doctorManager.generateDutyAvailabilityReport(id);
+        System.out.println(report);
+    } else {
+        System.out.println("NOT available");
+        // Display the doctor's schedule
+        String report = doctorManager.generateDutyAvailabilityReport(id);
+        System.out.println(report);
+    }
+}
 
  }
