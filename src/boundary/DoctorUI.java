@@ -72,46 +72,93 @@ public class DoctorUI {
     }
 
     private Doctor inputDoctorDetails() {
-        System.out.println("\nAdd New Doctor (enter 'cancel' at any time to exit)");
+    System.out.println("\nAdd New Doctor (enter 'cancel' at any time to exit)");
 
-        // Automatically generate ID
-        String id = doctorManager.generateDoctorID();
-        System.out.println("Automatically assigned Doctor ID: " + id);
+    // Automatically generate ID
+    String id = doctorManager.generateDoctorID();
+    System.out.println("Automatically assigned Doctor ID: " + id);
 
-        System.out.print("Enter Name: ");
-        String name = scanner.nextLine();
-        if (name.equalsIgnoreCase("cancel")) return null;
+    System.out.print("Enter Name: ");
+    String name = scanner.nextLine();
+    if (name.equalsIgnoreCase("cancel")) return null;
 
-        System.out.print("Enter Specialization: ");
-        String specialization = scanner.nextLine();
-        if (specialization.equalsIgnoreCase("cancel")) return null;
+    // List of specializations derived from the sample data
+    String[] specializations = {
+        "Cardiology", "Pediatrics", "Orthopedics", "Neurology", "Oncology",
+        "General Surgery", "Dermatology", "Ophthalmology", "Emergency Medicine", "Psychiatry"
+    };
 
-        System.out.print("Enter Contact Number (10 digits): ");
-        String contact = scanner.nextLine();
-        if (contact.equalsIgnoreCase("cancel")) return null;
+    // Display available specializations and let the user choose one
+    System.out.println("Choose a specialization from the list below:");
+    for (int i = 0; i < specializations.length; i++) {
+        System.out.println((i + 1) + ". " + specializations[i]);
+    }
 
-        System.out.print("Enter Years of Experience: ");
-        int years = Integer.parseInt(scanner.nextLine());
+    System.out.print("Enter the number corresponding to your choice: ");
+    int choice;
+    try {
+        choice = Integer.parseInt(scanner.nextLine());
+        if (choice < 1 || choice > specializations.length) {
+            System.out.println("Invalid choice. Please select a valid number.");
+            return null;
+        }
+    } catch (NumberFormatException e) {
+        System.out.println("Invalid input. Please enter a number.");
+        return null;
+    }
+
+    String specialization = specializations[choice - 1];
+
+    System.out.print("Enter Contact Number (10 digits): ");
+    String contact = scanner.nextLine();
+    if (contact.equalsIgnoreCase("cancel")) return null;
+
+    System.out.print("Enter Years of Experience: ");
+    int years;
+    try {
+        years = Integer.parseInt(scanner.nextLine());
         if (years < 0) {
             System.out.println("Years of experience must be non-negative.");
             return null;
         }
+    } catch (NumberFormatException e) {
+        System.out.println("Invalid input. Please enter a valid number.");
+        return null;
+    }
 
-        System.out.print("Enter Consultation Fee: ");
-        double fee = Double.parseDouble(scanner.nextLine());
+    System.out.print("Enter Consultation Fee: ");
+    double fee;
+    try {
+        fee = Double.parseDouble(scanner.nextLine());
         if (fee < 0) {
             System.out.println("Consultation fee must be non-negative.");
             return null;
         }
-
-        System.out.print("Is Available (true/false): ");
-        boolean available = Boolean.parseBoolean(scanner.nextLine());
-
-        System.out.print("Is On Leave (true/false): ");
-        boolean onLeave = Boolean.parseBoolean(scanner.nextLine());
-
-        return new Doctor(id, name, specialization, contact, years, fee, available, onLeave);
+    } catch (NumberFormatException e) {
+        System.out.println("Invalid input. Please enter a valid number.");
+        return null;
     }
+
+    System.out.print("Is Available (true/false): ");
+    boolean available;
+    try {
+        available = Boolean.parseBoolean(scanner.nextLine());
+    } catch (Exception e) {
+        System.out.println("Invalid input. Please enter 'true' or 'false'.");
+        return null;
+    }
+
+    System.out.print("Is On Leave (true/false): ");
+    boolean onLeave;
+    try {
+        onLeave = Boolean.parseBoolean(scanner.nextLine());
+    } catch (Exception e) {
+        System.out.println("Invalid input. Please enter 'true' or 'false'.");
+        return null;
+    }
+
+    return new Doctor(id, name, specialization, contact, years, fee, available, onLeave);
+}
 
     private void displayAllDoctorsUI() {
         System.out.println("\nALL DOCTORS LIST");
@@ -147,13 +194,38 @@ public class DoctorUI {
     }
 
     private void displaySeniorDoctorsUI() {
-    System.out.print("\nEnter minimum years of experience for senior doctors: ");
-    int minYears = scanner.nextInt();
-    scanner.nextLine(); // Consume newline
+    final int[] bands = {1, 5, 10, 15};
+    final String[] titles = {
+        "1+ YEAR(S) OF EXPERIENCE",
+        "5+ YEARS OF EXPERIENCE",
+        "10+ YEARS OF EXPERIENCE",
+        "15+ YEARS OF EXPERIENCE"
+    };
 
+    System.out.println("\n=== SENIOR DOCTORS MENU ===");
+    for (int i = 0; i < titles.length; i++) {
+        System.out.println((i + 1) + ". " + titles[i]);
+    }
+    System.out.print("Choose an option (1-4): ");
+
+    int choice;
+    try {
+        choice = Integer.parseInt(scanner.nextLine().trim());
+    } catch (NumberFormatException e) {
+        System.out.println("Invalid input.");
+        return;
+    }
+
+    if (choice < 1 || choice > 4) {
+        System.out.println("Choice out of range.");
+        return;
+    }
+
+    int minYears = bands[choice - 1];
     String report = doctorManager.generateSeniorDoctorsReport(minYears);
     System.out.println(report);
 }
+
     
     
     

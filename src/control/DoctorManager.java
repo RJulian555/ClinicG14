@@ -149,46 +149,157 @@ public class DoctorManager {
     }
 
     public String generateSpecializationReportWithPatientCount() {
-        // Doctor + Consultation + Patient dependency
-        if (consultationQueue == null || patientQueue == null)
-            return "Shared queues not injected";
+    if (consultationQueue == null || patientQueue == null)
+        return "Shared queues not injected";
 
-        StringBuilder rpt = new StringBuilder("SPECIALIZATION SUMMARY (with patient counts)\n");
-        for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
-            int cons = 0;
-            QueueInterface<Patient> uniques = new LinkedQueue<>();
-            for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
-                if (!c.getDoctorId().equals(d.getDoctorID())) continue;
-                cons++;
-                for (Patient p : patientQueue.toArray(new Patient[0]))
-                    if (p.getPatientID().equals(c.getPatientId()) && !uniques.contains(p))
-                        uniques.enqueue(p);
+    final String[] SPEC = {
+        "Cardiology", "Pediatrics", "Orthopedics", "Neurology", "Oncology",
+        "General Surgery", "Dermatology", "Ophthalmology", "Emergency Medicine", "Psychiatry"
+    };
+
+    int[] docs   = new int[SPEC.length];
+    int[] cons   = new int[SPEC.length];
+    int[] expSum = new int[SPEC.length];
+
+    /* ---- count doctors ---- */
+    for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
+        for (int i = 0; i < SPEC.length; i++)
+            if (SPEC[i].equalsIgnoreCase(d.getSpecialization())) {
+                docs[i]++;
+                expSum[i] += d.getYearsOfExperience();
+                break;
             }
-            rpt.append(String.format("%-20s | %3d cons | %3d patients\n",
-                    d.getSpecialization(), cons, uniques.size()));
-        }
-        return rpt.toString();
     }
 
+    /* ---- count consultations ---- */
+    for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
+        Doctor d = getDoctorByID(c.getDoctorId());
+        if (d == null) continue;
+        for (int i = 0; i < SPEC.length; i++)
+            if (SPEC[i].equalsIgnoreCase(d.getSpecialization())) {
+                cons[i]++;
+                break;
+            }
+    }
+        
+
+    StringBuilder sb = new StringBuilder("\n");
+sb.append(" TUNKU ADBUL RAHMAN UNIVERSITY MANAGEMENT and TECHNOLOGY\n");
+sb.append(" TARG14 CLINIC OF HEALTH AND WELLNESS\n");
+sb.append(" BLOCK K ROOM 104A\n");
+        // Centered title
+sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+        sb.append("| ").append("SPECIFICATION REPORT").append(" |\n");
+sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+    /* ---- wider, prettier table ---- */
+    sb.append("SPECIALITY LIST TABLE");
+
+        sb.append("\n+----------------------------------------+----------+-------------+-------------+\n");
+        sb.append("| Specialty                              | Doctors  | Consults    | Avg Exp(yrs)|\n");
+        sb.append("+----------------------------------------+----------+-------------+-------------+\n");
+
+        for (int i = 0; i < SPEC.length; i++) {
+            if (docs[i] == 0) continue;
+            double avg = (double) expSum[i] / docs[i];
+            sb.append(String.format("| %-38s |    %-4d  |    %-5d    |  %9.1f  |\n",
+                    SPEC[i], docs[i], cons[i], avg));
+        }
+        sb.append("+----------------------------------------+----------+-------------+-------------+\n\n");
+        
+        
+sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+   sb.append("CONSULTATIONS & AVERAGE EXPERIENCE IN GRAPH FORM");
+/* ---- side-by-side filled boxes with square-like characters ---- */
+        sb.append("\nFOR EACH SPECIALIZATION\n");
+        sb.append("+--------------------------------------------------+------------------------------+\n");
+        sb.append("| Specialty          | Consultations   (#)         | Average Experience (yrs)     |\n");
+        sb.append("+--------------------------------------------------+------------------------------+\n");
+
+        for (int i = 0; i < SPEC.length; i++) {
+            if (docs[i] == 0) continue;
+
+            int cBox = cons[i];
+            int eBox = (int) Math.round((double) expSum[i] / docs[i]);
+            double avg = (double) expSum[i] / docs[i];
+
+            // Create a visual representation of the bar graph for consultations
+            String consBar = "";
+            for (int j = 0; j < 20; j++) { // Assuming a maximum scale of 20 for consultations
+                if (j < cBox) consBar += "#";
+                else consBar += " ";
+            }
+
+            // Create a visual representation of the bar graph for average experience
+            String expBar = "";
+            for (int j = 0; j < 20; j++) { // Assuming a maximum scale of 20 for average experience
+                if (j < eBox) expBar += "#";
+                else expBar += " ";
+            }
+
+            sb.append(String.format("| %-18s | %-27s | %-28s |\n",
+                    SPEC[i],
+                    consBar + " (" + cBox + ")",
+                    expBar + " (" + String.format("%.1f", avg) + ")"));
+        }
+        sb.append("+--------------------------------------------------+------------------------------+\n");
+        sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+   sb.append("BAR CHART - AMMOUNT OF DOCTORS AGAINST SPECIALIZATION");
+    /* ---- vertical column for doctors ---- */
+    sb.append("DOCTORS (vertical column)\n\n");
+    int maxH = 10;   // fixed scale height for demo
+    for (int h = maxH; h >= 0; h--) {
+        sb.append(String.format("%2d|", h));
+        for (int i = 0; i < SPEC.length; i++) {
+            if (docs[i] == 0) continue;
+            sb.append(docs[i] >= h ? "   #   " : "   ");
+        }
+        sb.append('\n');
+    }
+    sb.append("  +");
+    for (int i = 0; i < SPEC.length; i++)
+        if (docs[i] != 0) sb.append("-------");
+    sb.append('\n');
+    sb.append("   ");
+    for (int i = 0; i < SPEC.length; i++)
+        if (docs[i] != 0) sb.append(String.format("%-7s", SPEC[i].substring(0, 3)));
+    sb.append('\n');
+    sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+
+    return sb.toString();
+}
     
     
      public String generateSeniorDoctorsReport(int minYears) {
-        if (consultationQueue == null)
-            return "Shared queues not injected";
+    if (consultationQueue == null)
+        return "Shared queues not injected";
 
-        StringBuilder rpt = new StringBuilder("SENIOR DOCTORS REPORT\n");
-        for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
-            if (d.getYearsOfExperience() >= minYears) {
-                int cons = 0;
-                for (Consultation c : consultationQueue.toArray(new Consultation[0]))
-                    if (c.getDoctorId().equals(d.getDoctorID())) cons++;
-                rpt.append(String.format("%s (%s) – %d years, %d consultations\n",
-                        d.getName(), d.getSpecialization(), d.getYearsOfExperience(), cons));
-            }
+    StringBuilder rpt = new StringBuilder();
+    rpt.append("-------------------------------------------------------------------\n");
+    rpt.append(String.format("%-3d+ YEARS OF EXPERIENCE\n", minYears));
+    rpt.append("-------------------------------------------------------------------\n");
+    rpt.append("| ID |     NAME     | SPECIALIZATION       | YEARS | CONSULTATION |\n");
+    rpt.append("|----|--------------|----------------------|-------|--------------|\n");
+
+    boolean any = false;
+    for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
+        if (d.getYearsOfExperience() >= minYears) {
+            any = true;
+            int cons = 0;
+            for (Consultation c : consultationQueue.toArray(new Consultation[0]))
+                if (c.getDoctorId().equals(d.getDoctorID())) cons++;
+
+            rpt.append(String.format("|%-4s|%-14s|%-22s|%-7d|%-14d|\n",
+                    d.getDoctorID(), d.getName(), d.getSpecialization(),
+                    d.getYearsOfExperience(), cons));
         }
-        return rpt.toString();
     }
-     
+
+    if (!any) {
+        rpt.append("|                 No doctors                 |\n");
+    }
+    rpt.append("-------------------------------------------------------------------\n");
+    return rpt.toString();
+}
       /* ----------  LEAVE MANAGEMENT  ---------- */
     public String viewAllLeaves() {
         StringBuilder report = new StringBuilder("DOCTOR LEAVE SCHEDULES\n");
@@ -349,6 +460,8 @@ public class DoctorManager {
     return report.toString();
 }
 
+            
+     
     
 /* ----------  UTILITIES  ---------- */
     public String generateDoctorID() {
