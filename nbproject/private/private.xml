@@ -3,6 +3,7 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/control/PatientManager.java</file>
             <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/adt/QueueInterface.java</file>
             <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/adt/LinkedQueue.java</file>
             <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/entity/Doctor.java</file>
@@ -12,9 +13,8 @@
             <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/boundary/MainUI.java</file>
             <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/adt/README_ADT.txt</file>
             <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/entity/Pharmacy.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/entity/MedicalTreatment.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/entity/DiagnosisTemplate.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/entity/Prescription.java</file>
+            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/control/MainControl.java</file>
+            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/control/ConsultationManager.java</file>
         </group>
         <group>
             <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/adt/QueueInterface.java</file>
@@ -26,9 +26,9 @@
             <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/boundary/MainUI.java</file>
             <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/adt/README_ADT.txt</file>
             <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/entity/Pharmacy.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/entity/MedicalTreatment.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/entity/DiagnosisTemplate.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/entity/Prescription.java</file>
+            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/control/MainControl.java</file>
+            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/control/ConsultationManager.java</file>
+            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/control/PatientManager.java</file>
         </group>
     </open-files>
 </project-private>

@@ -33,7 +33,11 @@ public class MainControl {
         ClinicInitializer.initializeSampleConsultations(consultationManager,doctorManager,patientManager);
         System.out.println("All sample data loaded successfully!");
         
-        
+        // … after all ClinicInitializer calls …
+        doctorManager.setSharedQueues(
+        consultationManager.getAllConsultationsQueue(),
+        patientManager.getAllPatients()
+);
 
 
 // 3. Create the main UI, passing the control objects to it

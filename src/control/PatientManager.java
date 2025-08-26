@@ -43,7 +43,9 @@ public class PatientManager {
     this.doctorManager = doctorManager;
 } */
     
-     
+     public QueueInterface<Patient> getAllPatients() {
+    return allPatients;         // your master list
+}
 
     
  /**
