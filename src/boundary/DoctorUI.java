@@ -318,17 +318,13 @@ private void checkSlotAvailabilityUI() {
     System.out.print("Time (HH:MM): ");
     LocalTime slot = LocalTime.parse(scanner.nextLine());
 
-    if (doctorManager.isDoctorAvailable(id, date, slot)) {
-        System.out.println("Available");
-        // Display the doctor's schedule
-        String report = doctorManager.generateDutyAvailabilityReport(id);
-        System.out.println(report);
-    } else {
-        System.out.println("NOT available");
-        // Display the doctor's schedule
-        String report = doctorManager.generateDutyAvailabilityReport(id);
-        System.out.println(report);
+    String availabilityReport = doctorManager.checkDoctorAvailability(id, date, slot);
+    System.out.println(availabilityReport);
+
+    if (!availabilityReport.contains("Available")) {
+        String suggestionReport = doctorManager.suggestAlternativeSlots(id, date, slot);
+        System.out.println(suggestionReport);
     }
 }
 
- }
+}

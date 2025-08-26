@@ -238,35 +238,55 @@ public class DoctorManager {
                 return true;
             }
 
-            public boolean isDoctorAvailable(String doctorID, LocalDate date, LocalTime slot) {
-                Doctor d = getDoctorByID(doctorID);
-                if (d == null || d.isOnLeave()) return false;
+            public String checkDoctorAvailability(String doctorID, LocalDate date, LocalTime slot) {
+    Doctor d = getDoctorByID(doctorID);
+    if (d == null) return "Doctor not found";
 
-                /* 1. Check leave  */
-                for (String leave : d.getLeaveDates()) {
-                    if (LocalDate.parse(leave, DateTimeFormatter.ISO_LOCAL_DATE).isEqual(date))
-                        return false;
-                }
+    StringBuilder report = new StringBuilder("Availability Report for Doctor: " + d.getName() + "\n");
 
-                /* 2. Check duty window (simple HH:MM-HH:MM pattern) */
-                String pattern = d.getWorkingHours();
-                if (pattern == null || pattern.isEmpty()) return false;
+    if (d.isOnLeave()) {
+        report.append("NOT available: Doctor is on leave.\n");
+        return report.toString();
+    }
 
-                String[] parts = pattern.split("-");
-                if (parts.length != 2) return false;
-                LocalTime start = LocalTime.parse(parts[0].trim());
-                LocalTime end   = LocalTime.parse(parts[1].trim());
-                if (slot.isBefore(start) || slot.isAfter(end)) return false;
+    for (String leave : d.getLeaveDates()) {
+        if (LocalDate.parse(leave, DateTimeFormatter.ISO_LOCAL_DATE).isEqual(date)) {
+            report.append("NOT available: Doctor has a scheduled leave on this date.\n");
+            return report.toString();
+        }
+    }
 
-                /* 3. Check existing consultations */
-                for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
-                    if (c.getDoctorId().equals(doctorID) &&
-                        c.getConsultationDate().equals(date) &&
-                        c.getConsultationTime().equals(slot))
-                        return false;
-                }
-                return true;
-            }
+    String pattern = d.getWorkingHours();
+    if (pattern == null || pattern.isEmpty()) {
+        report.append("NOT available: Doctor's working hours are not set.\n");
+        return report.toString();
+    }
+
+    String[] parts = pattern.split("-");
+    if (parts.length != 2) {
+        report.append("NOT available: Invalid working hours format.\n");
+        return report.toString();
+    }
+
+    LocalTime start = LocalTime.parse(parts[0].trim());
+    LocalTime end = LocalTime.parse(parts[1].trim());
+    if (slot.isBefore(start) || slot.isAfter(end)) {
+        report.append("NOT available: Slot is outside working hours.\n");
+        return report.toString();
+    }
+
+    for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
+        if (c.getDoctorId().equals(doctorID) &&
+            c.getConsultationDate().equals(date) &&
+            c.getConsultationTime().equals(slot)) {
+            report.append("NOT available: Slot is already booked.\n");
+            return report.toString();
+        }
+    }
+
+    report.append("Available\n");
+    return report.toString();
+}
 
             public String generateDutyAvailabilityReport(String doctorID) {
     Doctor d = getDoctorByID(doctorID);
@@ -296,6 +316,40 @@ public class DoctorManager {
     return sb.toString();
 }
 
+            
+            public String suggestAlternativeSlots(String doctorID, LocalDate date, LocalTime slot) {
+    Doctor d = getDoctorByID(doctorID);
+    if (d == null) return "Doctor not found";
+
+    StringBuilder report = new StringBuilder("Alternative Slots for Doctor: " + d.getName() + "\n");
+    report.append("Requested Date: ").append(date).append(", Time: ").append(slot).append("\n");
+
+    String availabilityReport = checkDoctorAvailability(doctorID, date, slot);
+
+    if (availabilityReport.contains("Available")) {
+        report.append("Requested slot is available.\n");
+    } else {
+        report.append("Requested slot is NOT available.\n");
+        report.append("Suggested alternative slots:\n");
+
+        boolean foundAlternative = false;
+        for (LocalTime time = LocalTime.of(9, 0); time.isBefore(LocalTime.of(17, 0)); time = time.plusMinutes(30)) {
+            String alternativeReport = checkDoctorAvailability(doctorID, date, time);
+            if (alternativeReport.contains("Available")) {
+                report.append("  ").append(time).append("\n");
+                foundAlternative = true;
+            }
+        }
+
+        if (!foundAlternative) {
+            report.append("  No alternative slots available for this day.\n");
+        }
+    }
+
+    return report.toString();
+}
+
+    
 /* ----------  UTILITIES  ---------- */
     public String generateDoctorID() {
         int max = 0;
