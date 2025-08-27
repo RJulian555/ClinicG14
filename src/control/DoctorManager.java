@@ -88,18 +88,18 @@ public class DoctorManager {
     return updated;
 }
 /* ----------  SEARCH / FILTER  ---------- */
-    public QueueInterface<Doctor> filterDoctorsByPatientWorkload(int minConsultations) {
-        QueueInterface<Doctor> result = new LinkedQueue<>();
-        if (consultationQueue == null) return result;
+public QueueInterface<Doctor> filterDoctorsByPatientWorkload(int minConsultations) {
+    QueueInterface<Doctor> result = new LinkedQueue<>();
+    if (consultationQueue == null) return result;
 
-        for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
-            int count = 0;
-            for (Consultation c : consultationQueue.toArray(new Consultation[0]))
-                if (c.getDoctorId().equals(d.getDoctorID())) count++;
-            if (count >= minConsultations) result.enqueue(d);
-        }
-        return result;
+    for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
+        int count = 0;
+        for (Consultation c : consultationQueue.toArray(new Consultation[0]))
+            if (c.getDoctorId().equals(d.getDoctorID())) count++;
+        if (count >= minConsultations) result.enqueue(d);
     }
+    return result;
+}
 
     private Doctor getDoctorBySelectionNumber(int selection, String specialization) {
         LinkedQueue<Doctor> tempQueue = new LinkedQueue<>();

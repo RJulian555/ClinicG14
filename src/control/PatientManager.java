@@ -15,9 +15,9 @@ import adt.QueueInterface;
 
 
 
-import entity.Doctor;
 
 import boundary.PatientUI;
+import entity.Consultation;
 import entity.Patient;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -25,13 +25,16 @@ import java.time.format.DateTimeFormatter;
 
 
 public class PatientManager {
+    
+    
    
-    private QueueInterface<Patient> allPatients = new LinkedQueue<>();
-    private final LinkedQueue<Patient> patientQueue = new LinkedQueue<>();
-    private final LinkedQueue<Patient> processedPatients = new LinkedQueue<>();
+    private final QueueInterface<Patient> allPatients = new LinkedQueue<>();
+    private final QueueInterface<Patient> patientQueue = new LinkedQueue<>();
+    private final QueueInterface<Patient> processedPatients = new LinkedQueue<>();
     //private final LinkedQueue<Patient> allPatients = new LinkedQueue<>();
     
     //private DoctorManager doctorManager;
+    
     
     private int patientCounter;
     private int queueCounter;
@@ -43,20 +46,12 @@ public class PatientManager {
     this.doctorManager = doctorManager;
 } */
     
-     public QueueInterface<Patient> getAllPatients() {
+    public QueueInterface<Patient> getAllPatients() {
     return allPatients;         // your master list
 }
-
-    
- /**
- * Adds a sample patient to the system and optionally to the queue.
- * This method is specifically designed for initializing sample data.
- * 
- * @param patient The Patient object to be added to the system
- * @param inQueue If true, adds the patient to the queue as well as the master list
- */
     
     
+  
     public void addSamplePatient(Patient patient, boolean inQueue) {
     // Add the patient to the master list of all patients
     allPatients.enqueue(patient);
@@ -174,7 +169,7 @@ public class PatientManager {
     // Return whether patient was found in queue
     return found;
 }
-    
+
     
     
 //-----------------------------------------------------------------------------------------------------------------//
@@ -871,9 +866,9 @@ public void displayAllPatients(PatientUI ui) {
 
 // Helper method to interpret BMI value
 private String interpretBMI(double bmi) {
-    if (bmi < 18.5) return "Under";
-    else if (bmi < 25) return "Normal";
-    else if (bmi < 30) return "Over";
+    if (bmi < 18.5) return "Under weight";
+    else if (bmi < 25) return "Normal weight";
+    else if (bmi < 30) return "Over weight";
     else return "Obese";
 }
 
@@ -1790,6 +1785,61 @@ private Patient findPatientInQueue(String identifier) {
 
 //-----------------------------------------------------------------------------------------------------------------//
 
+    public void setPatientCounter(int i) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
+    public void setQueueCounter(int i) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    
+    
+public String getLatestConsultationDoctorName(ConsultationManager cm,
+                                              DoctorManager dm,
+                                              Patient patient){
+    Consultation latest = getLatestConsultation(cm, patient);
+    if (latest == null) return "";
+    entity.Doctor d = dm.getDoctorByID(latest.getDoctorId());
+    return (d == null) ? "" : d.getName();
+}
 
+    
+    // In PatientManager class - FIXED VERSION
+public Consultation getLatestConsultation(ConsultationManager cm, Patient patient) {
+    Consultation latest = null;
+
+    // Use the patient's ID instead of this.patientID
+    adt.QueueInterface<Consultation> q = cm.getConsultationsByPatient(patient.getPatientID());
+    
+    // CRITICAL: Use temporary queue to avoid destructive operations
+    adt.QueueInterface<Consultation> tempQueue = new adt.LinkedQueue<>();
+    
+    while (!q.isEmpty()) {
+        Consultation c = q.dequeue();
+        tempQueue.enqueue(c);
+        
+        if (latest == null) {
+            latest = c;
+        } else {
+            // Compare by date first, then time
+            int cmp = c.getConsultationDate().compareTo(latest.getConsultationDate());
+            if (cmp > 0 || (cmp == 0 && 
+                c.getConsultationTime().compareTo(latest.getConsultationTime()) > 0)) {
+                latest = c;
+            }
+        }
+    }
+    
+    // RESTORE ORIGINAL QUEUE - This was missing!
+    while (!tempQueue.isEmpty()) {
+        q.enqueue(tempQueue.dequeue());
+    }
+    
+    return latest;
+}
+
+    
+    
+    
 }

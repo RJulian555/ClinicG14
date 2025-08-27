@@ -316,11 +316,32 @@ public class DoctorUI {
             return;
         }
 
-        System.out.println("\nDoctors with at least " + minConsultations + " consultations:");
-        for (Doctor doctor : filteredDoctors.toArray(new Doctor[0])) {
-            displayDoctorCard(doctor);
-        }
+            System.out.println("\nDoctors with at least " + minConsultations + " consultations:");
+            System.out.println("\nDoctors with at least " + minConsultations + " consultations:");
+            System.out.println("+----------+----------------------+--------------------+--------------+---------+----------+-----------+");
+            System.out.println("| ID       | Name                 | Specialization     | Contact      | Exp yrs | Fee RM   | Status    |");
+            System.out.println("+----------+----------------------+--------------------+--------------+---------+----------+-----------+");
+
+            for (Doctor doctor : filteredDoctors.toArray(new Doctor[0])) {
+                displayDoctorRow(doctor);
+            }
+
+            System.out.println("+----------+----------------------+--------------------+--------------+---------+----------+-----------+");
+
     }
+    
+    private void displayDoctorRow(Doctor d) {
+    // 8-char ID, 20-char name, 18-char spec, 12-char contact, 3-digit years, 6-char fee, 8-char status
+    System.out.printf("| %-8s | %-20s | %-18s | %-12s | %3d yrs | RM%6.2f | %-8s |\n",
+            d.getDoctorID(),
+            d.getName(),
+            d.getSpecialization(),
+            d.getContactNumber(),
+            d.getYearsOfExperience(),
+            d.getConsultationFee(),
+            d.isOnLeave() ? "OnLeave" : (d.isAvailable() ? "Available" : "Occupied"));
+}
+
 
     private void manageLeavesUI() {
         while (true) {
