@@ -25,16 +25,16 @@ public class DoctorUI {
             System.out.println("\n|-------------------------------------|");
             System.out.println("|          MAIN MENU OPTIONS          |");
             System.out.println("|-------------------------------------|");
-            System.out.println("| 1. Add New Doctor                   |");
-            System.out.println("| 2. View All Doctors                 |");
-            System.out.println("| 3. View Senior Doctors              |");
-            System.out.println("| 4. Search Doctor by ID              |");
-            System.out.println("| 5. Doctor Specialization Report     |");
-            System.out.println("| 6. Doctor Workload Report           |");
-            System.out.println("| 7. Filter Doctors by Workload       |");
-            System.out.println("| 8. Manage Doctor Leaves             |");
-            System.out.println("| 9. Check Slot Availability          |");
-            System.out.println("| 10. Set Duty Shift                  |");
+            System.out.println("| 1.  Add New Doctor                  |");
+            System.out.println("| 2.  View All Doctors                |");
+            System.out.println("| 3.  View Senior Doctors             |");
+            System.out.println("| 4.  Search Doctor by ID             |");
+            System.out.println("| 5.  Filter Doctors by Workload      |");
+            System.out.println("| 6.  Manage Doctor Leaves            |");
+            System.out.println("| 7.  Check Slot Availability         |");
+            System.out.println("| 8.  Set Duty Shift                  |");
+            System.out.println("| 9.  Doctor Specialization Report    |");
+            System.out.println("| 10. Doctor Workload Report          |");
             System.out.println("| 11. Exit                            |");
             System.out.println("|_____________________________________|");
             System.out.print("Choose an option: ");
@@ -47,12 +47,12 @@ public class DoctorUI {
                 case 2 -> displayAllDoctorsUI();
                 case 3 -> displaySeniorDoctorsUI();
                 case 4 -> searchDoctorUI();
-                case 5 -> displaySpecializationReportUI();
-                case 6 -> displayWorkloadReportUI();
-                case 7 -> filterDoctorsByWorkloadUI();
-                case 8 -> manageLeavesUI();
-                case 9 -> checkSlotAvailabilityUI();
-                case 10 -> setDutyShiftUI();
+                case 5 -> filterDoctorsByWorkloadUI();
+                case 6 -> manageLeavesUI();
+                case 7 -> checkSlotAvailabilityUI();
+                case 8 -> setDutyShiftUI();
+                case 9 -> displaySpecializationReportUI();
+                case 10 -> displayWorkloadReportUI();
                 case 11 -> { return; }
                 default -> System.out.println("❌ Invalid choice!");
             }
@@ -306,42 +306,29 @@ public class DoctorUI {
     }
 
     private void filterDoctorsByWorkloadUI() {
-        System.out.print("\nEnter minimum consultations: ");
-        int minConsultations = scanner.nextInt();
-        scanner.nextLine();
+    System.out.print("\nEnter minimum consultations: ");
+    int min = scanner.nextInt();
+    scanner.nextLine();
 
-        QueueInterface<Doctor> filteredDoctors = doctorManager.filterDoctorsByPatientWorkload(minConsultations);
-        if (filteredDoctors.size() == 0) {
-            System.out.println("No doctors found with the specified workload.");
-            return;
-        }
-
-            System.out.println("\nDoctors with at least " + minConsultations + " consultations:");
-            System.out.println("\nDoctors with at least " + minConsultations + " consultations:");
-            System.out.println("+----------+----------------------+--------------------+--------------+---------+----------+-----------+");
-            System.out.println("| ID       | Name                 | Specialization     | Contact      | Exp yrs | Fee RM   | Status    |");
-            System.out.println("+----------+----------------------+--------------------+--------------+---------+----------+-----------+");
-
-            for (Doctor doctor : filteredDoctors.toArray(new Doctor[0])) {
-                displayDoctorRow(doctor);
-            }
-
-            System.out.println("+----------+----------------------+--------------------+--------------+---------+----------+-----------+");
-
+    QueueInterface<String> rows = doctorManager.getDoctorsWithWorkload(min);
+    if (rows.size() == 0) {
+        System.out.println("No doctors found with the specified workload.");
+        return;
     }
-    
-    private void displayDoctorRow(Doctor d) {
-    // 8-char ID, 20-char name, 18-char spec, 12-char contact, 3-digit years, 6-char fee, 8-char status
-    System.out.printf("| %-8s | %-20s | %-18s | %-12s | %3d yrs | RM%6.2f | %-8s |\n",
-            d.getDoctorID(),
-            d.getName(),
-            d.getSpecialization(),
-            d.getContactNumber(),
-            d.getYearsOfExperience(),
-            d.getConsultationFee(),
-            d.isOnLeave() ? "OnLeave" : (d.isAvailable() ? "Available" : "Occupied"));
-}
 
+    System.out.println("\nDoctors with at least " + min + " consultations:");
+    System.out.println("+--------+----------------------+--------------------+--------------+---------+----------+-----------+--------------+");
+    System.out.println("| ID     | Name                 | Specialization     | Contact      | Exp yrs | Fee RM   | Status    | Consultations|");
+    System.out.println("+--------+----------------------+--------------------+--------------+---------+----------+-----------+--------------+");
+
+    while (!rows.isEmpty()) {
+        System.out.println("|" + rows.dequeue() + "|");
+    }
+
+    System.out.println("+--------+----------------------+--------------------+--------------+---------+----------+-----------+--------------+");
+}
+    
+    
 
     private void manageLeavesUI() {
         while (true) {

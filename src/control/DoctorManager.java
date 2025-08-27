@@ -1,3 +1,7 @@
+/**
+ *
+ * @author Made BY RYAN JULIAN RAJESH 25WMR10036(Doctor Module)
+ */
 package control;
 
 import adt.LinkedQueue;
@@ -8,17 +12,12 @@ import entity.Patient;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Scanner;
-import java.util.Comparator;
-/**
- *
- * @author user
- */
+
 public class DoctorManager {
     /* ----------  DATA  ---------- */
     private QueueInterface<Doctor>       doctorQueue   = new LinkedQueue<>();
-    private       QueueInterface<Consultation> consultationQueue;  // injected
-    private       QueueInterface<Patient>      patientQueue;       // injected
+    private QueueInterface<Consultation> consultationQueue;  // injected
+    private QueueInterface<Patient>      patientQueue;       // injected
 
     /* ----------  INJECTION  ---------- */
     public void setSharedQueues(QueueInterface<Consultation> cq,
@@ -88,17 +87,43 @@ public class DoctorManager {
     return updated;
 }
 /* ----------  SEARCH / FILTER  ---------- */
-public QueueInterface<Doctor> filterDoctorsByPatientWorkload(int minConsultations) {
-    QueueInterface<Doctor> result = new LinkedQueue<>();
-    if (consultationQueue == null) return result;
+public QueueInterface<String> getDoctorsWithWorkload(int minConsultations) {
+    QueueInterface<String> report = new LinkedQueue<>();
 
-    for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
-        int count = 0;
-        for (Consultation c : consultationQueue.toArray(new Consultation[0]))
-            if (c.getDoctorId().equals(d.getDoctorID())) count++;
-        if (count >= minConsultations) result.enqueue(d);
+    // 1.  build an array of doctors once
+    Doctor[] docs = doctorQueue.toArray(new Doctor[0]);
+
+    // 2.  count consultations for each doctor
+    int[] counts = new int[docs.length];
+    for (int i = 0; i < docs.length; i++) {
+        counts[i] = 0;
     }
-    return result;
+    for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
+        for (int i = 0; i < docs.length; i++) {
+            if (c.getDoctorId().equals(docs[i].getDoctorID())) {
+                counts[i]++;
+                break;
+            }
+        }
+    }
+
+    // 3.  enqueue formatted row strings for those who meet the threshold
+    for (int i = 0; i < docs.length; i++) {
+        if (counts[i] >= minConsultations) {
+            Doctor d = docs[i];
+            String row = String.format("%-8s|%-22s|%-20s|%-14s|%5d yrs| RM%6.2f |%-11s|  %12d",
+                    d.getDoctorID(),
+                    d.getName(),
+                    d.getSpecialization(),
+                    d.getContactNumber(),
+                    d.getYearsOfExperience(),
+                    d.getConsultationFee(),
+                    d.isOnLeave() ? "OnLeave" : (d.isAvailable() ? "Available" : "Occupied"),
+                    counts[i]);
+            report.enqueue(row);
+        }
+    }
+    return report;
 }
 
     private Doctor getDoctorBySelectionNumber(int selection, String specialization) {
@@ -127,26 +152,143 @@ public QueueInterface<Doctor> filterDoctorsByPatientWorkload(int minConsultation
 
 /* ----------  REPORTS  ---------- */
     public String generateDoctorWorkloadReport() {
-        if (consultationQueue == null || patientQueue == null)
-            return "Shared queues not injected";
+    if (consultationQueue == null || patientQueue == null)
+        return "Shared queues not injected\n";
 
-        StringBuilder rpt = new StringBuilder("DOCTOR WORKLOAD SUMMARY\n");
-        for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
-            int cons = 0;
-            QueueInterface<Patient> uniques = new LinkedQueue<>();
+    /* ---------- 1.  collect counts ---------- */
+    final int MAX_DOCS = doctorQueue.size();
+    Doctor[] docs = doctorQueue.toArray(new Doctor[0]);
 
-            for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
-                if (!c.getDoctorId().equals(d.getDoctorID())) continue;
-                cons++;
-                for (Patient p : patientQueue.toArray(new Patient[0]))
-                    if (p.getPatientID().equals(c.getPatientId()) && !uniques.contains(p))
-                        uniques.enqueue(p);
-            }
-            rpt.append(String.format("%s (%s) – %d consultations, %d unique patients\n",
-                    d.getName(), d.getSpecialization(), cons, uniques.size()));
+    int[] cons = new int[MAX_DOCS];
+    int[] uniq = new int[MAX_DOCS];
+
+    for (int i = 0; i < MAX_DOCS; i++) {
+        Doctor d = docs[i];
+
+        /* consultations */
+        int c = 0;
+        for (Consultation con : consultationQueue.toArray(new Consultation[0])) {
+            if (con.getDoctorId().equals(d.getDoctorID())) c++;
         }
-        return rpt.toString();
+        cons[i] = c;
+
+        /* unique patients */
+        QueueInterface<Patient> seen = new LinkedQueue<>();
+        for (Consultation con : consultationQueue.toArray(new Consultation[0])) {
+            if (!con.getDoctorId().equals(d.getDoctorID())) continue;
+            Patient p = null;
+            for (Patient cand : patientQueue.toArray(new Patient[0])) {
+                if (cand.getPatientID().equals(con.getPatientId())) {
+                    p = cand;
+                    break;
+                }
+            }
+            if (p != null && !seen.contains(p)) seen.enqueue(p);
+        }
+        uniq[i] = seen.size();
     }
+
+    /* ---------- 2.  sort indices (top 10) ---------- */
+    int[] idxByCons = new int[MAX_DOCS];
+    int[] idxByUniq = new int[MAX_DOCS];
+    for (int i = 0; i < MAX_DOCS; i++) {
+        idxByCons[i] = i;
+        idxByUniq[i] = i;
+    }
+
+    // simple descending bubble sort over indices
+    for (int i = 0; i < MAX_DOCS - 1; i++) {
+        for (int j = i + 1; j < MAX_DOCS; j++) {
+            if (cons[idxByCons[j]] > cons[idxByCons[i]]) {
+                int tmp = idxByCons[i]; idxByCons[i] = idxByCons[j]; idxByCons[j] = tmp;
+            }
+            if (uniq[idxByUniq[j]] > uniq[idxByUniq[i]]) {
+                int tmp = idxByUniq[i]; idxByUniq[i] = idxByUniq[j]; idxByUniq[j] = tmp;
+            }
+        }
+    }
+
+    /* ---------- 3.  build output ---------- */
+    StringBuilder sb = new StringBuilder();
+        sb.append(" TUNKU ADBUL RAHMAN UNIVERSITY MANAGEMENT and TECHNOLOGY\n");
+        sb.append(" TARG14 CLINIC OF HEALTH AND WELLNESS\n");
+        sb.append(" BLOCK K ROOM 104A\n");
+        // Centered title
+        sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+        sb.append("| ").append("DOCTOR WORKLOAD REPORT").append(" |\n");
+        sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+
+    sb.append("+--------+----------------------+--------------------+--------------+------------------+\n");
+    sb.append("| ID     | Name                 | Specialization     | Consultations| Unique Patients  |\n");
+    sb.append("+--------+----------------------+--------------------+--------------+------------------+\n");
+
+    for (int i = 0; i < MAX_DOCS; i++) {
+        Doctor d = docs[i];
+        sb.append(String.format("| %-6s | %-20s | %-18s | %12d | %16d |\n",
+                d.getDoctorID(),
+                d.getName(),
+                d.getSpecialization(),
+                cons[i],
+                uniq[i]));
+    }
+    sb.append("+--------+----------------------+--------------------+--------------+------------------+\n\n");
+
+            /* ---------- 4.  vertical histogram with values & labels ---------- */
+            int top = Math.min(10, MAX_DOCS);
+            int maxC = (top > 0) ? cons[idxByCons[0]] : 0;
+            int maxU = (top > 0) ? uniq[idxByUniq[0]] : 0;
+
+            /* ---- CONSULTATIONS ---- */
+            sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+            sb.append("");
+            sb.append("Top 10 - Consultations (Histogram)\n");
+            for (int line = maxC; line >= 0; line--) {
+                // left label
+                sb.append(String.format("%4d|", line));
+                // bars + value on top
+                for (int r = 0; r < top; r++) {
+                    int val = cons[idxByCons[r]];
+                    if (line == maxC) {                       // top line → value
+                        sb.append(String.format("  %-8s", val));
+                    } else {                                  // bar or space
+                        sb.append(val >= line ? "    #     " : "    ");
+                    }
+                }
+                sb.append("\n");
+            }
+            // bottom names
+            sb.append("   ");
+            for (int r = 0; r < top; r++) {
+                String name = docs[idxByCons[r]].getName();
+                sb.append(String.format("%-10s", name.substring(0, Math.min(8, name.length()))));
+            }
+            sb.append("\n\n");
+
+            /* ---- UNIQUE PATIENTS ---- */
+            sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+            sb.append("");
+            sb.append("Top 10 - Unique Patients (Histogram)\n");
+            for (int line = maxU; line >= 0; line--) {
+                sb.append(String.format("%2d|", line));
+                for (int r = 0; r < top; r++) {
+                    int val = uniq[idxByUniq[r]];
+                    if (line == maxU) {
+                        sb.append(String.format("  %-8s", val));
+                    } else {
+                        sb.append(val >= line ? "    #     " : "    ");
+                    }
+                }
+                sb.append("\n");
+            }
+            sb.append("   ");
+            for (int r = 0; r < top; r++) {
+                String name = docs[idxByUniq[r]].getName();
+                sb.append(String.format("%-10s", name.substring(0, Math.min(8, name.length()))));
+            }
+            sb.append("\n");
+
+                return sb.toString();
+            }
 
     public String generateSpecializationReportWithPatientCount() {
     if (consultationQueue == null || patientQueue == null)
@@ -376,85 +518,85 @@ sb.append("_____________________________________________________________________
             }
 
             public String checkDoctorAvailability(String doctorID, LocalDate date, LocalTime slot) {
-    Doctor d = getDoctorByID(doctorID);
-    if (d == null) return "Doctor not found";
+                Doctor d = getDoctorByID(doctorID);
+                if (d == null) return "Doctor not found";
 
-    StringBuilder report = new StringBuilder("Availability Report for Doctor: " + d.getName() + "\n");
+                StringBuilder report = new StringBuilder("Availability Report for Doctor: " + d.getName() + "\n");
 
-    if (d.isOnLeave()) {
-        report.append("NOT available: Doctor is on leave.\n");
-        return report.toString();
-    }
+                if (d.isOnLeave()) {
+                    report.append("NOT available: Doctor is on leave.\n");
+                    return report.toString();
+                }
 
-    for (String leave : d.getLeaveDates()) {
-        if (LocalDate.parse(leave, DateTimeFormatter.ISO_LOCAL_DATE).isEqual(date)) {
-            report.append("NOT available: Doctor has a scheduled leave on this date.\n");
-            return report.toString();
-        }
-    }
+                for (String leave : d.getLeaveDates()) {
+                    if (LocalDate.parse(leave, DateTimeFormatter.ISO_LOCAL_DATE).isEqual(date)) {
+                        report.append("NOT available: Doctor has a scheduled leave on this date.\n");
+                        return report.toString();
+                    }
+                }
 
-    String pattern = d.getWorkingHours();
-    if (pattern == null || pattern.isEmpty()) {
-        report.append("NOT available: Doctor's working hours are not set.\n");
-        return report.toString();
-    }
+                String pattern = d.getWorkingHours();
+                if (pattern == null || pattern.isEmpty()) {
+                    report.append("NOT available: Doctor's working hours are not set.\n");
+                    return report.toString();
+                }
 
-    String[] parts = pattern.split("-");
-    if (parts.length != 2) {
-        report.append("NOT available: Invalid working hours format.\n");
-        return report.toString();
-    }
+                String[] parts = pattern.split("-");
+                if (parts.length != 2) {
+                    report.append("NOT available: Invalid working hours format.\n");
+                    return report.toString();
+                }
 
-    LocalTime start = LocalTime.parse(parts[0].trim());
-    LocalTime end = LocalTime.parse(parts[1].trim());
-    if (slot.isBefore(start) || slot.isAfter(end)) {
-        report.append("NOT available: Slot is outside working hours.\n");
-        return report.toString();
-    }
+                LocalTime start = LocalTime.parse(parts[0].trim());
+                LocalTime end = LocalTime.parse(parts[1].trim());
+                if (slot.isBefore(start) || slot.isAfter(end)) {
+                    report.append("NOT available: Slot is outside working hours.\n");
+                    return report.toString();
+                }
 
-    for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
-        if (c.getDoctorId().equals(doctorID) &&
-            c.getConsultationDate().equals(date) &&
-            c.getConsultationTime().equals(slot)) {
-            report.append("NOT available: Slot is already booked.\n");
-            return report.toString();
-        }
-    }
+                for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
+                    if (c.getDoctorId().equals(doctorID) &&
+                        c.getConsultationDate().equals(date) &&
+                        c.getConsultationTime().equals(slot)) {
+                        report.append("NOT available: Slot is already booked.\n");
+                        return report.toString();
+                    }
+                }
 
-    report.append("Available\n");
-    return report.toString();
-}
+                report.append("Available\n");
+                return report.toString();
+            }
 
             public String generateDutyAvailabilityReport(String doctorID) {
-    Doctor d = getDoctorByID(doctorID);
-    if (d == null) return "Doctor not found";
+                Doctor d = getDoctorByID(doctorID);
+                if (d == null) return "Doctor not found";
 
-    StringBuilder sb = new StringBuilder("DUTY & AVAILABILITY\n");
-    sb.append("Doctor: ").append(d.getName()).append("\n");
-    sb.append("Shift: ").append(d.getWorkingHours()).append("\n");
-    sb.append("Leave: ").append(d.getFormattedLeaveDates()).append("\n");
+                StringBuilder sb = new StringBuilder("DUTY & AVAILABILITY\n");
+                sb.append("Doctor: ").append(d.getName()).append("\n");
+                sb.append("Shift: ").append(d.getWorkingHours()).append("\n");
+                sb.append("Leave: ").append(d.getFormattedLeaveDates()).append("\n");
 
-    int booked = 0;
-    for (Consultation c : consultationQueue.toArray(new Consultation[0]))
-        if (c.getDoctorId().equals(doctorID)) booked++;
-    sb.append("Booked Slots: ").append(booked).append("\n");
+                int booked = 0;
+                for (Consultation c : consultationQueue.toArray(new Consultation[0]))
+                    if (c.getDoctorId().equals(doctorID)) booked++;
+                sb.append("Booked Slots: ").append(booked).append("\n");
 
-    // Add more detailed information about booked slots
-    sb.append("Booked Slots Details:\n");
-    for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
-        if (c.getDoctorId().equals(doctorID)) {
-            sb.append("  Date: ").append(c.getConsultationDate())
-              .append(", Time: ").append(c.getConsultationTime())
-              .append(", Patient ID: ").append(c.getPatientId())
-              .append("\n");
-        }
-    }
+                // Add more detailed information about booked slots
+                sb.append("Booked Slots Details:\n");
+                for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
+                    if (c.getDoctorId().equals(doctorID)) {
+                        sb.append("  Date: ").append(c.getConsultationDate())
+                          .append(", Time: ").append(c.getConsultationTime())
+                          .append(", Patient ID: ").append(c.getPatientId())
+                          .append("\n");
+                    }
+                }
 
-    return sb.toString();
-}
+                return sb.toString();
+            }
 
             
-            public String suggestAlternativeSlots(String doctorID, LocalDate date, LocalTime slot) {
+    public String suggestAlternativeSlots(String doctorID, LocalDate date, LocalTime slot) {
     Doctor d = getDoctorByID(doctorID);
     if (d == null) return "Doctor not found";
 
