@@ -12,7 +12,8 @@ package entity;
 
 import java.time.LocalDateTime;
 import java.time.Duration;
-import adt.LinkedQueue;
+import control.ConsultationManager;
+import control.DoctorManager;
 
 
 public class Patient {
@@ -33,10 +34,9 @@ public class Patient {
     private LocalDateTime queueEntryTime;
     private LocalDateTime processingStartTime;
     private LocalDateTime processingEndTime;
-    
-    
     //Docotr
-    private String assignedDoctorID;
+    
+    
 
     public Patient(String patientID, String name, String identificationNo, String contactInfo,
                    String dateOfBirth, String gender, String bloodType, String allergies,
@@ -240,8 +240,39 @@ public class Patient {
     }
     
     public void setAssignedDoctorID(String doctorID) {
-        this.assignedDoctorID = doctorID;
     }
+    
+    public Consultation getLatestConsultation(ConsultationManager cm) {
+    Consultation latest = null;
+
+    // Use the ADT queue returned by the manager
+    adt.QueueInterface<Consultation> q = cm.getConsultationsByPatient(this.patientID);
+    while (!q.isEmpty()) {
+        Consultation c = q.dequeue();
+        if (latest == null) {
+            latest = c;
+        } else {
+            // Compare by date first, then time
+            int cmp = c.getConsultationDate().compareTo(latest.getConsultationDate());
+            if (cmp > 0 || (cmp == 0 && 
+                c.getConsultationTime().compareTo(latest.getConsultationTime()) > 0)) {
+                latest = c;
+            }
+        }
+    }
+    return latest;
+}
+
+
+public String getLatestConsultationDoctorName(ConsultationManager cm,
+                                              DoctorManager dm) {
+    Consultation latest = getLatestConsultation(cm);
+    if (latest == null) return "";
+    entity.Doctor d = dm.getDoctorByID(latest.getDoctorId());
+    return (d == null) ? "" : d.getName();
+}
+    
+    
     
     
 
@@ -251,4 +282,3 @@ public class Patient {
         return "PatientID: " + patientID + ", Name: " + name + ", IC: " + identificationNo;
     }
 }
-

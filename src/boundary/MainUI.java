@@ -52,7 +52,7 @@ public class MainUI {
                     pressEnterToContinue();
                     break;
                 case 3:
-                    new ConsultationUI(consultationManager).displayMainMenu();
+                    new ConsultationUI(consultationManager,doctorManager, patientManager).displayMainMenu();
                     System.out.println("\nConsultation Module UI would launch here");
                     pressEnterToContinue();
                     break;

@@ -21,7 +21,7 @@ public class MainControl {
         PharmacyControl pharmacyControl = new PharmacyControl();
         MedicalTreatmentControl medicalTreatmentControl = new MedicalTreatmentControl(pharmacyControl);
         PatientManager patientManager = new PatientManager();
-        ConsultationManager consultationManager = new ConsultationManager();
+        ConsultationManager consultationManager = new ConsultationManager(doctorManager, patientManager);
         // As you add more modules, you would create their control objects here.
 
         // 2. Initialize all system data using the DAO Initializer
@@ -30,8 +30,19 @@ public class MainControl {
         ClinicInitializer.initializeSamplePharmacyStock(pharmacyControl);
         ClinicInitializer.initializeSampleDiagnoses(medicalTreatmentControl);
         ClinicInitializer.initializeSamplePatients(patientManager);
+        System.out.println("DEBUG: allPatients size = " + patientManager.getAllPatients().size());
+        System.out.println("Patients loaded: " + patientManager.getAllPatients().size());
+        System.out.println("Loading sample consultations...");
         ClinicInitializer.initializeSampleConsultations(consultationManager,doctorManager,patientManager);
+        System.out.println("Total consultations loaded: " + consultationManager.getAllConsultations().length);
         System.out.println("All sample data loaded successfully!");
+        
+        // … after all ClinicInitializer calls …
+        doctorManager.setSharedQueues(
+        consultationManager.getAllConsultationsQueue(),
+        patientManager.getAllPatients()
+        );
+
         
         // 3. Create the main UI, passing the control objects to it
         MainUI mainUI = new MainUI(doctorManager, pharmacyControl, medicalTreatmentControl, patientManager, consultationManager);

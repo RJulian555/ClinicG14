@@ -15,9 +15,9 @@ import adt.QueueInterface;
 
 
 
-import entity.Doctor;
 
 import boundary.PatientUI;
+import entity.Consultation;
 import entity.Patient;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -25,17 +25,22 @@ import java.time.format.DateTimeFormatter;
 
 
 public class PatientManager {
-   
-    private QueueInterface<Patient> allPatients = new LinkedQueue<>();
-    private final LinkedQueue<Patient> patientQueue = new LinkedQueue<>();
-    private final LinkedQueue<Patient> processedPatients = new LinkedQueue<>();
-    //private final LinkedQueue<Patient> allPatients = new LinkedQueue<>();
     
-    //private DoctorManager doctorManager;
+    
+   
+    private final QueueInterface<Patient> allPatients;
+    private final QueueInterface<Patient> patientQueue = new LinkedQueue<>();
+    private final QueueInterface<Patient> processedPatients = new LinkedQueue<>();
+   
+    
     
     private int patientCounter;
     private int queueCounter;
     private static final int AVG_CONSULTATION_TIME_MIN = 15;
+
+    public PatientManager() {
+        this.allPatients = new LinkedQueue<>();
+    }
     
     
      /*
@@ -43,18 +48,14 @@ public class PatientManager {
     this.doctorManager = doctorManager;
 } */
     
-    
-
-    
- /**
- * Adds a sample patient to the system and optionally to the queue.
- * This method is specifically designed for initializing sample data.
- * 
- * @param patient The Patient object to be added to the system
- * @param inQueue If true, adds the patient to the queue as well as the master list
- */
+    public QueueInterface<Patient> getAllPatients() {
+    return allPatients;         // your master list
+}
     
     
+    
+    
+  
     public void addSamplePatient(Patient patient, boolean inQueue) {
     // Add the patient to the master list of all patients
     allPatients.enqueue(patient);
@@ -172,7 +173,13 @@ public class PatientManager {
     // Return whether patient was found in queue
     return found;
 }
+
     
+    //for the summary report 
+    private String bar(int threePlus) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
     
     
 //-----------------------------------------------------------------------------------------------------------------//
@@ -664,19 +671,21 @@ private String getCurrentDate() {
 }
 
 
-/**
- * Completely restores all patients from a temporary queue to the main allPatients queue.
- * First clears the current queue to ensure no duplicates remain.
- * 
- * @param temp The temporary queue containing patients to restore
- */
 
 
+
+private void withPreservedQueue(Runnable readOnlyAction) {
+    LinkedQueue<Patient> temp = new LinkedQueue<>();
+    // 1. drain
+    while (!allPatients.isEmpty()) temp.enqueue(allPatients.dequeue());
+    // 2. do whatever you need (display / filter / sort copy)
+    readOnlyAction.run();
+    // 3. restore
+    while (!temp.isEmpty()) allPatients.enqueue(temp.dequeue());
+}
+
+// put this anywhere inside PatientManager
 private void restoreAllPatients(LinkedQueue<Patient> temp) {
-    // Clear the current patient queue completely
-    allPatients.clear();
-    
-    // Transfer all patients from temporary queue back to main queue
     while (!temp.isEmpty()) {
         allPatients.enqueue(temp.dequeue());
     }
@@ -686,12 +695,6 @@ private void restoreAllPatients(LinkedQueue<Patient> temp) {
 
 
 
-/**
- * Searches for a patient in the system by either their identification number or patient ID.
- * 
- * @param identifier The search string (can be either IC number or patient ID)
- * @return The found Patient object, or null if no match was found
- */
 
 
 public Patient findPatient(String identifier) {
@@ -787,35 +790,35 @@ public Patient findPatient(String identifier) {
 //-----------------------------------------------------------------------------------------------------------------//
 
 public boolean deletePatient(Patient patient) {
-    // Remove from allPatients
+    // Delete from the master list
+    boolean removed = deleteFromQueue(allPatients, patient);
+
+    // Delete from the active queue (if present)
+    deleteFromQueue(patientQueue, patient);
+
+    return removed;
+}
+
+/* Generic helper that removes one item and rebuilds the same queue */
+private boolean deleteFromQueue(QueueInterface<Patient> queue, Patient toDelete) {
     LinkedQueue<Patient> temp = new LinkedQueue<>();
     boolean found = false;
-    
-    while (!allPatients.isEmpty()) {
-        Patient p = allPatients.dequeue();
-        if (p != patient) { // Keep all except the one to delete
+
+    // drain
+    while (!queue.isEmpty()) {
+        Patient p = queue.dequeue();
+        if (p != toDelete) {
             temp.enqueue(p);
         } else {
             found = true;
         }
     }
-    restoreAllPatients(temp);
-    
-    // Remove from queue if present
-    if (patientQueue.contains(patient)) {
-        temp.clear();
-        found = false;
-        while (!patientQueue.isEmpty()) {
-            Patient p = patientQueue.dequeue();
-            if (p != patient) {
-                temp.enqueue(p);
-            } else {
-                found = true;
-            }
-        }
-        restoreQueue(temp);
+
+    // refill (in-place)
+    while (!temp.isEmpty()) {
+        queue.enqueue(temp.dequeue());
     }
-    
+
     return found;
 }
 
@@ -869,9 +872,9 @@ public void displayAllPatients(PatientUI ui) {
 
 // Helper method to interpret BMI value
 private String interpretBMI(double bmi) {
-    if (bmi < 18.5) return "Under";
-    else if (bmi < 25) return "Normal";
-    else if (bmi < 30) return "Over";
+    if (bmi < 18.5) return "Under weight";
+    else if (bmi < 25) return "Normal weight";
+    else if (bmi < 30) return "Over weight";
     else return "Obese";
 }
 
@@ -1541,133 +1544,81 @@ public void generateDailyQueueReport() {
 
 //-----------------------------------------------------------------------------------------------------------------//
 
-/**
- * Generates a comprehensive health report for patients in the queue, including:
- * 1. BMI distribution with health risk assessment
- * 2. Blood type availability and emergency readiness
- * 3. Allergy alerts for common allergens
- * 
- * The report provides visual representations of data and highlights critical
- * health risks that require staff attention.
- */
+public void generatePatientVisitSummary(PatientUI ui, ConsultationManager cm) {
+    ui.clearScreen();
+    System.out.println("\n==========================================");
+    System.out.println("  PATIENT VISIT COUNT & LAST-SEEN SUMMARY");
+    System.out.println("==========================================");
 
+    QueueInterface<Patient> patients = getAllPatients();
+    LinkedQueue<Patient> temp = new LinkedQueue<>();
 
-public void generatePatientHealthReport() {
-    // Header Section
-    System.out.println(generateReportHeader());
-    
+    int totalConsultations = 0;
+    int patientsWithVisits = 0;
 
-    // SECTION 1: BMI DISTRIBUTION (Visual Health Risk Assessment)
-    System.out.println("=================================");
-    System.out.println("=        BMI HEALTH RISK PROFILE     =");
-    System.out.println("=================================");
-    
-    LinkedQueue<Patient> tempBMI = new LinkedQueue<>();
-    int[] bmiCounts = new int[4]; // Under, Normal, Over, Obese
-    int highRiskPatients = 0;
-    
-    while (!patientQueue.isEmpty()) {
-        Patient p = patientQueue.dequeue();
-        double bmi = p.calculateBMI();
-        if (bmi < 18.5) bmiCounts[0]++;
-        else if (bmi < 25) bmiCounts[1]++;
-        else if (bmi < 30) bmiCounts[2]++;
-        else {
-            bmiCounts[3]++;
-            highRiskPatients++;
+    System.out.printf("%-6s %-20s %-5s %-12s\n", "ID", "Name", "Visits", "Last Seen");
+    System.out.println("--------------------------------------------------");
+
+    while (!patients.isEmpty()) {
+        Patient p = patients.dequeue();
+        temp.enqueue(p);
+
+        QueueInterface<Consultation> consults = cm.getConsultationsByPatient(p.getPatientID());
+        int count = 0;
+        Consultation latest = null;
+
+        LinkedQueue<Consultation> tempCons = new LinkedQueue<>();
+        while (!consults.isEmpty()) {
+            Consultation c = consults.dequeue();
+            tempCons.enqueue(c);
+            count++;
+            totalConsultations++;
+            if (latest == null || c.getConsultationDate().isAfter(latest.getConsultationDate()))
+                latest = c;
         }
-        tempBMI.enqueue(p);
-    }
-    restoreQueue(tempBMI);
-    
-    System.out.println("\n[BMI DISTRIBUTION IN CURRENT QUEUE]");
-    System.out.println("Category     | Count | Graph");
-    System.out.println("-------------|-------|---------------------");
-    String[] categories = {"Underweight", "Normal", "Overweight", "Obese"};
-    for (int i = 0; i < categories.length; i++) {
-        System.out.printf("%-12s | %-5d | %s\n", 
-            categories[i], bmiCounts[i], " * ".repeat(bmiCounts[i]*2));
-    }
-    
-    // BMI Health Advisory
-    System.out.println("\n[HEALTH ADVISORY]");
-    if (highRiskPatients > 0) {
-        System.out.printf("!️ %d obese patients requiring priority nutrition counseling\n", highRiskPatients);
-    }
-    if (bmiCounts[0] > 0) {
-        System.out.printf("!️ %d underweight patients needing dietary assessment\n", bmiCounts[0]);
-    }
+        while (!tempCons.isEmpty()) consults.enqueue(tempCons.dequeue());
 
-    // SECTION 2: BLOOD TYPE READINESS
-    System.out.println("\n==================================");
-    System.out.println("=        BLOOD TYPE READINESS        =");
-    System.out.println("==================================");
-    
-    LinkedQueue<String> bloodTypes = new LinkedQueue<>();
-    bloodTypes.enqueue("A+"); bloodTypes.enqueue("A-");
-    bloodTypes.enqueue("B+"); bloodTypes.enqueue("B-");
-    bloodTypes.enqueue("AB+"); bloodTypes.enqueue("AB-");
-    bloodTypes.enqueue("O+"); bloodTypes.enqueue("O-");
-    
-    System.out.println("\n[BLOOD TYPE DISTRIBUTION]");
-    System.out.println("Type | Count | Emergency Readiness");
-    System.out.println("-----|-------|---------------------");
-    
-    while (!bloodTypes.isEmpty()) {
-        String type = bloodTypes.dequeue();
-        int count = countPatientsInQueueByBloodType(type);
-        String alert = "";
-        if (type.equals("O-") && count < 2) alert = "! Universal Donor Shortage";
-        else if (type.equals("AB+") && count < 1) alert = "! Rare Recipient Type";
-        System.out.printf("%-4s | %-5d | %s\n", type, count, alert);
+        if (count > 0) patientsWithVisits++;
+        String lastDate = (latest == null) ? "Never" : latest.getConsultationDate().toString();
+        System.out.printf("%-6s %-20s %-5d %-12s\n", p.getPatientID(), p.getName(), count, lastDate);
     }
+    while (!temp.isEmpty()) patients.enqueue(temp.dequeue());
+    
+        // -------- ASCII BAR CHART --------
+    // Build frequency buckets: 1, 2, 3+ visits
+    int once = 0, twice = 0, threePlus = 0;
+    // reuse the same patients queue (already restored above)
+    patients = getAllPatients();
+    temp.clear();
+    while (!patients.isEmpty()) {
+        Patient p = patients.dequeue();
+        temp.enqueue(p);
+        QueueInterface<Consultation> consults = cm.getConsultationsByPatient(p.getPatientID());
+        int c = 0;
+        LinkedQueue<Consultation> tmp = new LinkedQueue<>();
+        while (!consults.isEmpty()) { c++; tmp.enqueue(consults.dequeue()); }
+        while (!tmp.isEmpty()) consults.enqueue(tmp.dequeue());
 
-    // SECTION 3: ALLERGY ALERTS
-    System.out.println("\n==================================");
-    System.out.println("=          ALLERGY ALERTS            =");
-    System.out.println("==================================");
-    
-    LinkedQueue<String> commonAllergens = new LinkedQueue<>();
-    commonAllergens.enqueue("Peanuts");
-    commonAllergens.enqueue("Seafood");
-    commonAllergens.enqueue("Dust");
-    commonAllergens.enqueue("Lactose");
-    commonAllergens.enqueue("Pollen");
-    
-    int otherAllergies = 0;
-    LinkedQueue<Patient> tempAllergy = new LinkedQueue<>();
-    
-    System.out.println("\n[COMMON ALLERGENS IN QUEUE]");
-    while (!commonAllergens.isEmpty()) {
-        String allergen = commonAllergens.dequeue();
-        int affected = countPatientsWithAllergy(allergen);
-        if (affected > 0) {
-            System.out.printf("! %-10s: %d patient(s)\n", allergen, affected);
-        }
+        if (c == 1) once++;
+        else if (c == 2) twice++;
+        else threePlus++;
     }
-    
-    // Count other allergies
-    while (!patientQueue.isEmpty()) {
-        Patient p = patientQueue.dequeue();
-        if (!p.getAllergies().isEmpty() && 
-            !containsCommonAllergen(p.getAllergies())) {
-            otherAllergies++;
-        }
-        tempAllergy.enqueue(p);
-    }
-    restoreQueue(tempAllergy);
-    
-    if (otherAllergies > 0) {
-        System.out.printf("! Other rare allergies: %d patient(s)\n", otherAllergies);
-    }
+    while (!temp.isEmpty()) patients.enqueue(temp.dequeue());
 
-    // Footer
-    System.out.println("\n==================================================");
-    System.out.println("KEY:");
-    System.out.println("* - Each block represents 1 patient");
-    System.out.println("! - Requires staff attention");
-    System.out.println("==================================================");
+    System.out.println("\nVISIT FREQUENCY DISTRIBUTION");
+    System.out.println("Visits | # Patients | Chart");
+    System.out.println("-------|------------|--------------------");
+    if (once > 0)       System.out.println("1      | " + once + "        | " + bar(once));
+    if (twice > 0)      System.out.println("2      | " + twice + "        | " + bar(twice));
+    if (threePlus > 0)  System.out.println("3+     | " + threePlus + "        | " + bar(threePlus));
+
+    System.out.println("\nTOTAL CONSULTATIONS : " + totalConsultations);
+    System.out.println("PATIENTS WITH VISITS: " + patientsWithVisits);
+    ui.pressEnterToContinue();
 }
+
+   
+
 
 
 //-----------------------------------------------------------------------------------------------------------------//
@@ -1788,6 +1739,59 @@ private Patient findPatientInQueue(String identifier) {
 
 //-----------------------------------------------------------------------------------------------------------------//
 
+    public void setPatientCounter(int i) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setQueueCounter(int i) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    
+    
+public String getLatestConsultationDoctorName(ConsultationManager cm,
+                                              DoctorManager dm,
+                                              Patient patient){
+    Consultation latest = getLatestConsultation(cm, patient);
+    if (latest == null) return "";
+    entity.Doctor d = dm.getDoctorByID(latest.getDoctorId());
+    return (d == null) ? "" : d.getName();
+}
+
+    
+    // In PatientManager class - FIXED VERSION
+public Consultation getLatestConsultation(ConsultationManager cm, Patient patient) {
+    Consultation latest = null;
+
+    // Use the patient's ID instead of this.patientID
+    adt.QueueInterface<Consultation> q = cm.getConsultationsByPatient(patient.getPatientID());
+    
+    // CRITICAL: Use temporary queue to avoid destructive operations
+    adt.QueueInterface<Consultation> tempQueue = new adt.LinkedQueue<>();
+    
+    while (!q.isEmpty()) {
+        Consultation c = q.dequeue();
+        tempQueue.enqueue(c);
+        
+        if (latest == null) {
+            latest = c;
+        } else {
+            // Compare by date first, then time
+            int cmp = c.getConsultationDate().compareTo(latest.getConsultationDate());
+            if (cmp > 0 || (cmp == 0 && 
+                c.getConsultationTime().compareTo(latest.getConsultationTime()) > 0)) {
+                latest = c;
+            }
+        }
+    }
+    
+    // RESTORE ORIGINAL QUEUE - This was missing!
+    while (!tempQueue.isEmpty()) {
+        q.enqueue(tempQueue.dequeue());
+    }
+    
+    return latest;
+}
 
 
 }

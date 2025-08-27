@@ -3,7 +3,10 @@ package control;
 import adt.LinkedQueue;
 import adt.QueueInterface;
 import entity.Doctor;
+import entity.Consultation;
+import entity.Patient;
 import java.util.Scanner;
+import java.util.Comparator;
 
 /**
  *
@@ -11,7 +14,15 @@ import java.util.Scanner;
  */
 public class DoctorManager {
     public QueueInterface<Doctor> doctorQueue = new LinkedQueue<>();
+    private QueueInterface<Consultation> consultationQueue; //injected
+    private QueueInterface<Patient> patientQueue; //injector
     
+    
+    public void setSharedQueues (QueueInterface<Consultation> cq,
+                                  QueueInterface<Patient> pq) {
+        this.consultationQueue = cq;
+        this.patientQueue = pq;
+    }
     
     
   //-----------------------------------------------------------------------------------------------------------------//  
