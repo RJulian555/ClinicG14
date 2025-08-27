@@ -383,7 +383,8 @@ public class DoctorUI {
                     }
                 }
                 case 4 -> {
-                    doctorManager.processLeaveStatusUpdates();
+                    String report = doctorManager.processLeaveStatusUpdates();
+                    System.out.println(report);
                     System.out.println("Leave statuses updated based on current date!");
                 }
                 case 5 -> { return; }

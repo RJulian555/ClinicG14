@@ -301,16 +301,27 @@ sb.append("_____________________________________________________________________
     return rpt.toString();
 }
       /* ----------  LEAVE MANAGEMENT  ---------- */
-    public String viewAllLeaves() {
-        StringBuilder report = new StringBuilder("DOCTOR LEAVE SCHEDULES\n");
-        for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
-            report.append("ID: ").append(d.getDoctorID())
-                  .append(", Name: ").append(d.getName())
-                  .append(", Leave Dates: ").append(d.getFormattedLeaveDates())
-                  .append("\n");
+            public String viewAllLeaves() {
+            if (doctorQueue.isEmpty())
+                return "No doctors on record.\n";
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("DOCTOR LEAVE SCHEDULES\n");
+            sb.append("+----------+----------------------+-------------------------------+\n");
+            sb.append("| ID       | Name                 | Leave Dates                   |\n");
+            sb.append("+----------+----------------------+-------------------------------+\n");
+
+            for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
+                String leaves = d.getFormattedLeaveDates();
+                if ("No leave scheduled".equals(leaves)) leaves = "-";
+                sb.append(String.format("| %-8s | %-20s | %-29s |\n",
+                        d.getDoctorID(),
+                        d.getName(),
+                        leaves));
+            }
+            sb.append("+----------+----------------------+-------------------------------+\n");
+            return sb.toString();
         }
-        return report.toString();
-    }
 
     public boolean registerLeave(String doctorID, String leaveDate) {
         Doctor d = getDoctorByID(doctorID);
@@ -326,20 +337,35 @@ sb.append("_____________________________________________________________________
         return true;
     }
 
-    public void processLeaveStatusUpdates() {
-        LocalDate today = LocalDate.now();
-        for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
-            boolean onLeave = false;
-            for (String date : d.getLeaveDates()) {
-                if (LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE).isEqual(today)) {
-                    onLeave = true;
-                    break;
-                }
+    public String processLeaveStatusUpdates() {
+    LocalDate today = LocalDate.now();
+    StringBuilder report = new StringBuilder("STATUS UPDATE\n");
+
+    for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
+        boolean onLeave = false;
+        for (String date : d.getLeaveDates()) {
+            if (LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE).isEqual(today)) {
+                onLeave = true;
+                break;
             }
-            d.setOnLeave(onLeave);
-            d.setAvailable(!onLeave);
+        }
+
+        d.setOnLeave(onLeave);
+        d.setAvailable(!onLeave);
+
+        // only list doctors who are on leave today
+        if (onLeave) {
+            report.append("Is on leave today  : ").append(d.getDoctorID()).append("\n");
         }
     }
+
+    if (report.length() == 14) { // length of "STATUS UPDATE\n"
+        return "STATUS UPDATE\nNo doctors on leave today.\n";
+    }
+    return report.toString();
+}
+
+    
         /* ----------  Duty-Schedule & Availability (Doctor + Consultation + Patient) ---------- */
 
             public boolean addDutyShift(String doctorID, String shiftPattern) {
