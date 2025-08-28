@@ -1,6 +1,6 @@
 package dao;
 
-import adt.*;
+
 import control.*;
 import entity.*;
 import java.util.Date;
@@ -304,10 +304,17 @@ public class ClinicInitializer {
         }
     }
     
+<<<<<<< HEAD
+    public static void initializeSamplePatients(PatientManager patientManager) {
+    try {
+        // ================= PATIENTS IN QUEUE (10 patients) =================
+        addHardcodedQueuedPatient(patientManager, "Ryan Julian Rajesh", "990101014321", "0123456789", "01/01/1999", "M", "A+", "Peanuts", 200.5, 170.0, 
+=======
        public static void initializeSamplePatients(PatientManager patientManager) {
     try {
         // ================= PATIENTS IN QUEUE (10 patients) =================
         addHardcodedQueuedPatient(patientManager, "Ali Bin Abu", "990101014321", "0123456789", "01/01/1999", "M", "A+", "Peanuts", 70.5, 170.0, 
+>>>>>>> 93ed186f0bb04ef2f00033157df5552c8a2bb78e
                                 "P001", "Q001", "01/01/2023");
         addHardcodedQueuedPatient(patientManager, "Siti Aminah", "000202023456", "0139876543", "02/02/2000", "F", "O-", "", 55.0, 160.0, 
                                 "P002", "Q002", "02/01/2025");
@@ -459,7 +466,10 @@ public class ClinicInitializer {
     PatientManager patientManager) {
 
     try {
+<<<<<<< HEAD
+=======
         
+>>>>>>> 93ed186f0bb04ef2f00033157df5552c8a2bb78e
 
         // ===== 2. ADD CONSULTATIONS =====
         // Cardiology Consultations (D101-D104)
@@ -838,4 +848,9 @@ public class ClinicInitializer {
     
     manager.addConsultation(consultation);
 }
+<<<<<<< HEAD
+        
+        
+=======
+>>>>>>> 93ed186f0bb04ef2f00033157df5552c8a2bb78e
 }
