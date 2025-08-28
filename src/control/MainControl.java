@@ -30,11 +30,7 @@ public class MainControl {
         ClinicInitializer.initializeSamplePharmacyStock(pharmacyControl);
         ClinicInitializer.initializeSampleDiagnoses(medicalTreatmentControl);
         ClinicInitializer.initializeSamplePatients(patientManager);
-        System.out.println("DEBUG: allPatients size = " + patientManager.getAllPatients().size());
-        System.out.println("Patients loaded: " + patientManager.getAllPatients().size());
-        System.out.println("Loading sample consultations...");
         ClinicInitializer.initializeSampleConsultations(consultationManager,doctorManager,patientManager);
-        System.out.println("Total consultations loaded: " + consultationManager.getAllConsultations().length);
         System.out.println("All sample data loaded successfully!");
         
         // … after all ClinicInitializer calls …
