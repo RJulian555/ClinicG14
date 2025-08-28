@@ -47,7 +47,8 @@ public class MainUI {
                     pressEnterToContinue();
                     break;
                 case 2:
-                    new PatientUI(patientManager).displayMainMenu();
+                    //new PatientUI(patientManager).displayMainMenu();
+                    new PatientUI(patientManager, consultationManager, doctorManager).displayMainMenu();
                     System.out.println("\nPatient Module UI would launch here");
                     pressEnterToContinue();
                     break;
