@@ -24,6 +24,7 @@
     }
     
     
+    
     Consultation[] array = new Consultation[consultationQueue.size()];
     return consultationQueue.toArray(array);
 }
@@ -31,6 +32,10 @@
 
             this.consultationQueue = new LinkedQueue<>();
         } 
+        
+    public QueueInterface<Consultation> getAllConsultationsQueue() {
+        return consultationQueue;
+    }     
     //DISPLAY===================================================================    
     public void displayConsultations() {
 

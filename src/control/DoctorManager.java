@@ -1,615 +1,659 @@
+/**
+ *
+ * @author Made BY RYAN JULIAN RAJESH 25WMR10036(Doctor Module)
+ */
 package control;
 
 import adt.LinkedQueue;
 import adt.QueueInterface;
+import entity.Consultation;
 import entity.Doctor;
-import java.util.Scanner;
+import entity.Patient;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
-/**
- *
- * @author user
- */
 public class DoctorManager {
-    public QueueInterface<Doctor> doctorQueue = new LinkedQueue<>();
-    
-    
-    
-  //-----------------------------------------------------------------------------------------------------------------//  
-    public void addDoctor(Doctor doctor) {
-        if (doctor == null) {
-            throw new IllegalArgumentException("Doctor cannot be null");
-        }
-        if (doctorExists(doctor.getDoctorID())) {
-            throw new IllegalStateException("Doctor with ID " + doctor.getDoctorID() + " already exists");
-        }
-        doctorQueue.enqueue(doctor);
+    /* ----------  DATA  ---------- */
+    private QueueInterface<Doctor>       doctorQueue   = new LinkedQueue<>();
+    private QueueInterface<Consultation> consultationQueue;  // injected
+    private QueueInterface<Patient>      patientQueue;       // injected
+
+    /* ----------  INJECTION  ---------- */
+    public void setSharedQueues(QueueInterface<Consultation> cq,
+                                QueueInterface<Patient> pq) {
+        this.consultationQueue = cq;
+        this.patientQueue      = pq;
     }
-    //-----------------------------------------------------------------------------------------------------------------//
-    public String generateDoctorID() {
-    Doctor[] doctors = doctorQueue.toArray(new Doctor[0]);
-    int maxID = 0;
     
-    // Find the highest existing ID number
-    for (Doctor doctor : doctors) {
-        String id = doctor.getDoctorID();
-        if (id.startsWith("DR") && id.length() > 2) {
-            try {
-                int num = Integer.parseInt(id.substring(2));
-                if (num > maxID) {
-                    maxID = num;
-                }
-            } catch (NumberFormatException e) {
-                // Skip if the ID format is invalid
+    
+  /* ----------  CRUD  ---------- */
+    public void addDoctor(Doctor d) {
+        if (d == null) throw new IllegalArgumentException("Doctor is null");
+        if (doctorExists(d.getDoctorID()))
+            throw new IllegalStateException("Duplicate ID");
+        doctorQueue.enqueue(d);
+    }
+
+    public boolean removeDoctor(String doctorID) {
+        // 1. remove doctor
+        boolean removed = false;
+        QueueInterface<Doctor> tmp = new LinkedQueue<>();
+        while (!doctorQueue.isEmpty()) {
+            Doctor d = doctorQueue.dequeue();
+            if (d.getDoctorID().equals(doctorID)) removed = true;
+            else tmp.enqueue(d);
+        }
+        doctorQueue = tmp;
+
+        // 2. cascade: remove all consultations linked to this doctor
+        if (removed && consultationQueue != null) {
+            QueueInterface<Consultation> tmpCon = new LinkedQueue<>();
+            while (!consultationQueue.isEmpty()) {
+                Consultation c = consultationQueue.dequeue();
+                if (!c.getDoctorId().equals(doctorID)) tmpCon.enqueue(c);
+            }
+            consultationQueue = tmpCon;
+        }
+        return removed;
+    }
+    
+
+    public boolean updateDoctor(String doctorID, Doctor newData) {
+    if (newData == null || !doctorExists(doctorID)) return false;
+
+    QueueInterface<Doctor> tmp = new LinkedQueue<>();
+    boolean updated = false;
+
+    while (!doctorQueue.isEmpty()) {
+        Doctor d = doctorQueue.dequeue();
+        if (d.getDoctorID().equals(doctorID)) {
+            // Update fields if new values are provided
+            if (newData.getName() != null) d.setName(newData.getName());
+            if (newData.getSpecialization() != null) d.setSpecialization(newData.getSpecialization());
+            if (newData.getContactNumber() != null) d.setContactNumber(newData.getContactNumber());
+            if (newData.getYearsOfExperience() >= 0) d.setYearsOfExperience(newData.getYearsOfExperience());
+            if (newData.getConsultationFee() >= 0) d.setConsultationFee(newData.getConsultationFee());
+            d.setAvailable(newData.isAvailable());
+            d.setOnLeave(newData.isOnLeave());
+            if (newData.getLeaveDates() != null) d.setLeaveDates(newData.getLeaveDates());
+            if (newData.getWorkingHours() != null) d.setWorkingHours(newData.getWorkingHours());
+            updated = true;
+        }
+        tmp.enqueue(d);
+    }
+
+    doctorQueue = tmp;
+    return updated;
+}
+/* ----------  SEARCH / FILTER  ---------- */
+public QueueInterface<String> getDoctorsWithWorkload(int minConsultations) {
+    QueueInterface<String> report = new LinkedQueue<>();
+
+    // 1.  build an array of doctors once
+    Doctor[] docs = doctorQueue.toArray(new Doctor[0]);
+
+    // 2.  count consultations for each doctor
+    int[] counts = new int[docs.length];
+    for (int i = 0; i < docs.length; i++) {
+        counts[i] = 0;
+    }
+    for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
+        for (int i = 0; i < docs.length; i++) {
+            if (c.getDoctorId().equals(docs[i].getDoctorID())) {
+                counts[i]++;
+                break;
             }
         }
     }
-    
-    // Return new ID with incremented number
-    return String.format("DR%03d", maxID + 1);
+
+    // 3.  enqueue formatted row strings for those who meet the threshold
+    for (int i = 0; i < docs.length; i++) {
+        if (counts[i] >= minConsultations) {
+            Doctor d = docs[i];
+            String row = String.format("%-8s|%-22s|%-20s|%-14s|%5d yrs| RM%6.2f |%-11s|  %12d",
+                    d.getDoctorID(),
+                    d.getName(),
+                    d.getSpecialization(),
+                    d.getContactNumber(),
+                    d.getYearsOfExperience(),
+                    d.getConsultationFee(),
+                    d.isOnLeave() ? "OnLeave" : (d.isAvailable() ? "Available" : "Occupied"),
+                    counts[i]);
+            report.enqueue(row);
+        }
+    }
+    return report;
 }
 
-//-----------------------------------------------------------------------------------------------------------------//  
-    public boolean removeDoctor(String doctorID) {
+    private Doctor getDoctorBySelectionNumber(int selection, String specialization) {
         LinkedQueue<Doctor> tempQueue = new LinkedQueue<>();
-        boolean found = false;
+        Doctor selectedDoctor = null;
+        int currentIndex = 0;
         
         while (!doctorQueue.isEmpty()) {
             Doctor current = doctorQueue.dequeue();
-            if (!found && current.getDoctorID().equals(doctorID)) {
-                found = true;
-            } else {
-                tempQueue.enqueue(current);
-            }
-        }
+            boolean matches = current.isAvailable() && !current.isOnLeave() && 
+                            (specialization == null || 
+                             current.getSpecialization().equalsIgnoreCase(specialization));
         
+            if (matches) {
+                currentIndex++;
+                if (currentIndex == selection) {
+                    selectedDoctor = current;
+                }
+            }
+            tempQueue.enqueue(current);
+        }
+    
         doctorQueue = tempQueue;
-        return found;
+        return selectedDoctor;
     }
-//-----------------------------------------------------------------------------------------------------------------//  
-    public boolean updateDoctor(String doctorID, Doctor newDetails) {
-    // Null check
-    if (newDetails == null || doctorID == null) {
-        return false;
-    }
-    
-    LinkedQueue<Doctor> tempQueue = new LinkedQueue<>();
-    boolean found = false;
-    
-    while (!doctorQueue.isEmpty()) {
-        Doctor current = doctorQueue.dequeue();
-        if (current.getDoctorID().equals(doctorID)) {
-            // Update only non-null fields (except primitives)
-            if (newDetails.getName() != null) {
-                current.setName(newDetails.getName());
-            }
-            if (newDetails.getSpecialization() != null) {
-                current.setSpecialization(newDetails.getSpecialization());
-            }
-            if (newDetails.getContactNumber() != null) {
-                current.setContactNumber(newDetails.getContactNumber());
-            }
-            
-            // Primitive fields don't need null checks
-            current.setYearsOfExperience(newDetails.getYearsOfExperience());
-            current.setAvailable(newDetails.isAvailable());
-            current.setConsultationFee(newDetails.getConsultationFee());
-            current.setOnLeave(newDetails.isOnLeave());
-            
-            // Handle leave dates - only update if being set to on leave
-            if (newDetails.isOnLeave() && newDetails.getLeaveDates() != null 
-                && newDetails.getLeaveDates().length > 0) {
-                current.setLeaveDates(newDetails.getLeaveDates());
-            } else if (!newDetails.isOnLeave()) {
-                current.setLeaveDates(null);
-            }
-            
-            // Working hours can be null
-            if (newDetails.getWorkingHours() != null) {
-                current.setWorkingHours(newDetails.getWorkingHours());
-            } else {
-                current.setWorkingHours(null);
-            }
-            
-            found = true;
+
+/* ----------  REPORTS  ---------- */
+    public String generateDoctorWorkloadReport() {
+    if (consultationQueue == null || patientQueue == null)
+        return "Shared queues not injected\n";
+
+    /* ---------- 1.  collect counts ---------- */
+    final int MAX_DOCS = doctorQueue.size();
+    Doctor[] docs = doctorQueue.toArray(new Doctor[0]);
+
+    int[] cons = new int[MAX_DOCS];
+    int[] uniq = new int[MAX_DOCS];
+
+    for (int i = 0; i < MAX_DOCS; i++) {
+        Doctor d = docs[i];
+
+        /* consultations */
+        int c = 0;
+        for (Consultation con : consultationQueue.toArray(new Consultation[0])) {
+            if (con.getDoctorId().equals(d.getDoctorID())) c++;
         }
-        tempQueue.enqueue(current);
-    }
-    
-    doctorQueue = tempQueue;
-    return found;
-}
-//-----------------------------------------------------------------------------------------------------------------//  
-    public Doctor getNextAvailableDoctorBySpecialization(Scanner scanner) {
-    // Display specialization menu
-    System.out.println("\nSelect needed specialization:");
-    System.out.println(" 1. Cardiology");
-    System.out.println(" 2. Pediatrics");
-    System.out.println(" 3. Neurology");
-    System.out.println(" 4. Orthopedics");
-    System.out.println(" 5. Dermatology");
-    System.out.println(" 6. General Surgery");
-    System.out.println(" 7. Emergency Medicine");
-    System.out.println(" 8. Oncology");
-    System.out.println(" 9. Psychiatry");
-    System.out.println("10. Ophthalmology");
-    System.out.println("11. Show all available doctors");
-    System.out.print("Enter choice (1-11): ");
-    
-    String targetSpecialization = null;
-    String choice = scanner.nextLine();
-    
-    switch(choice) {
-        case "1": targetSpecialization = "Cardiology"; break;
-        case "2": targetSpecialization = "Pediatrics"; break;
-        case "3": targetSpecialization = "Neurology"; break;
-        case "4": targetSpecialization = "Orthopedics"; break;
-        case "5": targetSpecialization = "Dermatology"; break;
-        case "6": targetSpecialization = "General Surgery"; break;
-        case "7": targetSpecialization = "Emergency Medicine"; break;
-        case "8": targetSpecialization = "Oncology"; break;
-        case "9": targetSpecialization = "Psychiatry"; break;
-        case "10": targetSpecialization = "Ophthalmology"; break;
-        case "11": targetSpecialization = null; break; // Show all
-        default: 
-            System.out.println("Invalid choice, showing all specialties");
-    }
+        cons[i] = c;
 
-    // Search and display available doctors
-    LinkedQueue<Doctor> tempQueue = new LinkedQueue<>();
-    Doctor foundDoctor = null;
-    int availableCount = 0;
-    
-    System.out.println("\nAvailable Doctors:");
-    System.out.println("==================================================================");
-    System.out.println("| No. | Doctor Name      | Specialization      | Yrs Exp | Fee    |");
-    System.out.println("==================================================================");
-    
-    while (!doctorQueue.isEmpty()) {
-        Doctor current = doctorQueue.dequeue();
-        boolean isAvailable = current.isAvailable() && !current.isOnLeave();
-        boolean matchesSpecialization = targetSpecialization == null || 
-                                     current.getSpecialization().equalsIgnoreCase(targetSpecialization);
-        
-        if (isAvailable && matchesSpecialization) {
-            availableCount++;
-            System.out.printf("| %-3d | %-15s | %-19s | %-7d | RM%-5.2f |\n",
-                availableCount,
-                current.getName(),
-                current.getSpecialization(),
-                current.getYearsOfExperience(),
-                current.getConsultationFee());
-            
-            if (foundDoctor == null) {
-                foundDoctor = current; // First available doctor
-            }
-        }
-        tempQueue.enqueue(current);
-    }
-    
-    doctorQueue = tempQueue;
-    System.out.println("==================================================================");
-    
-    if (availableCount == 0) {
-        System.out.println("No available doctors matching your criteria");
-        return null;
-    }
-    
-    // Let patient choose if multiple available
-    if (availableCount > 1) {
-        System.out.print("\nEnter doctor number to select (or 0 to cancel): ");
-        try {
-            int selection = Integer.parseInt(scanner.nextLine());
-            if (selection > 0 && selection <= availableCount) {
-                return getDoctorBySelectionNumber(selection, targetSpecialization);
-            }
-            return null; // If user chose 0 to cancel
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input, selecting first available");
-        }
-    }
-    
-    return foundDoctor;
-}
-
-private Doctor getDoctorBySelectionNumber(int selection, String specialization) {
-    LinkedQueue<Doctor> tempQueue = new LinkedQueue<>();
-    Doctor selectedDoctor = null;
-    int currentIndex = 0;
-    
-    while (!doctorQueue.isEmpty()) {
-        Doctor current = doctorQueue.dequeue();
-        boolean matches = current.isAvailable() && !current.isOnLeave() && 
-                        (specialization == null || 
-                         current.getSpecialization().equalsIgnoreCase(specialization));
-        
-        if (matches) {
-            currentIndex++;
-            if (currentIndex == selection) {
-                selectedDoctor = current;
-            }
-        }
-        tempQueue.enqueue(current);
-    }
-    
-    doctorQueue = tempQueue;
-    return selectedDoctor;
-}
-
-//-----------------------------------------------------------------------------------------------------------------//  
-    // Query Methods
-    public Doctor getDoctorByID(String doctorID) {
-        for (Doctor doctor : doctorQueue.toArray(new Doctor[0])) {
-            if (doctor.getDoctorID().equals(doctorID)) {
-                return doctor;
-            }
-        }
-        return null;
-    }
-//-----------------------------------------------------------------------------------------------------------------//  
-    public Doctor[] getAllDoctors() {
-        return doctorQueue.toArray(new Doctor[0]);
-    }
-//-----------------------------------------------------------------------------------------------------------------//  
-    public boolean doctorExists(String doctorID) {
-        return getDoctorByID(doctorID) != null;
-
-    }
-    
- //-----------------------------------------------------------------------------------------------------------------//   
-    
-// In DoctorManager.java
-public String viewAllLeaves() {
-    StringBuilder report = new StringBuilder();
-    // Define the column widths
-    final int idWidth = 6;
-    final int nameWidth = 17;
-    final int specWidth = 20;
-    final int leaveWidth = 25;
-    
-    // Calculate total table width
-    int tableWidth = 3 + idWidth + 3 + nameWidth + 3 + specWidth + 3 + leaveWidth + 3;
-    String horizontalLine = new String(new char[tableWidth]).replace('\0', '=');
-    
-    report.append("\n\n\nDOCTOR LEAVE SCHEDULE\n");
-    report.append(horizontalLine).append("\n");
-    report.append(String.format("| %-" + idWidth + "s | %-" + nameWidth + "s | %-" + specWidth + "s | %-" + leaveWidth + "s |\n",
-        "ID", "Name", "Specialization", "Leave Dates"));
-    report.append(horizontalLine).append("\n");
-
-    for (Doctor doctor : doctorQueue.toArray(new Doctor[0])) {
-        report.append(String.format("| %-" + idWidth + "s | %-" + nameWidth + "s | %-" + specWidth + "s | %-" + leaveWidth + "s |\n",
-            doctor.getDoctorID(),
-            doctor.getName(),
-            doctor.getSpecialization(),
-            doctor.getFormattedLeaveDates()));
-    }
-    report.append(horizontalLine).append("\n");
-    return report.toString();
-}
-public boolean registerLeave(String doctorID, String leaveDate) {
-    Doctor doctor = getDoctorByID(doctorID);
-    if (doctor != null) {
-        doctor.addLeaveDate(leaveDate);
-        return true;
-    }
-    return false;
-}
-
-public boolean endLeave(String doctorID, String leaveDate) {
-    Doctor doctor = getDoctorByID(doctorID);
-    if (doctor != null) {
-        doctor.removeLeaveDate(leaveDate);
-        return true;
-    }
-    return false;
-}
-
-public void processLeaveStatusUpdates() {
-    String currentDate = java.time.LocalDate.now().toString();
-    for (Doctor doctor : doctorQueue.toArray(new Doctor[0])) {
-        if (doctor.getLeaveDates() != null) {
-            boolean onLeave = false;
-            for (String date : doctor.getLeaveDates()) {
-                if (date.equals(currentDate)) {
-                    onLeave = true;
+        /* unique patients */
+        QueueInterface<Patient> seen = new LinkedQueue<>();
+        for (Consultation con : consultationQueue.toArray(new Consultation[0])) {
+            if (!con.getDoctorId().equals(d.getDoctorID())) continue;
+            Patient p = null;
+            for (Patient cand : patientQueue.toArray(new Patient[0])) {
+                if (cand.getPatientID().equals(con.getPatientId())) {
+                    p = cand;
                     break;
                 }
             }
-            doctor.setOnLeave(onLeave);
-            doctor.setAvailable(!onLeave);
+            if (p != null && !seen.contains(p)) seen.enqueue(p);
         }
+        uniq[i] = seen.size();
     }
-}    
-    
-//-----------------------------------------------------------------------------------------------------------------//  
-    // Reports
-    public String generateSpecializationReport() {
-    StringBuilder report = new StringBuilder();
-    
-    // Header section
-    report.append("TUNKU ABDUL RAHMAN UNIVERSITY HOSPITAL\n");
-    report.append("DOCTOR MANAGEMENT SYSTEM REPORT\n\n");
-    report.append("SUMMARY OF MEDICAL STAFFING\n\n");
-    report.append("Generated at: ").append(java.time.LocalDateTime.now()).append("\n\n");
-    report.append("***************************************************************************************************************\n\n");
-    report.append("TUNKU ABDUL RAHMAN UNIVERSITY HOSPITAL - CONFIDENTIAL MEDICAL STAFF RECORDS\n\n");
-    
-    // Get all doctors first
-    Doctor[] doctors = doctorQueue.toArray(new Doctor[0]);
-    
-    // Process specializations and fees
-    LinkedQueue<String> specializations = new LinkedQueue<>();
-    LinkedQueue<Double> minFees = new LinkedQueue<>();
-    LinkedQueue<Double> maxFees = new LinkedQueue<>();
-    LinkedQueue<Integer> specCounts = new LinkedQueue<>();
-    
-    // Collect specialization data
-    for (Doctor doctor : doctors) {
-        String spec = doctor.getSpecialization();
-        
-        if (!specializations.contains(spec)) {
-            specializations.enqueue(spec);
-            
-            // Initialize min/max fees and count for this specialization
-            minFees.enqueue(doctor.getConsultationFee());
-            maxFees.enqueue(doctor.getConsultationFee());
-            specCounts.enqueue(1);
-        } else {
-            // Update existing specialization data
-            LinkedQueue<String> tempSpecs = new LinkedQueue<>();
-            LinkedQueue<Double> tempMin = new LinkedQueue<>();
-            LinkedQueue<Double> tempMax = new LinkedQueue<>();
-            LinkedQueue<Integer> tempCount = new LinkedQueue<>();
-            
-            while (!specializations.isEmpty()) {
-                String currentSpec = specializations.dequeue();
-                double currentMin = minFees.dequeue();
-                double currentMax = maxFees.dequeue();
-                int currentCount = specCounts.dequeue();
-                
-                if (currentSpec.equals(spec)) {
-                    currentMin = Math.min(currentMin, doctor.getConsultationFee());
-                    currentMax = Math.max(currentMax, doctor.getConsultationFee());
-                    currentCount++;
-                }
-                
-                tempSpecs.enqueue(currentSpec);
-                tempMin.enqueue(currentMin);
-                tempMax.enqueue(currentMax);
-                tempCount.enqueue(currentCount);
+
+    /* ---------- 2.  sort indices (top 10) ---------- */
+    int[] idxByCons = new int[MAX_DOCS];
+    int[] idxByUniq = new int[MAX_DOCS];
+    for (int i = 0; i < MAX_DOCS; i++) {
+        idxByCons[i] = i;
+        idxByUniq[i] = i;
+    }
+
+    // simple descending bubble sort over indices
+    for (int i = 0; i < MAX_DOCS - 1; i++) {
+        for (int j = i + 1; j < MAX_DOCS; j++) {
+            if (cons[idxByCons[j]] > cons[idxByCons[i]]) {
+                int tmp = idxByCons[i]; idxByCons[i] = idxByCons[j]; idxByCons[j] = tmp;
             }
-            
-            specializations = tempSpecs;
-            minFees = tempMin;
-            maxFees = tempMax;
-            specCounts = tempCount;
-        }
-    }
-    
-    // Graphical representation section
-    report.append("GRAPHICAL REPRESENTATION OF SPECIALIZATION DISTRIBUTION\n");
-    report.append("_________________________________________________________\n\n");
-
-    // Improved specialization distribution visualization
-    final int BOX_WIDTH = 35;  // Adjusted to match your example
-    final String SPEC_FORMAT = " >>> %s (%d) ";
-
-    // First, build all specialization entries
-    LinkedQueue<String> specEntries = new LinkedQueue<>();
-    LinkedQueue<String> tempSpecs = new LinkedQueue<>();
-    LinkedQueue<Integer> tempCounts = new LinkedQueue<>();
-
-    while (!specializations.isEmpty()) {
-        String spec = specializations.dequeue();
-        int count = specCounts.dequeue();
-        tempSpecs.enqueue(spec);
-        tempCounts.enqueue(count);
-    
-        String entry = String.format(SPEC_FORMAT, spec, count);
-        specEntries.enqueue(entry);
-    }
-
-    // Reset the queues for later use
-    specializations = tempSpecs;
-    specCounts = tempCounts;
-
-    // Build the distribution lines
-    LinkedQueue<String> distributionLines = new LinkedQueue<>();
-    StringBuilder currentLine = new StringBuilder("      |");
-    int entriesInLine = 0;
-
-    while (!specEntries.isEmpty()) {
-        String entry = specEntries.dequeue();
-    
-        // Check if adding this entry would exceed line width
-        if (currentLine.length() + entry.length() > BOX_WIDTH) {
-            // Pad the line to maintain box width
-            while (currentLine.length() < BOX_WIDTH) {
-                currentLine.append(" ");
-            }
-            currentLine.append("|");
-            distributionLines.enqueue(currentLine.toString());
-        
-            // Start new line
-            currentLine = new StringBuilder("      |");
-            entriesInLine = 0;
-        }
-    
-        currentLine.append(entry);
-        entriesInLine++;
-    }
-
-    // Add the last line if it has content
-    if (currentLine.length() > 7) {  // "      |".length() = 7
-        while (currentLine.length() < BOX_WIDTH) {
-            currentLine.append(" ");
-        }
-        currentLine.append("|");
-        distributionLines.enqueue(currentLine.toString());
-    }
-
-    // Add to report
-    report.append("               SPECIALIZATION DISTRIBUTION (No. of Doctors)\n");
-    report.append("      +").append(new String(new char[BOX_WIDTH-7]).replace('\0', '-')).append("+\n");
-
-    while (!distributionLines.isEmpty()) {
-        report.append(distributionLines.dequeue()).append("\n");
-    }
-
-    report.append("      +").append(new String(new char[BOX_WIDTH-7]).replace('\0', '-')).append("+\n\n");
-    
-
-    // Consultation fee range section
-    report.append("               CONSULTATION FEE RANGE BY SPECIALIZATION (RM)\n");
-    report.append("      +-----------------------------------------------------+\n");
-    
-    while (!specializations.isEmpty()) {
-        String spec = specializations.dequeue();
-        double minFee = minFees.dequeue();
-        double maxFee = maxFees.dequeue();
-        int specCount = specCounts.dequeue();
-        
-        // Calculate bar length (simplified visualization)
-        int barLength = (int) ((minFee + maxFee) / 2 / 10);
-        String bar = new String(new char[barLength]).replace('\0', '=');
-        
-        report.append(String.format("%-6s | %s %.0f-%.0f\n", 
-            spec.substring(0, Math.min(6, spec.length())), 
-            bar, minFee, maxFee));
-    }
-    
-    report.append("      +-----------------------------------------------------+\n\n");
-    
-    // Doctor details table
-    report.append("| Doctor ID | Doctor Name       | Specialization       | Yrs Exp | Fee (RM) | Available |\n");
-    report.append("|-----------|-------------------|-----------------------|---------|----------|-----------|\n");
-    
-    // Sort doctors by ID for consistent display
-    sortDoctors(doctors);
-    
-    for (Doctor doctor : doctors) {
-        report.append(String.format("| %-9s | %-17s | %-21s | %-7d | %-8.0f | %-9s |\n",
-            doctor.getDoctorID(),
-            doctor.getName(),
-            doctor.getSpecialization(),
-            doctor.getYearsOfExperience(),
-            doctor.getConsultationFee(),
-            doctor.isAvailable() ? "Yes" : "No"));
-    }
-    
-    // Key statistics section
-    report.append("\nKEY STATISTICS:\n");
-    
-    // Calculate statistics
-    if (doctors.length > 0) {
-        Doctor highestFeeDoctor = doctors[0];
-        Doctor lowestFeeDoctor = doctors[0];
-        double totalFee = 0;
-        double[] specTotals = new double[tempSpecs.size()];
-        int[] specCountsArr = new int[tempSpecs.size()];
-        
-        // Reset temp queues
-        tempSpecs = new LinkedQueue<>();
-        while (!specializations.isEmpty()) tempSpecs.enqueue(specializations.dequeue());
-        
-        for (Doctor doctor : doctors) {
-            totalFee += doctor.getConsultationFee();
-            
-            if (doctor.getConsultationFee() > highestFeeDoctor.getConsultationFee()) {
-                highestFeeDoctor = doctor;
-            }
-            if (doctor.getConsultationFee() < lowestFeeDoctor.getConsultationFee()) {
-                lowestFeeDoctor = doctor;
+            if (uniq[idxByUniq[j]] > uniq[idxByUniq[i]]) {
+                int tmp = idxByUniq[i]; idxByUniq[i] = idxByUniq[j]; idxByUniq[j] = tmp;
             }
         }
-        
-        double avgFee = totalFee / doctors.length;
-        
-        report.append(String.format("- Highest Fee: %s (%s) at RM%.0f/session\n",
-            highestFeeDoctor.getDoctorID(),
-            highestFeeDoctor.getSpecialization(),
-            highestFeeDoctor.getConsultationFee()));
-        
-        report.append(String.format("- Lowest Fee: %s (%s) at RM%.0f/session\n",
-            lowestFeeDoctor.getDoctorID(),
-            lowestFeeDoctor.getSpecialization(),
-            lowestFeeDoctor.getConsultationFee()));
-        
-        report.append(String.format("- Average Fee: RM%.0f/session\n", avgFee));
-        
-        // Calculate specialty averages
-        if (!tempSpecs.isEmpty()) {
-            String mostExpensiveSpec = "";
-            double maxSpecAvg = 0;
-            String mostAffordableSpec = "";
-            double minSpecAvg = Double.MAX_VALUE;
-            
-            while (!tempSpecs.isEmpty()) {
-                String spec = tempSpecs.dequeue();
-                double specTotal = 0;
-                int specCount = 0;
-                
-                for (Doctor doctor : doctors) {
-                    if (doctor.getSpecialization().equals(spec)) {
-                        specTotal += doctor.getConsultationFee();
-                        specCount++;
+    }
+
+    /* ---------- 3.  build output ---------- */
+    StringBuilder sb = new StringBuilder();
+        sb.append(" TUNKU ADBUL RAHMAN UNIVERSITY MANAGEMENT and TECHNOLOGY\n");
+        sb.append(" TARG14 CLINIC OF HEALTH AND WELLNESS\n");
+        sb.append(" BLOCK K ROOM 104A\n");
+        // Centered title
+        sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+        sb.append("| ").append("DOCTOR WORKLOAD REPORT").append(" |\n");
+        sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+
+    sb.append("+--------+----------------------+--------------------+--------------+------------------+\n");
+    sb.append("| ID     | Name                 | Specialization     | Consultations| Unique Patients  |\n");
+    sb.append("+--------+----------------------+--------------------+--------------+------------------+\n");
+
+    for (int i = 0; i < MAX_DOCS; i++) {
+        Doctor d = docs[i];
+        sb.append(String.format("| %-6s | %-20s | %-18s | %12d | %16d |\n",
+                d.getDoctorID(),
+                d.getName(),
+                d.getSpecialization(),
+                cons[i],
+                uniq[i]));
+    }
+    sb.append("+--------+----------------------+--------------------+--------------+------------------+\n\n");
+
+            /* ---------- 4.  vertical histogram with values & labels ---------- */
+            int top = Math.min(10, MAX_DOCS);
+            int maxC = (top > 0) ? cons[idxByCons[0]] : 0;
+            int maxU = (top > 0) ? uniq[idxByUniq[0]] : 0;
+
+            /* ---- CONSULTATIONS ---- */
+            sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+            sb.append("");
+            sb.append("Top 10 - Consultations (Histogram)\n");
+            for (int line = maxC; line >= 0; line--) {
+                // left label
+                sb.append(String.format("%4d|", line));
+                // bars + value on top
+                for (int r = 0; r < top; r++) {
+                    int val = cons[idxByCons[r]];
+                    if (line == maxC) {                       // top line → value
+                        sb.append(String.format("  %-8s", val));
+                    } else {                                  // bar or space
+                        sb.append(val >= line ? "    #     " : "    ");
                     }
                 }
-                
-                double specAvg = specTotal / specCount;
-                if (specAvg > maxSpecAvg) {
-                    maxSpecAvg = specAvg;
-                    mostExpensiveSpec = spec;
-                }
-                if (specAvg < minSpecAvg) {
-                    minSpecAvg = specAvg;
-                    mostAffordableSpec = spec;
-                }
+                sb.append("\n");
             }
-            
-            report.append(String.format("- Most Expensive Specialty: %s (Avg RM%.0f)\n",
-                mostExpensiveSpec, maxSpecAvg));
-            report.append(String.format("- Most Affordable Specialty: %s (Avg RM%.0f)\n",
-                mostAffordableSpec, minSpecAvg));
+            // bottom names
+            sb.append("   ");
+            for (int r = 0; r < top; r++) {
+                String name = docs[idxByCons[r]].getName();
+                sb.append(String.format("%-10s", name.substring(0, Math.min(8, name.length()))));
+            }
+            sb.append("\n\n");
+
+            /* ---- UNIQUE PATIENTS ---- */
+            sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+            sb.append("");
+            sb.append("Top 10 - Unique Patients (Histogram)\n");
+            for (int line = maxU; line >= 0; line--) {
+                sb.append(String.format("%2d|", line));
+                for (int r = 0; r < top; r++) {
+                    int val = uniq[idxByUniq[r]];
+                    if (line == maxU) {
+                        sb.append(String.format("  %-8s", val));
+                    } else {
+                        sb.append(val >= line ? "    #     " : "    ");
+                    }
+                }
+                sb.append("\n");
+            }
+            sb.append("   ");
+            for (int r = 0; r < top; r++) {
+                String name = docs[idxByUniq[r]].getName();
+                sb.append(String.format("%-10s", name.substring(0, Math.min(8, name.length()))));
+            }
+            sb.append("\n");
+
+                return sb.toString();
+            }
+
+    public String generateSpecializationReportWithPatientCount() {
+    if (consultationQueue == null || patientQueue == null)
+        return "Shared queues not injected";
+
+    final String[] SPEC = {
+        "Cardiology", "Pediatrics", "Orthopedics", "Neurology", "Oncology",
+        "General Surgery", "Dermatology", "Ophthalmology", "Emergency Medicine", "Psychiatry"
+    };
+
+    int[] docs   = new int[SPEC.length];
+    int[] cons   = new int[SPEC.length];
+    int[] expSum = new int[SPEC.length];
+
+    /* ---- count doctors ---- */
+    for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
+        for (int i = 0; i < SPEC.length; i++)
+            if (SPEC[i].equalsIgnoreCase(d.getSpecialization())) {
+                docs[i]++;
+                expSum[i] += d.getYearsOfExperience();
+                break;
+            }
+    }
+
+    /* ---- count consultations ---- */
+    for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
+        Doctor d = getDoctorByID(c.getDoctorId());
+        if (d == null) continue;
+        for (int i = 0; i < SPEC.length; i++)
+            if (SPEC[i].equalsIgnoreCase(d.getSpecialization())) {
+                cons[i]++;
+                break;
+            }
+    }
+        
+
+    StringBuilder sb = new StringBuilder("\n");
+sb.append(" TUNKU ADBUL RAHMAN UNIVERSITY MANAGEMENT and TECHNOLOGY\n");
+sb.append(" TARG14 CLINIC OF HEALTH AND WELLNESS\n");
+sb.append(" BLOCK K ROOM 104A\n");
+        // Centered title
+sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+        sb.append("| ").append("SPECIFICATION REPORT").append(" |\n");
+sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+    /* ---- wider, prettier table ---- */
+    sb.append("SPECIALITY LIST TABLE");
+
+        sb.append("\n+----------------------------------------+----------+-------------+-------------+\n");
+        sb.append("| Specialty                              | Doctors  | Consults    | Avg Exp(yrs)|\n");
+        sb.append("+----------------------------------------+----------+-------------+-------------+\n");
+
+        for (int i = 0; i < SPEC.length; i++) {
+            if (docs[i] == 0) continue;
+            double avg = (double) expSum[i] / docs[i];
+            sb.append(String.format("| %-38s |    %-4d  |    %-5d    |  %9.1f  |\n",
+                    SPEC[i], docs[i], cons[i], avg));
+        }
+        sb.append("+----------------------------------------+----------+-------------+-------------+\n\n");
+        
+        
+sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+   sb.append("CONSULTATIONS & AVERAGE EXPERIENCE IN GRAPH FORM");
+/* ---- side-by-side filled boxes with square-like characters ---- */
+        sb.append("\nFOR EACH SPECIALIZATION\n");
+        sb.append("+--------------------------------------------------+------------------------------+\n");
+        sb.append("| Specialty          | Consultations   (#)         | Average Experience (yrs)     |\n");
+        sb.append("+--------------------------------------------------+------------------------------+\n");
+
+        for (int i = 0; i < SPEC.length; i++) {
+            if (docs[i] == 0) continue;
+
+            int cBox = cons[i];
+            int eBox = (int) Math.round((double) expSum[i] / docs[i]);
+            double avg = (double) expSum[i] / docs[i];
+
+            // Create a visual representation of the bar graph for consultations
+            String consBar = "";
+            for (int j = 0; j < 20; j++) { // Assuming a maximum scale of 20 for consultations
+                if (j < cBox) consBar += "#";
+                else consBar += " ";
+            }
+
+            // Create a visual representation of the bar graph for average experience
+            String expBar = "";
+            for (int j = 0; j < 20; j++) { // Assuming a maximum scale of 20 for average experience
+                if (j < eBox) expBar += "#";
+                else expBar += " ";
+            }
+
+            sb.append(String.format("| %-18s | %-27s | %-28s |\n",
+                    SPEC[i],
+                    consBar + " (" + cBox + ")",
+                    expBar + " (" + String.format("%.1f", avg) + ")"));
+        }
+        sb.append("+--------------------------------------------------+------------------------------+\n");
+        sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+   sb.append("BAR CHART - AMMOUNT OF DOCTORS AGAINST SPECIALIZATION");
+    /* ---- vertical column for doctors ---- */
+    sb.append("DOCTORS (vertical column)\n\n");
+    int maxH = 10;   // fixed scale height for demo
+    for (int h = maxH; h >= 0; h--) {
+        sb.append(String.format("%2d|", h));
+        for (int i = 0; i < SPEC.length; i++) {
+            if (docs[i] == 0) continue;
+            sb.append(docs[i] >= h ? "   #   " : "   ");
+        }
+        sb.append('\n');
+    }
+    sb.append("  +");
+    for (int i = 0; i < SPEC.length; i++)
+        if (docs[i] != 0) sb.append("-------");
+    sb.append('\n');
+    sb.append("   ");
+    for (int i = 0; i < SPEC.length; i++)
+        if (docs[i] != 0) sb.append(String.format("%-7s", SPEC[i].substring(0, 3)));
+    sb.append('\n');
+    sb.append("________________________________________________________________________________________________________________________________________________________________\n");
+
+    return sb.toString();
+}
+    
+    
+     public String generateSeniorDoctorsReport(int minYears) {
+    if (consultationQueue == null)
+        return "Shared queues not injected";
+
+    StringBuilder rpt = new StringBuilder();
+    rpt.append("-------------------------------------------------------------------\n");
+    rpt.append(String.format("%-3d+ YEARS OF EXPERIENCE\n", minYears));
+    rpt.append("-------------------------------------------------------------------\n");
+    rpt.append("| ID |     NAME     | SPECIALIZATION       | YEARS | CONSULTATION |\n");
+    rpt.append("|----|--------------|----------------------|-------|--------------|\n");
+
+    boolean any = false;
+    for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
+        if (d.getYearsOfExperience() >= minYears) {
+            any = true;
+            int cons = 0;
+            for (Consultation c : consultationQueue.toArray(new Consultation[0]))
+                if (c.getDoctorId().equals(d.getDoctorID())) cons++;
+
+            rpt.append(String.format("|%-4s|%-14s|%-22s|%-7d|%-14d|\n",
+                    d.getDoctorID(), d.getName(), d.getSpecialization(),
+                    d.getYearsOfExperience(), cons));
         }
     }
-    
-    report.append("\n***************************************************************************************************************\n");
-    report.append("END OF REPORT");
-    
+
+    if (!any) {
+        rpt.append("|                 No doctors                 |\n");
+    }
+    rpt.append("-------------------------------------------------------------------\n");
+    return rpt.toString();
+}
+      /* ----------  LEAVE MANAGEMENT  ---------- */
+            public String viewAllLeaves() {
+            if (doctorQueue.isEmpty())
+                return "No doctors on record.\n";
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("DOCTOR LEAVE SCHEDULES\n");
+            sb.append("+----------+----------------------+-------------------------------+\n");
+            sb.append("| ID       | Name                 | Leave Dates                   |\n");
+            sb.append("+----------+----------------------+-------------------------------+\n");
+
+            for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
+                String leaves = d.getFormattedLeaveDates();
+                if ("No leave scheduled".equals(leaves)) leaves = "-";
+                sb.append(String.format("| %-8s | %-20s | %-29s |\n",
+                        d.getDoctorID(),
+                        d.getName(),
+                        leaves));
+            }
+            sb.append("+----------+----------------------+-------------------------------+\n");
+            return sb.toString();
+        }
+
+    public boolean registerLeave(String doctorID, String leaveDate) {
+        Doctor d = getDoctorByID(doctorID);
+        if (d == null) return false;
+        d.addLeaveDate(leaveDate);
+        return true;
+    }
+
+    public boolean endLeave(String doctorID, String leaveDate) {
+        Doctor d = getDoctorByID(doctorID);
+        if (d == null) return false;
+        d.removeLeaveDate(leaveDate);
+        return true;
+    }
+
+    public String processLeaveStatusUpdates() {
+    LocalDate today = LocalDate.now();
+    StringBuilder report = new StringBuilder("STATUS UPDATE\n");
+
+    for (Doctor d : doctorQueue.toArray(new Doctor[0])) {
+        boolean onLeave = false;
+        for (String date : d.getLeaveDates()) {
+            if (LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE).isEqual(today)) {
+                onLeave = true;
+                break;
+            }
+        }
+
+        d.setOnLeave(onLeave);
+        d.setAvailable(!onLeave);
+
+        // only list doctors who are on leave today
+        if (onLeave) {
+            report.append("Is on leave today  : ").append(d.getDoctorID()).append("\n");
+        }
+    }
+
+    if (report.length() == 14) { // length of "STATUS UPDATE\n"
+        return "STATUS UPDATE\nNo doctors on leave today.\n";
+    }
     return report.toString();
 }
 
-// Helper method to sort doctors by ID (using bubble sort as required)
-private void sortDoctors(Doctor[] doctors) {
-    boolean swapped;
-    do {
-        swapped = false;
-        for (int i = 0; i < doctors.length - 1; i++) {
-            if (doctors[i].getDoctorID().compareTo(doctors[i+1].getDoctorID()) > 0) {
-                Doctor temp = doctors[i];
-                doctors[i] = doctors[i+1];
-                doctors[i+1] = temp;
-                swapped = true;
+    
+        /* ----------  Duty-Schedule & Availability (Doctor + Consultation + Patient) ---------- */
+
+            public boolean addDutyShift(String doctorID, String shiftPattern) {
+                Doctor d = getDoctorByID(doctorID);
+                if (d == null) return false;
+                d.setWorkingHours(shiftPattern);   // reuse existing field
+                return true;
+            }
+
+            public String checkDoctorAvailability(String doctorID, LocalDate date, LocalTime slot) {
+                Doctor d = getDoctorByID(doctorID);
+                if (d == null) return "Doctor not found";
+
+                StringBuilder report = new StringBuilder("Availability Report for Doctor: " + d.getName() + "\n");
+
+                if (d.isOnLeave()) {
+                    report.append("NOT available: Doctor is on leave.\n");
+                    return report.toString();
+                }
+
+                for (String leave : d.getLeaveDates()) {
+                    if (LocalDate.parse(leave, DateTimeFormatter.ISO_LOCAL_DATE).isEqual(date)) {
+                        report.append("NOT available: Doctor has a scheduled leave on this date.\n");
+                        return report.toString();
+                    }
+                }
+
+                String pattern = d.getWorkingHours();
+                if (pattern == null || pattern.isEmpty()) {
+                    report.append("NOT available: Doctor's working hours are not set.\n");
+                    return report.toString();
+                }
+
+                String[] parts = pattern.split("-");
+                if (parts.length != 2) {
+                    report.append("NOT available: Invalid working hours format.\n");
+                    return report.toString();
+                }
+
+                LocalTime start = LocalTime.parse(parts[0].trim());
+                LocalTime end = LocalTime.parse(parts[1].trim());
+                if (slot.isBefore(start) || slot.isAfter(end)) {
+                    report.append("NOT available: Slot is outside working hours.\n");
+                    return report.toString();
+                }
+
+                for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
+                    if (c.getDoctorId().equals(doctorID) &&
+                        c.getConsultationDate().equals(date) &&
+                        c.getConsultationTime().equals(slot)) {
+                        report.append("NOT available: Slot is already booked.\n");
+                        return report.toString();
+                    }
+                }
+
+                report.append("Available\n");
+                return report.toString();
+            }
+
+            public String generateDutyAvailabilityReport(String doctorID) {
+                Doctor d = getDoctorByID(doctorID);
+                if (d == null) return "Doctor not found";
+
+                StringBuilder sb = new StringBuilder("DUTY & AVAILABILITY\n");
+                sb.append("Doctor: ").append(d.getName()).append("\n");
+                sb.append("Shift: ").append(d.getWorkingHours()).append("\n");
+                sb.append("Leave: ").append(d.getFormattedLeaveDates()).append("\n");
+
+                int booked = 0;
+                for (Consultation c : consultationQueue.toArray(new Consultation[0]))
+                    if (c.getDoctorId().equals(doctorID)) booked++;
+                sb.append("Booked Slots: ").append(booked).append("\n");
+
+                // Add more detailed information about booked slots
+                sb.append("Booked Slots Details:\n");
+                for (Consultation c : consultationQueue.toArray(new Consultation[0])) {
+                    if (c.getDoctorId().equals(doctorID)) {
+                        sb.append("  Date: ").append(c.getConsultationDate())
+                          .append(", Time: ").append(c.getConsultationTime())
+                          .append(", Patient ID: ").append(c.getPatientId())
+                          .append("\n");
+                    }
+                }
+
+                return sb.toString();
+            }
+
+            
+    public String suggestAlternativeSlots(String doctorID, LocalDate date, LocalTime slot) {
+    Doctor d = getDoctorByID(doctorID);
+    if (d == null) return "Doctor not found";
+
+    StringBuilder report = new StringBuilder("Alternative Slots for Doctor: " + d.getName() + "\n");
+    report.append("Requested Date: ").append(date).append(", Time: ").append(slot).append("\n");
+
+    String availabilityReport = checkDoctorAvailability(doctorID, date, slot);
+
+    if (availabilityReport.contains("Available")) {
+        report.append("Requested slot is available.\n");
+    } else {
+        report.append("Requested slot is NOT available.\n");
+        report.append("Suggested alternative slots:\n");
+
+        boolean foundAlternative = false;
+        for (LocalTime time = LocalTime.of(9, 0); time.isBefore(LocalTime.of(17, 0)); time = time.plusMinutes(30)) {
+            String alternativeReport = checkDoctorAvailability(doctorID, date, time);
+            if (alternativeReport.contains("Available")) {
+                report.append("  ").append(time).append("\n");
+                foundAlternative = true;
             }
         }
-    } while (swapped);
-}
-//-----------------------------------------------------------------------------------------------------------------//  
-    public String generateSeniorDoctorsReport(int minYears) {
-        QueueInterface<Doctor> seniors = doctorQueue.filter(d -> 
-            d.getYearsOfExperience() >= minYears);
-        
-        StringBuilder report = new StringBuilder(
-            String.format("Senior Doctors Report (%d+ years experience):\n", minYears));
-        
-        for (Doctor doctor : seniors.toArray(new Doctor[0])) {
-            report.append(String.format("- %s (%s): %d years\n", 
-                doctor.getName(), 
-                doctor.getSpecialization(), 
-                doctor.getYearsOfExperience()));
+
+        if (!foundAlternative) {
+            report.append("  No alternative slots available for this day.\n");
         }
-        
-        return report.toString();
     }
+
+    return report.toString();
+}
+
+            
+     
+    
+/* ----------  UTILITIES  ---------- */
+    public String generateDoctorID() {
+        int max = 0;
+        for (Doctor d : doctorQueue.toArray(new Doctor[0]))
+            if (d.getDoctorID().startsWith("DR"))
+                max = Math.max(max, Integer.parseInt(d.getDoctorID().substring(2)));
+        return String.format("DR%03d", max + 1);
+    }
+
+    public Doctor getDoctorByID(String id) {
+        for (Doctor d : doctorQueue.toArray(new Doctor[0]))
+            if (d.getDoctorID().equals(id)) return d;
+        return null;
+    }
+
+    public Doctor[] getAllDoctors() {
+        return doctorQueue.toArray(new Doctor[0]);
+    }
+
+    public boolean doctorExists(String id) {
+        return getDoctorByID(id) != null;
+    }
+    
+
+    
 }
