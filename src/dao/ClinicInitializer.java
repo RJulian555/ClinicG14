@@ -75,7 +75,57 @@ public class ClinicInitializer {
             addSampleDoctor(manager, "DC03", "Dr. David", "Psychiatry", "+60109334455", 22, 240.00, new String[]{"2024-02-10"}, "8am-4pm");
             addSampleDoctor(manager, "DC04", "Dr. Zara", "Psychiatry", "+60119445566", 10, 180.00, new String[]{}, "10am-6pm");    
             
-            
+            // === EXTRA DUTY SHIFTS (Doctor + Schedule + Consultation) ===
+                manager.addDutyShift("D101", "08:00-16:00");
+                manager.addDutyShift("D102", "12:00-20:00");
+                manager.addDutyShift("D103", "07:00-15:00");
+                manager.addDutyShift("D104", "14:00-22:00");
+                
+                manager.addDutyShift("D201", "08:30-16:30");
+                manager.addDutyShift("D202", "10:00-18:00");
+                manager.addDutyShift("D203", "09:00-17:00");
+                manager.addDutyShift("D204", "16:00-00:00");
+                
+                manager.addDutyShift("D301", "07:30-15:30");
+                manager.addDutyShift("D302", "13:00-21:00");
+                manager.addDutyShift("D303", "06:00-14:00");
+                manager.addDutyShift("D304", "15:00-23:00");
+                
+                manager.addDutyShift("D401", "08:00-16:00");
+                manager.addDutyShift("D402", "12:00-20:00");
+                manager.addDutyShift("D403", "09:00-17:00");
+                manager.addDutyShift("D404", "14:00-22:00");
+                
+                manager.addDutyShift("D501", "07:00-15:00");
+                manager.addDutyShift("D502", "10:00-18:00");
+                manager.addDutyShift("D503", "08:00-16:00");
+                manager.addDutyShift("D504", "15:00-23:00");
+                
+                manager.addDutyShift("D601", "08:30-16:30");
+                manager.addDutyShift("D602", "12:00-20:00");
+                manager.addDutyShift("D603", "09:00-17:00");
+                manager.addDutyShift("D604", "16:00-00:00");
+                
+                manager.addDutyShift("D701", "07:00-15:00");
+                manager.addDutyShift("D702", "10:00-18:00");
+                manager.addDutyShift("D703", "08:00-16:00");
+                manager.addDutyShift("D704", "15:00-23:00");
+                
+                manager.addDutyShift("D801", "08:30-16:30");
+                manager.addDutyShift("D802", "12:00-20:00");
+                manager.addDutyShift("D803", "09:00-17:00");
+                manager.addDutyShift("D804", "14:00-22:00");
+                
+                manager.addDutyShift("D901", "06:00-14:00");
+                manager.addDutyShift("D902", "14:00-22:00");
+                manager.addDutyShift("D903", "22:00-06:00");
+                manager.addDutyShift("D904", "08:00-16:00");
+                
+                manager.addDutyShift("DC01", "08:00-16:00");
+                manager.addDutyShift("DC02", "16:00-00:00");
+                manager.addDutyShift("DC03", "08:00-16:00");
+                manager.addDutyShift("DC04", "12:00-20:00");
+                
         } catch (Exception e) {
             System.out.println("Error loading sample data: " + e.getMessage());
         }
@@ -87,7 +137,8 @@ public class ClinicInitializer {
             String specialization, String contact, int experience, double fee, 
             String[] leaveDates, String hours) {
         
-        Doctor doctor = new Doctor(id, name, specialization);
+        Doctor doctor = new Doctor(id, name, specialization, contact, experience, fee, 
+                leaveDates.length == 0, leaveDates.length > 0);
         doctor.setContactNumber(contact);
         doctor.setYearsOfExperience(experience);
         doctor.setConsultationFee(fee);
@@ -98,6 +149,7 @@ public class ClinicInitializer {
         
         manager.addDoctor(doctor);
     }
+    
     
     
     public static void initializeSamplePharmacyStock(PharmacyControl pharmacyControl) {
@@ -252,10 +304,17 @@ public class ClinicInitializer {
         }
     }
     
+<<<<<<< HEAD
     public static void initializeSamplePatients(PatientManager patientManager) {
     try {
         // ================= PATIENTS IN QUEUE (10 patients) =================
         addHardcodedQueuedPatient(patientManager, "Ryan Julian Rajesh", "990101014321", "0123456789", "01/01/1999", "M", "A+", "Peanuts", 200.5, 170.0, 
+=======
+       public static void initializeSamplePatients(PatientManager patientManager) {
+    try {
+        // ================= PATIENTS IN QUEUE (10 patients) =================
+        addHardcodedQueuedPatient(patientManager, "Ali Bin Abu", "990101014321", "0123456789", "01/01/1999", "M", "A+", "Peanuts", 70.5, 170.0, 
+>>>>>>> 93ed186f0bb04ef2f00033157df5552c8a2bb78e
                                 "P001", "Q001", "01/01/2023");
         addHardcodedQueuedPatient(patientManager, "Siti Aminah", "000202023456", "0139876543", "02/02/2000", "F", "O-", "", 55.0, 160.0, 
                                 "P002", "Q002", "02/01/2025");
@@ -407,6 +466,10 @@ public class ClinicInitializer {
     PatientManager patientManager) {
 
     try {
+<<<<<<< HEAD
+=======
+        
+>>>>>>> 93ed186f0bb04ef2f00033157df5552c8a2bb78e
 
         // ===== 2. ADD CONSULTATIONS =====
         // Cardiology Consultations (D101-D104)
@@ -785,6 +848,9 @@ public class ClinicInitializer {
     
     manager.addConsultation(consultation);
 }
+<<<<<<< HEAD
         
         
+=======
+>>>>>>> 93ed186f0bb04ef2f00033157df5552c8a2bb78e
 }

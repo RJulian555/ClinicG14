@@ -15,7 +15,11 @@ import adt.QueueInterface;
 
 
 
+<<<<<<< HEAD
 import entity.Doctor;
+=======
+
+>>>>>>> 93ed186f0bb04ef2f00033157df5552c8a2bb78e
 import boundary.PatientUI;
 import entity.Consultation;
 import entity.Patient;
@@ -25,6 +29,16 @@ import java.time.format.DateTimeFormatter;
 
 
 public class PatientManager {
+<<<<<<< HEAD
+=======
+    
+    
+   
+    private final QueueInterface<Patient> allPatients = new LinkedQueue<>();
+    private final QueueInterface<Patient> patientQueue = new LinkedQueue<>();
+    private final QueueInterface<Patient> processedPatients = new LinkedQueue<>();
+    //private final LinkedQueue<Patient> allPatients = new LinkedQueue<>();
+>>>>>>> 93ed186f0bb04ef2f00033157df5552c8a2bb78e
     
     
    
@@ -33,22 +47,37 @@ public class PatientManager {
    
     
     
+    
     private int patientCounter;
     private int queueCounter;
+<<<<<<< HEAD
 
     public PatientManager() {
         this.allPatients = new LinkedQueue<>();
     }
     
 
+=======
+    private static final int AVG_CONSULTATION_TIME_MIN = 15;
+    
+    
+     /*
+    public PatientManager(DoctorManager doctorManager) {
+    this.doctorManager = doctorManager;
+} */
+    
+>>>>>>> 93ed186f0bb04ef2f00033157df5552c8a2bb78e
     public QueueInterface<Patient> getAllPatients() {
     return allPatients;         // your master list
 }
     
     
+<<<<<<< HEAD
 //-----------------------------------------------------------------------------------------------------------------//    
       
     
+=======
+>>>>>>> 93ed186f0bb04ef2f00033157df5552c8a2bb78e
   
     public void addSamplePatient(Patient patient, boolean inQueue) {
     // Add patient object to master list queue
@@ -163,7 +192,10 @@ public class PatientManager {
     // true if duplicate IC detected, false otherwise
     return found;
 }
+<<<<<<< HEAD
     
+=======
+>>>>>>> 93ed186f0bb04ef2f00033157df5552c8a2bb78e
 
     
     
@@ -1328,6 +1360,7 @@ private Patient findPatientInQueue(String identifier) {
     }
     
     
+<<<<<<< HEAD
 //-----------------------------------------------------------------------------------------------------------------//
   
     
@@ -1365,4 +1398,54 @@ public Consultation getLatestConsultation(ConsultationManager cm, Patient patien
 
 //-----------------------------------------------------------------------------------------------------------------//
 
+=======
+    
+public String getLatestConsultationDoctorName(ConsultationManager cm,
+                                              DoctorManager dm,
+                                              Patient patient){
+    Consultation latest = getLatestConsultation(cm, patient);
+    if (latest == null) return "";
+    entity.Doctor d = dm.getDoctorByID(latest.getDoctorId());
+    return (d == null) ? "" : d.getName();
+>>>>>>> 93ed186f0bb04ef2f00033157df5552c8a2bb78e
+}
+
+    
+    // In PatientManager class - FIXED VERSION
+public Consultation getLatestConsultation(ConsultationManager cm, Patient patient) {
+    Consultation latest = null;
+
+    // Use the patient's ID instead of this.patientID
+    adt.QueueInterface<Consultation> q = cm.getConsultationsByPatient(patient.getPatientID());
+    
+    // CRITICAL: Use temporary queue to avoid destructive operations
+    adt.QueueInterface<Consultation> tempQueue = new adt.LinkedQueue<>();
+    
+    while (!q.isEmpty()) {
+        Consultation c = q.dequeue();
+        tempQueue.enqueue(c);
+        
+        if (latest == null) {
+            latest = c;
+        } else {
+            // Compare by date first, then time
+            int cmp = c.getConsultationDate().compareTo(latest.getConsultationDate());
+            if (cmp > 0 || (cmp == 0 && 
+                c.getConsultationTime().compareTo(latest.getConsultationTime()) > 0)) {
+                latest = c;
+            }
+        }
+    }
+    
+    // RESTORE ORIGINAL QUEUE - This was missing!
+    while (!tempQueue.isEmpty()) {
+        q.enqueue(tempQueue.dequeue());
+    }
+    
+    return latest;
+}
+
+    
+    
+    
 }
