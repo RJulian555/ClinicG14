@@ -166,22 +166,19 @@ public class PatientUI {
     }
 
     private void handlePatientDatabaseOperationsUI() {
-        while (true) {
-            showAllPatientsMenu();
-            String choice = scanner.nextLine();
-            
-            switch (choice) {
-                case "1" -> {
-                    controller.displayAllPatients(this);
-                    pressEnterToContinue();
-                }
-                case "2" -> controller.handleFilterPatients(this);
-                case "3" -> controller.handleSortPatients(this);
-                case "4" -> { return; }
-                default -> System.out.println("! Invalid option. Please select 1-4.");
-            }
+    while (true) {
+        showAllPatientsMenu();
+        String choice = scanner.nextLine();
+
+        switch (choice) {
+            case "1" -> { controller.displayAllPatients(this); pressEnterToContinue(); }
+            case "2" -> handleFilterPatients();   // ← no controller
+            case "3" -> handleSortPatients();     // ← no controller
+            case "4" -> { return; }
+            default  -> System.out.println("! Invalid option. Please select 1-4.");
         }
     }
+}
 
     // All the helper methods remain exactly the same
     private String prompt(String message, String regex, String errorMsg) {
@@ -613,5 +610,76 @@ private void displayLatestConsultation(Patient p) {
     System.out.println("+----------------------------------------------+");
 }
 
+// -----------------------------------------------------------------
+//  FILTERING
+// -----------------------------------------------------------------
+    public void handleFilterPatients() {
+    while (true) {
+        showFilterOptions();
+        String choice = getStringInput();   // using string keeps it simple
+
+        switch (choice) {
+            case "1" -> {
+    showMessage("Enter gender to filter (F/M): ");
+    String gender = getStringInput();
+    QueueInterface<Patient> filtered = controller.filterPatientsByGender(gender);
+    controller.displayFilteredPatients(filtered, "Gender: " + gender, this);
+    }
+    case "2" -> {
+    String bloodType = promptBloodType();
+    QueueInterface<Patient> filtered = controller.filterPatientsByBloodType(bloodType);
+    controller.displayFilteredPatients(filtered, "Blood Type: " + bloodType, this);
+    }
+    case "3" -> {
+    QueueInterface<Patient> filtered = controller.filterPatientsInQueue();
+    controller.displayFilteredPatients(filtered, "Patients in Queue", this);
+    }
+    case "4" -> {
+    QueueInterface<Patient> filtered = controller.filterPatientsNotInQueue();
+    controller.displayFilteredPatients(filtered, "Patients Not in Queue", this);
+   
+    }   
+    case "5" -> { return; }   // ← only this return is needed
+            default  -> showMessage("Invalid option. Please try again.");
 }
+        
+}
+
+}
+
+
+// -----------------------------------------------------------------
+//  SORTING
+// -----------------------------------------------------------------
+ public void handleSortPatients() {
+    while (true) {
+        showSortOptions();
+        int choice = getIntInput();
+
+        switch (choice) {
+            case 1 -> {
+                int order = promptSortOrder("name");
+                var snapshot = controller.getSortedCopyByName(order == 1);
+                controller.displayPatients(snapshot, "Sorted by Name (A→Z)", this);
+            }
+            case 2 -> {
+                int order = promptSortOrder("age");
+                var snapshot = controller.getSortedCopyByAge(order == 1);
+                controller.displayPatients(snapshot, "Sorted by Age", this);
+            }
+            case 3 -> {
+                var snapshot = controller.getSortedCopyByQueuePosition();
+                controller.displayPatients(snapshot, "Sorted by Queue Position", this);
+            }
+            case 4 -> { return; } // back to previous menu
+            default -> showMessage("Invalid option. Please try again.");
+        }
+    }
+}
+}
+
+ 
+
+
+
     
