@@ -21,16 +21,18 @@ public class Doctor {
     private String[] leaveDates;
     private String workingHours;
 
-    // Constructor
-    public Doctor(String doctorID, String name, String specialization) {
-        this.doctorID = doctorID;
-        this.name = name;
-        this.specialization = specialization;
-        // TODO: Initialize other default values
-        this.leaveDates = new String[0]; // Initialize empty array
-        this.isAvailable = true; // Default to available
-        this.isOnLeave = false; // Default to not on leave
-    }
+    public Doctor(String doctorID, String name, String specialization, String contactNumber, int yearsOfExperience, double consultationFee, boolean isAvailable, boolean isOnLeave) {
+    this.doctorID = doctorID;
+    this.name = name;
+    this.specialization = specialization;
+    this.contactNumber = contactNumber;
+    this.yearsOfExperience = yearsOfExperience;
+    this.consultationFee = consultationFee;
+    this.isAvailable = isAvailable;
+    this.isOnLeave = isOnLeave;
+    this.leaveDates = new String[0]; // Initialize empty array
+    this.workingHours = ""; // Initialize with an empty string
+}
     
     // Getters and Setters for doctors
     // getters for doctor

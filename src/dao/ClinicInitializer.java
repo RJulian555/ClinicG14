@@ -4,6 +4,10 @@ import adt.*;
 import control.*;
 import entity.*;
 import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Calendar;
+import java.util.Random;
 /**
  *
  * @author user
@@ -73,7 +77,57 @@ public class ClinicInitializer {
             addSampleDoctor(manager, "DC03", "Dr. David", "Psychiatry", "+60109334455", 22, 240.00, new String[]{"2024-02-10"}, "8am-4pm");
             addSampleDoctor(manager, "DC04", "Dr. Zara", "Psychiatry", "+60119445566", 10, 180.00, new String[]{}, "10am-6pm");    
             
-            
+            // === EXTRA DUTY SHIFTS (Doctor + Schedule + Consultation) ===
+                manager.addDutyShift("D101", "08:00-16:00");
+                manager.addDutyShift("D102", "12:00-20:00");
+                manager.addDutyShift("D103", "07:00-15:00");
+                manager.addDutyShift("D104", "14:00-22:00");
+                
+                manager.addDutyShift("D201", "08:30-16:30");
+                manager.addDutyShift("D202", "10:00-18:00");
+                manager.addDutyShift("D203", "09:00-17:00");
+                manager.addDutyShift("D204", "16:00-00:00");
+                
+                manager.addDutyShift("D301", "07:30-15:30");
+                manager.addDutyShift("D302", "13:00-21:00");
+                manager.addDutyShift("D303", "06:00-14:00");
+                manager.addDutyShift("D304", "15:00-23:00");
+                
+                manager.addDutyShift("D401", "08:00-16:00");
+                manager.addDutyShift("D402", "12:00-20:00");
+                manager.addDutyShift("D403", "09:00-17:00");
+                manager.addDutyShift("D404", "14:00-22:00");
+                
+                manager.addDutyShift("D501", "07:00-15:00");
+                manager.addDutyShift("D502", "10:00-18:00");
+                manager.addDutyShift("D503", "08:00-16:00");
+                manager.addDutyShift("D504", "15:00-23:00");
+                
+                manager.addDutyShift("D601", "08:30-16:30");
+                manager.addDutyShift("D602", "12:00-20:00");
+                manager.addDutyShift("D603", "09:00-17:00");
+                manager.addDutyShift("D604", "16:00-00:00");
+                
+                manager.addDutyShift("D701", "07:00-15:00");
+                manager.addDutyShift("D702", "10:00-18:00");
+                manager.addDutyShift("D703", "08:00-16:00");
+                manager.addDutyShift("D704", "15:00-23:00");
+                
+                manager.addDutyShift("D801", "08:30-16:30");
+                manager.addDutyShift("D802", "12:00-20:00");
+                manager.addDutyShift("D803", "09:00-17:00");
+                manager.addDutyShift("D804", "14:00-22:00");
+                
+                manager.addDutyShift("D901", "06:00-14:00");
+                manager.addDutyShift("D902", "14:00-22:00");
+                manager.addDutyShift("D903", "22:00-06:00");
+                manager.addDutyShift("D904", "08:00-16:00");
+                
+                manager.addDutyShift("DC01", "08:00-16:00");
+                manager.addDutyShift("DC02", "16:00-00:00");
+                manager.addDutyShift("DC03", "08:00-16:00");
+                manager.addDutyShift("DC04", "12:00-20:00");
+                
         } catch (Exception e) {
             System.out.println("Error loading sample data: " + e.getMessage());
         }
@@ -85,7 +139,8 @@ public class ClinicInitializer {
             String specialization, String contact, int experience, double fee, 
             String[] leaveDates, String hours) {
         
-        Doctor doctor = new Doctor(id, name, specialization);
+        Doctor doctor = new Doctor(id, name, specialization, contact, experience, fee, 
+                leaveDates.length == 0, leaveDates.length > 0);
         doctor.setContactNumber(contact);
         doctor.setYearsOfExperience(experience);
         doctor.setConsultationFee(fee);
@@ -96,6 +151,7 @@ public class ClinicInitializer {
         
         manager.addDoctor(doctor);
     }
+    
     
     
     public static void initializeSamplePharmacyStock(PharmacyControl pharmacyControl) {
@@ -237,17 +293,780 @@ public class ClinicInitializer {
         pharmacyControl.addMedication(medication);
     }
     
+    public static void initializeSamplePrescriptionHistory(MedicalTreatmentControl treatmentControl, PharmacyControl pharmacyControl) {
+        System.out.println("Simulating a large, hardcoded prescription history for Jan-Aug 2025...");
+        try {
+            // --- Data pools for creating realistic, random history ---
+            String[] patientIDs = {
+                "P001", "P002", "P003", "P004", "P005", "P006", "P007", "P008", "P009", "P010",
+                "P011", "P012", "P013", "P014", "P015", "P016", "P017", "P018", "P019", "P020",
+                "P021", "P022", "P023", "P024", "P025", "P026", "P027", "P028", "P029", "P030",
+                "P031", "P032", "P033", "P034", "P035", "P036", "P037", "P038", "P039", "P040",
+                "P041", "P042", "P043", "P044", "P045", "P046", "P047", "P048", "P049", "P050"
+            };
+            String[] doctorIDs = {"D101", "D201", "D301", "D401", "D501", "D102", "D202", "D302"};
+            String[] diagnosisTemplateIDs = {"DIAG01", "DIAG02", "DIAG03", "DIAG04", "DIAG05", "DIAG06"};
+            String[] sickTypes = {"Acute", "Chronic", "Follow-up"};
+            String[] medicationIDs = pharmacyControl.getAllMedicationIDsForTesting();
+            Random rand = new Random();
+            int year = 2025;
+
+            // --- Hardcode 25 approved prescriptions for JANUARY 2025 ---
+            for (int i = 0; i < 40; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.JANUARY, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+
+            // --- Hardcode 20 approved prescriptions for FEBRUARY 2025 ---
+            for (int i = 0; i < 45; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.FEBRUARY, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+            
+            // --- Hardcode 28 approved prescriptions for MARCH 2025 ---
+            for (int i = 0; i < 44; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.MARCH, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+
+            // --- Hardcode 23 approved prescriptions for APRIL 2025 ---
+            for (int i = 0; i < 42; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.APRIL, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+            
+            // --- Hardcode 26 approved prescriptions for MAY 2025 ---
+            for (int i = 0; i < 46; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.MAY, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+
+            // --- Hardcode 21 approved prescriptions for JUNE 2025 ---
+            for (int i = 0; i < 31; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.JUNE, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+            
+            // --- Hardcode 24 approved prescriptions for JULY 2025 ---
+            for (int i = 0; i < 24; i++) {
+                createAndApproveRandomTreatment(treatmentControl, pharmacyControl, year, Calendar.JULY, rand, patientIDs, doctorIDs, diagnosisTemplateIDs, sickTypes, medicationIDs);
+            }
+            
+           
+
+            // --- Add one case that gets put on hold for testing ---
+            treatmentControl.createTreatment("P005", "D401", "Recurring severe headaches.", "Chronic", "DIAG05", "M007", 500);
+            pharmacyControl.approveNextPrescription(); // This will fail due to low stock and be held
+
+            System.out.println("Prescription history simulation complete. Over 180 historical records created.");
+
+        } catch (Exception e) {
+            System.err.println("An error occurred during history simulation: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+     private static void createAndApproveRandomTreatment(MedicalTreatmentControl treatmentControl, PharmacyControl pharmacyControl,
+                                                         int year, int month, Random rand, String[] patientIDs,
+                                                         String[] doctorIDs, String[] diagnosisTemplateIDs,
+                                                         String[] sickTypes, String[] medicationIDs) {
+        // --- Create random data ---
+        String patientID = patientIDs[rand.nextInt(patientIDs.length)];
+        String doctorID = doctorIDs[rand.nextInt(doctorIDs.length)];
+        String templateID = diagnosisTemplateIDs[rand.nextInt(diagnosisTemplateIDs.length)];
+        String sickType = sickTypes[rand.nextInt(sickTypes.length)];
+        String medID = medicationIDs[rand.nextInt(medicationIDs.length)];
+        int quantity = rand.nextInt(20) + 5;
+
+        // --- Create a random date within the specified month ---
+        Calendar cal = Calendar.getInstance();
+        cal.set(year, month, 1);
+        int maxDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        int randomDay = rand.nextInt(maxDay) + 1;
+        cal.set(Calendar.DAY_OF_MONTH, randomDay);
+        Date specificDate = cal.getTime();
+
+        // --- Execute the creation and approval ---
+        treatmentControl.createTreatment(patientID, doctorID, "Patient symptoms recorded.", sickType, templateID, medID, quantity);
+        approveWithSpecificDate(pharmacyControl, specificDate);
+    }
+   
+    
+     
+    
+     private static void approveWithSpecificDate(PharmacyControl pharmacyControl, Date specificDate) {
+        Prescription p = pharmacyControl.getPendingPrescriptionsForTesting().getFront();
+        if (p == null) return;
+
+        p.setApprovalDate(specificDate);
+        pharmacyControl.approveNextPrescription();
+    }
+    
     public static void initializeSampleDiagnoses(MedicalTreatmentControl treatmentControl) {
         try {
-            treatmentControl.addDiagnosisTemplate("DIAG01", "Common Flu", "Viral infection of the upper respiratory tract. Recommend rest and hydration.");
-            treatmentControl.addDiagnosisTemplate("DIAG02", "Strep Throat", "Bacterial infection causing a severe sore throat. Requires antibiotics.");
-            treatmentControl.addDiagnosisTemplate("DIAG03", "Minor Sprain", "Stretching or tearing of ligaments. Apply RICE method (Rest, Ice, Compression, Elevation).");
-            treatmentControl.addDiagnosisTemplate("DIAG04", "Tension Headache", "Mild to moderate pain in the head, often described as a tight band. Suggest pain relievers.");
-            treatmentControl.addDiagnosisTemplate("DIAG05", "Migraine", "Severe, recurring headache, often accompanied by nausea and light sensitivity.");
-            treatmentControl.addDiagnosisTemplate("DIAG06", "Indigestion", "Discomfort in the upper abdomen, often after eating. Recommend antacids.");
+                        // --- Respiratory & ENT (Ear, Nose, Throat) ---
+            treatmentControl.addDiagnosisTemplate("DIAG01", "Common Flu", "Viral infection of the upper respiratory tract. Recommend rest and hydration."); // Respiratory
+            treatmentControl.addDiagnosisTemplate("DIAG02", "Strep Throat", "Bacterial infection causing a severe sore throat. Requires antibiotics."); // Respiratory
+            treatmentControl.addDiagnosisTemplate("DIAG03", "Asthma Attack", "Narrowing of airways causing wheezing and shortness of breath. Requires inhaler use."); // Respiratory
+            treatmentControl.addDiagnosisTemplate("DIAG04", "Bronchitis", "Inflammation of the bronchial tubes, leading to cough and mucus. Suggest fluids and rest."); // Respiratory
+            treatmentControl.addDiagnosisTemplate("DIAG05", "Pneumonia", "Lung infection causing cough, fever, and breathing difficulty. Antibiotics may be needed."); // Respiratory
+            treatmentControl.addDiagnosisTemplate("DIAG06", "Measles", "Viral infection with fever, cough, and rash. Highly contagious, requires isolation."); // Infectious/Respiratory
+            treatmentControl.addDiagnosisTemplate("DIAG07", "Whooping Cough", "Severe coughing fits followed by a ‘whoop’ sound. Requires antibiotics."); // Infectious/Respiratory
+            treatmentControl.addDiagnosisTemplate("DIAG08", "Tuberculosis", "Bacterial lung infection causing cough and weight loss. Needs long-term antibiotics."); // Infectious/Respiratory
+            treatmentControl.addDiagnosisTemplate("DIAG09", "COVID-19", "Respiratory infection with cough, fever, and fatigue. May need isolation and antiviral therapy."); // Infectious/Respiratory
+            treatmentControl.addDiagnosisTemplate("DIAG10", "Sinusitis", "Inflammation of sinuses causing facial pain and congestion. Suggest decongestants."); // ENT
+            treatmentControl.addDiagnosisTemplate("DIAG11", "Otitis Media", "Middle ear infection causing pain and fever. May require antibiotics."); // ENT
+
+            // --- Gastrointestinal & Digestive ---
+            treatmentControl.addDiagnosisTemplate("DIAG12", "Indigestion", "Discomfort in the upper abdomen, often after eating. Recommend antacids."); // Gastrointestinal
+            treatmentControl.addDiagnosisTemplate("DIAG13", "Gastritis", "Stomach lining inflammation causing pain and nausea. Avoid spicy food and use antacids."); // Gastrointestinal
+            treatmentControl.addDiagnosisTemplate("DIAG14", "Food Poisoning", "Nausea, vomiting, and diarrhea caused by contaminated food. Recommend fluids and rest."); // Gastrointestinal
+            treatmentControl.addDiagnosisTemplate("DIAG15", "Constipation", "Difficulty passing stools. Suggest high fiber diet and hydration."); // Gastrointestinal
+            treatmentControl.addDiagnosisTemplate("DIAG16", "Diarrhea", "Frequent loose stools. Risk of dehydration. Recommend oral rehydration salts."); // Gastrointestinal
+            treatmentControl.addDiagnosisTemplate("DIAG17", "Acid Reflux", "Burning sensation in the chest after eating. Suggest antacids and lifestyle changes."); // Gastrointestinal
+            treatmentControl.addDiagnosisTemplate("DIAG18", "Appendicitis", "Severe abdominal pain needing surgical removal of appendix."); // Gastrointestinal
+            treatmentControl.addDiagnosisTemplate("DIAG19", "Gallstones", "Hardened deposits in gallbladder causing pain. May require surgery."); // Gastrointestinal
+            treatmentControl.addDiagnosisTemplate("DIAG20", "Pancreatitis", "Inflammation of pancreas causing abdominal pain. Needs hospitalization."); // Gastrointestinal
+            treatmentControl.addDiagnosisTemplate("DIAG21", "Irritable Bowel Syndrome", "Chronic digestive disorder with cramps and bloating. Lifestyle management needed."); // Gastrointestinal
+            treatmentControl.addDiagnosisTemplate("DIAG22", "Crohn Disease", "Inflammatory bowel disease affecting intestines. Requires medication."); // Gastrointestinal
+            treatmentControl.addDiagnosisTemplate("DIAG23", "Ulcerative Colitis", "Inflammatory bowel disease causing bloody diarrhea. Needs treatment."); // Gastrointestinal
+            treatmentControl.addDiagnosisTemplate("DIAG24", "Peptic Ulcer", "Sores in stomach lining causing pain. Antacids and antibiotics recommended."); // Gastrointestinal
+            treatmentControl.addDiagnosisTemplate("DIAG25", "Hemorrhoids", "Swollen veins in rectum causing pain and bleeding. Suggest high fiber diet."); // Gastrointestinal
+
+            // --- Cardiovascular & Circulatory ---
+            treatmentControl.addDiagnosisTemplate("DIAG26", "Hypertension", "High blood pressure often without symptoms. Recommend monitoring and lifestyle change."); // Cardiovascular
+            treatmentControl.addDiagnosisTemplate("DIAG27", "Hypotension", "Low blood pressure causing dizziness and fainting. Suggest hydration and rest."); // Cardiovascular
+            treatmentControl.addDiagnosisTemplate("DIAG28", "Stroke", "Brain damage due to interrupted blood flow. Emergency treatment required."); // Cardiovascular/Neurological
+            treatmentControl.addDiagnosisTemplate("DIAG29", "Heart Attack", "Blocked blood flow to the heart muscle. Emergency treatment required."); // Cardiovascular
+            treatmentControl.addDiagnosisTemplate("DIAG30", "Arrhythmia", "Irregular heartbeat. May need medication or pacemaker."); // Cardiovascular
+            treatmentControl.addDiagnosisTemplate("DIAG31", "Heart Failure", "Weak heart unable to pump effectively. Lifestyle changes and medication needed."); // Cardiovascular
+            treatmentControl.addDiagnosisTemplate("DIAG32", "Anemia", "Low red blood cell count causing fatigue. Iron supplements may be required."); // Hematological
+
+            // --- Neurological & Brain ---
+            treatmentControl.addDiagnosisTemplate("DIAG33", "Parkinson Disease", "Nervous system disorder causing tremors and stiffness. Requires medication."); // Neurological
+            treatmentControl.addDiagnosisTemplate("DIAG34", "Epilepsy", "Seizure disorder. Requires anticonvulsant medication."); // Neurological
+            treatmentControl.addDiagnosisTemplate("DIAG35", "Sciatica", "Nerve pain radiating down the leg. Rest and physiotherapy recommended."); // Neurological
+            treatmentControl.addDiagnosisTemplate("DIAG36", "Herniated Disc", "Spinal disc displacement causing back pain. May need surgery."); // Neurological
+
+            // --- Mental & Behavioral Health ---
+            treatmentControl.addDiagnosisTemplate("DIAG37", "Depression", "Persistent sadness and lack of interest. Suggest counseling and possible medication."); // Mental Health
+            treatmentControl.addDiagnosisTemplate("DIAG38", "Anxiety Disorder", "Excessive worry and restlessness. Therapy or medication may be needed."); // Mental Health
+            treatmentControl.addDiagnosisTemplate("DIAG39", "Panic Attack", "Sudden intense fear with rapid heartbeat. Encourage relaxation techniques."); // Mental Health
+            treatmentControl.addDiagnosisTemplate("DIAG40", "Insomnia", "Difficulty falling or staying asleep. Suggest sleep hygiene and relaxation."); // Mental Health
+            treatmentControl.addDiagnosisTemplate("DIAG41", "Bipolar Disorder", "Mood swings between highs and lows. Requires medical treatment."); // Mental Health
+            treatmentControl.addDiagnosisTemplate("DIAG42", "Schizophrenia", "Mental disorder with distorted thinking and hallucinations. Needs antipsychotics."); // Mental Health
+            treatmentControl.addDiagnosisTemplate("DIAG43", "PTSD", "Anxiety after traumatic events. Therapy and medication may be required."); // Mental Health
+            treatmentControl.addDiagnosisTemplate("DIAG44", "Dementia", "Decline in memory and thinking skills. Supportive care and medication available."); // Mental Health
+            treatmentControl.addDiagnosisTemplate("DIAG45", "Alzheimer Disease", "Progressive brain disorder causing memory loss. Supportive treatment only."); // Mental Health
+
+            // --- Endocrine, Metabolic & Nutritional ---
+            treatmentControl.addDiagnosisTemplate("DIAG46", "Diabetes (Type 2)", "High blood sugar levels. Recommend lifestyle changes and possible medication."); // Endocrine
+            treatmentControl.addDiagnosisTemplate("DIAG47", "Diabetes (Type 1)", "Insufficient insulin production. Requires insulin therapy."); // Endocrine
+            treatmentControl.addDiagnosisTemplate("DIAG48", "Obesity", "Excess body fat increasing health risks. Recommend diet and exercise."); // Metabolic
+            treatmentControl.addDiagnosisTemplate("DIAG49", "Hyperthyroidism", "Overactive thyroid causing weight loss and anxiety. Requires medication."); // Endocrine
+            treatmentControl.addDiagnosisTemplate("DIAG50", "Hypothyroidism", "Underactive thyroid causing fatigue and weight gain. Needs hormone therapy."); // Endocrine
+            treatmentControl.addDiagnosisTemplate("DIAG51", "Vitamin D Deficiency", "Lack of vitamin D causing bone pain. Recommend supplements and sunlight."); // Nutritional
+            treatmentControl.addDiagnosisTemplate("DIAG52", "Vitamin B12 Deficiency", "Causes anemia and neurological issues. Requires supplements."); // Nutritional
+            treatmentControl.addDiagnosisTemplate("DIAG53", "Scurvy", "Vitamin C deficiency causing gum bleeding. Recommend citrus fruits."); // Nutritional
+            treatmentControl.addDiagnosisTemplate("DIAG54", "Rickets", "Bone softening in children due to vitamin D deficiency. Needs supplements."); // Nutritional
+            treatmentControl.addDiagnosisTemplate("DIAG55", "Gout", "Sudden joint pain due to uric acid buildup. Suggest dietary changes."); // Metabolic
+
+            // --- Musculoskeletal & Orthopedic ---
+            treatmentControl.addDiagnosisTemplate("DIAG56", "Minor Sprain", "Stretching or tearing of ligaments. Apply RICE method (Rest, Ice, Compression, Elevation)."); // Musculoskeletal
+            treatmentControl.addDiagnosisTemplate("DIAG57", "Arthritis", "Joint inflammation causing pain and stiffness. Pain relievers may help."); // Musculoskeletal
+            treatmentControl.addDiagnosisTemplate("DIAG58", "Carpal Tunnel Syndrome", "Nerve compression in the wrist causing pain and numbness. May need splint."); // Musculoskeletal
+            treatmentControl.addDiagnosisTemplate("DIAG59", "Tendonitis", "Inflammation of tendons causing pain. Rest and anti-inflammatory drugs help."); // Musculoskeletal
+            treatmentControl.addDiagnosisTemplate("DIAG60", "Fracture", "Broken bone requiring immobilization or surgery."); // Musculoskeletal
+            treatmentControl.addDiagnosisTemplate("DIAG61", "Dislocation", "Bone out of joint position. Needs reduction by medical staff."); // Musculoskeletal
+            treatmentControl.addDiagnosisTemplate("DIAG62", "Whiplash", "Neck injury due to sudden jerk. Rest and pain relievers recommended."); // Musculoskeletal
+            treatmentControl.addDiagnosisTemplate("DIAG63", "Osteoporosis", "Weak and brittle bones. Recommend calcium and exercise."); // Musculoskeletal
+
+            // --- Dermatological (Skin) ---
+            treatmentControl.addDiagnosisTemplate("DIAG64", "Chickenpox", "Viral infection with itchy blisters. Supportive care and avoid scratching."); // Dermatological/Infectious
+            treatmentControl.addDiagnosisTemplate("DIAG65", "Eczema", "Chronic skin condition with dry, itchy patches. Use moisturizers and avoid triggers."); // Dermatological
+            treatmentControl.addDiagnosisTemplate("DIAG66", "Psoriasis", "Skin condition with red, scaly patches. May need topical or systemic treatment."); // Dermatological
+            treatmentControl.addDiagnosisTemplate("DIAG67", "Acne", "Clogged pores leading to pimples. Use topical treatments or antibiotics."); // Dermatological
+            treatmentControl.addDiagnosisTemplate("DIAG68", "Sunburn", "Skin damage due to UV rays. Apply soothing lotions and avoid sun exposure."); // Dermatological
+            treatmentControl.addDiagnosisTemplate("DIAG69", "Fungal Infection", "Itchy rash caused by fungus (athlete’s foot, ringworm). Use antifungal cream."); // Dermatological
+            treatmentControl.addDiagnosisTemplate("DIAG70", "Scabies", "Skin infestation by mites causing intense itching. Requires medicated cream."); // Dermatological
+
+            // --- Urological & Renal (Urinary & Kidney) ---
+            treatmentControl.addDiagnosisTemplate("DIAG71", "Urinary Tract Infection", "Burning sensation during urination, frequent urge to urinate. Needs antibiotics."); // Urological
+            treatmentControl.addDiagnosisTemplate("DIAG72", "Kidney Stones", "Severe pain in lower back or side. May require pain relief or medical removal."); // Renal
+
+            // --- Hepatic (Liver) ---
+            treatmentControl.addDiagnosisTemplate("DIAG73", "Hepatitis A", "Viral liver infection spread by food. Usually self-limiting."); // Hepatic
+            treatmentControl.addDiagnosisTemplate("DIAG74", "Hepatitis B", "Viral liver infection spread by blood. May become chronic."); // Hepatic
+            treatmentControl.addDiagnosisTemplate("DIAG75", "Hepatitis C", "Viral liver infection causing chronic damage. Needs antiviral drugs."); // Hepatic
+            treatmentControl.addDiagnosisTemplate("DIAG76", "Cirrhosis", "Chronic liver damage due to alcohol or hepatitis. Supportive care required."); // Hepatic
+            treatmentControl.addDiagnosisTemplate("DIAG77", "Jaundice", "Yellowing of skin due to liver issues. Treat underlying cause."); // Hepatic
+            treatmentControl.addDiagnosisTemplate("DIAG78", "Cholecystitis", "Gallbladder inflammation. May need surgery."); // Hepatic
+
+            // --- Allergic & Immunological ---
+            treatmentControl.addDiagnosisTemplate("DIAG79", "Allergic Rhinitis", "Runny nose, sneezing, and congestion caused by allergens. Suggest antihistamines."); // Allergic
+            treatmentControl.addDiagnosisTemplate("DIAG80", "Conjunctivitis", "Red, itchy eyes caused by infection or allergy. Use eye drops or antihistamines."); // Allergic/Infectious
+            treatmentControl.addDiagnosisTemplate("DIAG81", "Anaphylaxis", "Severe allergic reaction. Emergency epinephrine required."); // Allergic
+
+            // --- Headaches & Pain ---
+            treatmentControl.addDiagnosisTemplate("DIAG82", "Tension Headache", "Mild to moderate pain in the head, often described as a tight band. Suggest pain relievers."); // Headache
+            treatmentControl.addDiagnosisTemplate("DIAG83", "Migraine", "Severe, recurring headache, often accompanied by nausea and light sensitivity."); // Headache
+
+            // --- Environmental & Toxin-Related ---
+            treatmentControl.addDiagnosisTemplate("DIAG84", "Dehydration", "Loss of body fluids leading to weakness and dizziness. Recommend oral rehydration."); // Environmental
+            treatmentControl.addDiagnosisTemplate("DIAG85", "Heat Exhaustion", "Weakness, heavy sweating, and fainting due to high temperatures. Cool down immediately."); // Environmental
+            treatmentControl.addDiagnosisTemplate("DIAG86", "Heat Stroke", "Severe overheating causing confusion and collapse. Requires emergency care."); // Environmental
+            treatmentControl.addDiagnosisTemplate("DIAG87", "Frostbite", "Skin and tissue freezing due to cold exposure. Warm gradually."); // Environmental
+            treatmentControl.addDiagnosisTemplate("DIAG88", "Hypothermia", "Dangerously low body temperature. Emergency warming required."); // Environmental
+            treatmentControl.addDiagnosisTemplate("DIAG89", "Snake Bite", "Venom injection causing pain and swelling. Emergency antivenom required."); // Toxin
+            treatmentControl.addDiagnosisTemplate("DIAG90", "Dog Bite", "Puncture wounds risk infection. May need rabies vaccination."); // Toxin/Injury
+            treatmentControl.addDiagnosisTemplate("DIAG91", "Bee Sting", "Localized pain and swelling. Severe allergy may require epinephrine."); // Toxin/Allergic
+            treatmentControl.addDiagnosisTemplate("DIAG92", "Poisoning", "Ingestion of toxic substance. Emergency care required."); // Toxin
+            treatmentControl.addDiagnosisTemplate("DIAG93", "Lead Poisoning", "Chronic exposure causes developmental issues. Requires chelation therapy."); // Toxin
+            treatmentControl.addDiagnosisTemplate("DIAG94", "Carbon Monoxide Poisoning", "Headache, dizziness, and confusion. Requires oxygen therapy."); // Toxin
+            treatmentControl.addDiagnosisTemplate("DIAG95", "Alcohol Intoxication", "Impaired judgment and coordination. Rest and hydration required."); // Toxin
+            treatmentControl.addDiagnosisTemplate("DIAG96", "Drug Overdose", "Toxic reaction to excessive drug use. Emergency care required."); // Toxin
+
+            // --- Injuries & Burns ---
+            treatmentControl.addDiagnosisTemplate("DIAG97", "Burn (First Degree)", "Red skin without blisters. Cool water treatment."); // Injury
+            treatmentControl.addDiagnosisTemplate("DIAG98", "Burn (Second Degree)", "Blistered, painful skin. Medical care required."); // Injury
+            treatmentControl.addDiagnosisTemplate("DIAG99", "Burn (Third Degree)", "Severe skin damage affecting deeper tissues. Emergency care needed."); // Injury
+
+            // --- Infectious Diseases (General) ---
+            treatmentControl.addDiagnosisTemplate("DIAG100", "Mumps", "Swelling of salivary glands. Rest, fluids, and pain relievers recommended."); // Infectious
         } catch (Exception e) {
             System.out.println("Error loading sample diagnoses: " + e.getMessage());
         }
     }
     
+       public static void initializeSamplePatients(PatientManager patientManager) {
+    try {
+        // ================= PATIENTS IN QUEUE (10 patients) =================
+        addHardcodedQueuedPatient(patientManager, "Ryan Julian Rajesh", "990101014321", "0123456789", "01/01/1999", "M", "A+", "Peanuts", 200.5, 170.0, 
+                                "P001", "Q001", "01/01/2023");
+        addHardcodedQueuedPatient(patientManager, "Siti Aminah", "000202023456", "0139876543", "02/02/2000", "F", "O-", "", 55.0, 160.0, 
+                                "P002", "Q002", "02/01/2025");
+        addHardcodedQueuedPatient(patientManager, "John Tan", "981010104321", "0112233445", "10/10/1998", "M", "B+", "Seafood", 68.0, 175.0, 
+                                "P003", "Q003", "03/01/2025");
+        addHardcodedQueuedPatient(patientManager, "Nur Izzati", "010303035432", "0199988776", "03/03/2001", "F", "AB-", "", 60.0, 162.0, 
+                                "P004", "Q004", "04/01/2025");
+        addHardcodedQueuedPatient(patientManager, "Raj Kumar", "970707074321", "0105678901", "07/07/1997", "M", "O+", "Dust", 72.3, 180.0, 
+                                "P005", "Q005", "05/01/2025");
+        addHardcodedQueuedPatient(patientManager, "Lim Mei Ling", "960606062222", "0143322110", "06/06/1996", "F", "A-", "Lactose", 50.0, 155.0, 
+                                "P006", "Q006", "06/01/2025");
+        addHardcodedQueuedPatient(patientManager, "Ahmad Fauzi", "950505051234", "0176543210", "05/05/1995", "M", "B-", "Penicillin", 80.0, 178.0, 
+                                "P007", "Q007", "07/01/2025");
+        addHardcodedQueuedPatient(patientManager, "Sarah Chong", "940404043210", "0167890123", "04/04/1994", "F", "AB+", "", 58.0, 165.0, 
+                                "P008", "Q008", "08/01/2025");
+        addHardcodedQueuedPatient(patientManager, "Mohd Razak", "930303032345", "0156789012", "03/03/1993", "M", "A+", "Shellfish", 75.0, 172.0, 
+                                "P009", "Q009", "09/01/2025");
+        addHardcodedQueuedPatient(patientManager, "Tan Wei Ling", "920202021234", "0198765432", "02/02/1992", "F", "O+", "Nuts", 52.0, 158.0, 
+                                "P010", "Q010", "10/01/2025");
+
+        // ================= PATIENTS NOT IN QUEUE (40 patients) =================
+        addHardcodedNonQueuedPatient(patientManager, "Kumar Selvam", "910101013456", "0134567890", "01/01/1991", "M", "B+", "", 82.0, 182.0, 
+                                   "P011", "11/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Fatimah Binti Abdullah", "891212123456", "0123456780", "12/12/1989", "F", "O-", "Eggs", 65.0, 168.0, 
+                                   "P012", "12/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Lee Chong Wei", "881010102345", "0112345678", "10/10/1988", "M", "A-", "", 70.0, 175.0, 
+                                   "P013", "13/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Nurul Syafiqah", "870707073210", "0190123456", "07/07/1987", "F", "AB-", "Soy", 54.0, 160.0, 
+                                   "P014", "14/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Ramesh Naidu", "860606062345", "0178901234", "06/06/1986", "M", "O+", "", 78.0, 180.0, 
+                                   "P015", "15/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Wong Mei Chen", "850505051234", "0167890123", "05/05/1985", "F", "B+", "Dairy", 56.0, 163.0, 
+                                   "P016", "16/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Ahmad Hakimi", "840404043456", "0156789012", "04/04/1984", "M", "A+", "", 85.0, 185.0, 
+                                   "P017", "17/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Norhayati Binti Osman", "830303032345", "0145678901", "03/03/1983", "F", "O-", "Wheat", 62.0, 170.0, 
+                                   "P018", "18/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Chan Kok Leong", "820202021234", "0134567890", "02/02/1982", "M", "AB+", "", 76.0, 178.0, 
+                                   "P019", "19/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Siti Nurhaliza", "810101013456", "0123456789", "01/01/1981", "F", "B-", "Peanuts", 60.0, 165.0, 
+                                   "P020", "20/01/2025");
+        
+        addHardcodedNonQueuedPatient(patientManager, "Muthu Samy", "791212123456", "0198765432", "12/12/1979", "M", "O+", "", 90.0, 182.0, 
+                                   "P021", "21/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Lim Siew Ling", "781010102345", "0187654321", "10/10/1978", "F", "A+", "Shellfish", 58.0, 162.0, 
+                                   "P022", "22/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Abdul Rahman", "770707073210", "0176543210", "07/07/1977", "M", "B+", "", 82.0, 178.0, 
+                                   "P023", "23/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Tan Bee Lian", "760606062345", "0165432109", "06/06/1976", "F", "AB-", "Latex", 63.0, 168.0, 
+                                   "P024", "24/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Krishnan A/L Muthu", "750505051234", "0154321098", "05/05/1975", "M", "O-", "Eggs", 88.0, 183.0, 
+                                   "P025", "25/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Ong Swee Lin", "740404043456", "0143210987", "04/04/1974", "F", "A-", "", 65.0, 170.0, 
+                                   "P026", "26/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Mohd Faisal", "730303032345", "0132109876", "03/03/1973", "M", "B-", "Penicillin", 92.0, 185.0, 
+                                   "P027", "27/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Yusuf Bin Ismail", "720202021234", "0121098765", "02/02/1972", "M", "AB+", "", 84.0, 180.0, 
+                                   "P028", "28/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Noraini Binti Ali", "710101013456", "0110987654", "01/01/1971", "F", "O+", "Nuts", 70.0, 175.0, 
+                                   "P029", "29/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Robert Chan", "691212123456", "0198765432", "12/12/1969", "M", "A+", "", 95.0, 188.0, 
+                                   "P030", "30/01/2025");
+        
+        addHardcodedNonQueuedPatient(patientManager, "Maimunah Binti Ahmad", "681010102345", "0187654321", "10/10/1968", "F", "B+", "Dairy", 68.0, 172.0, 
+                                   "P031", "01/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Ravi Shankar", "670707073210", "0176543210", "07/07/1967", "M", "O-", "", 87.0, 182.0, 
+                                   "P032", "02/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Lily Wong", "660606062345", "0165432109", "06/06/1966", "F", "AB+", "Wheat", 72.0, 178.0, 
+                                   "P033", "03/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Hassan Bin Omar", "650505051234", "0154321098", "05/05/1965", "M", "A-", "", 90.0, 185.0, 
+                                   "P034", "04/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Susila Devi", "640404043456", "0143210987", "04/04/1964", "F", "B-", "Peanuts", 75.0, 180.0, 
+                                   "P035", "05/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Goh Peng Lim", "630303032345", "0132109876", "03/03/1963", "M", "O+", "Shellfish", 92.0, 188.0, 
+                                   "P036", "06/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Zainab Binti Yusof", "620202021234", "0121098765", "02/02/1962", "F", "AB-", "", 78.0, 175.0, 
+                                   "P037", "07/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Arunachalam Muthu", "610101013456", "0110987654", "01/01/1961", "M", "A+", "Latex", 85.0, 182.0, 
+                                   "P038", "08/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Lim Siew Hong", "591212123456", "0198765432", "12/12/1959", "F", "B+", "Eggs", 80.0, 178.0, 
+                                   "P039", "09/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Ismail Bin Ahmad", "581010102345", "0187654321", "10/10/1958", "M", "O-", "", 95.0, 185.0, 
+                                   "P040", "10/02/2025");
+        
+        addHardcodedNonQueuedPatient(patientManager, "Chong Mei Fong", "570707073210", "0176543210", "07/07/1957", "F", "AB+", "", 82.0, 180.0, 
+                                   "P041", "11/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Muthu Palanisamy", "560606062345", "0165432109", "06/06/1956", "M", "A-", "Penicillin", 98.0, 188.0, 
+                                   "P042", "12/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Aishah Binti Mohd", "550505051234", "0154321098", "05/05/1955", "F", "B-", "Nuts", 85.0, 175.0, 
+                                   "P043", "13/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Tan Kok Wai", "540404043456", "0143210987", "04/04/1954", "M", "O+", "", 100.0, 185.0, 
+                                   "P044", "14/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Norhayati Binti Ali", "530303032345", "0132109876", "03/03/1953", "F", "AB-", "Dairy", 88.0, 178.0, 
+                                   "P045", "15/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Raja Kumar", "520202021234", "0121098765", "02/02/1952", "M", "A+", "", 92.0, 182.0, 
+                                   "P046", "16/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Lim Siew Chin", "510101013456", "0110987654", "01/01/1951", "F", "B+", "Wheat", 78.0, 175.0, 
+                                   "P047", "17/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Ahmad Bin Hassan", "491212123456", "0198765432", "12/12/1949", "M", "O-", "Peanuts", 102.0, 188.0, 
+                                   "P048", "18/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Wong Mei Yee", "481010102345", "0187654321", "10/10/1948", "F", "AB+", "", 85.0, 180.0, 
+                                   "P049", "19/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Muthu Samynathan", "470707073210", "0176543210", "07/07/1947", "M", "A-", "Shellfish", 95.0, 185.0, 
+                                   "P050", "20/02/2025");
+
+        // Set counters to continue from where we left off
+        patientManager.setPatientCounter(51); // Next ID would be P051
+        patientManager.setQueueCounter(11);   // Next queue would be Q011
+        
+    } catch (Exception e) {
+        System.out.println("Error loading sample patients: " + e.getMessage());
+    }
+}
+
+    
+    private static void addHardcodedQueuedPatient(PatientManager manager, String name, String ic, 
+        String contact, String dob, String gender, String bloodType, 
+        String allergies, double weight, double height,
+        String patientId, String queueId, String regDate) {
+    
+    Patient patient = new Patient(
+        patientId, name, ic, contact, dob, gender, 
+        bloodType, allergies, weight, height, 
+        queueId, regDate
+    );
+    
+    manager.addSamplePatient(patient, true);
+}
+    
+    private static void addHardcodedNonQueuedPatient(PatientManager manager, String name, String ic, 
+        String contact, String dob, String gender, String bloodType, 
+        String allergies, double weight, double height,
+        String patientId, String regDate) {
+    
+    Patient patient = new Patient(
+        patientId, name, ic, contact, dob, gender, 
+        bloodType, allergies, weight, height, 
+        null, regDate  // null queueId for non-queued patients
+    );
+    
+    manager.addSamplePatient(patient, false);
+
+
+}
+    // Main sample consultation initializer
+    public static void initializeSampleConsultations(
+    ConsultationManager consultationManager,
+    DoctorManager doctorManager,
+    PatientManager patientManager) {
+
+    try {
+        // ===== 1. HARDCODE REQUIRED PATIENTS =====
+        
+
+        // ===== 2. ADD CONSULTATIONS =====
+        // Cardiology Consultations (D101-D104)
+        addSampleConsultation(consultationManager,
+            "C001", "D103", "P001", LocalDate.of(2025, 3, 15), LocalTime.of(10, 0),
+            "Completed", "Chest pain evaluation", false, "Prescribed medication for hypertension"
+        );
+        addSampleConsultation(consultationManager,
+            "C002", "D103", "P005", LocalDate.of(2025, 3, 16), LocalTime.of(11, 0),
+            "Completed", "Heart palpitations", false, "Recommended ECG and follow-up"
+        );
+        addSampleConsultation(consultationManager,
+            "C003", "D103", "P002", LocalDate.of(2025, 3, 17), LocalTime.of(14, 0),
+            "Completed", "High blood pressure check", false, "Advised lifestyle changes"
+        );
+        addSampleConsultation(consultationManager,
+            "C004", "D103", "P010", LocalDate.of(2025, 3, 18), LocalTime.of(15, 30),
+            "Completed", "Shortness of breath", false, "Ordered chest X-ray"
+        );
+        addSampleConsultation(consultationManager,
+            "C005", "D103", "P003", LocalDate.of(2025, 3, 19), LocalTime.of(9, 30),
+            "Completed", "Annual cardiac checkup", false, "All parameters normal"
+        );
+        addSampleConsultation(consultationManager,
+            "C006", "D103", "P015", LocalDate.of(2025, 3, 20), LocalTime.of(10, 45),
+            "Completed", "Post-surgery follow-up", true, "Recovery progressing well"
+        );
+        addSampleConsultation(consultationManager,
+            "C007", "D103", "P004", LocalDate.of(2025, 3, 21), LocalTime.of(16, 0),
+            "Completed", "Irregular heartbeat", false, "Scheduled for Holter monitor"
+        );
+        addSampleConsultation(consultationManager,
+            "C008", "D103", "P020", LocalDate.of(2025, 3, 22), LocalTime.of(14, 30),
+            "Completed", "Family history of heart disease", false, "Preventive care initiated"
+        );
+
+        // Pediatrics Consultations (D201-D204)
+        addSampleConsultation(consultationManager,
+            "C009", "D201", "P006", LocalDate.of(2025, 3, 15), LocalTime.of(9, 0),
+            "Completed", "Childhood vaccination", false, "Administered MMR vaccine"
+        );
+        addSampleConsultation(consultationManager,
+            "C010", "D201", "P016", LocalDate.of(2025, 3, 16), LocalTime.of(10, 30),
+            "Completed", "Fever and cough", false, "Diagnosed with common cold"
+        );
+        addSampleConsultation(consultationManager,
+            "C011", "D201", "P007", LocalDate.of(2025, 3, 17), LocalTime.of(15, 0),
+            "Completed", "Developmental assessment", false, "Normal development for age"
+        );
+        addSampleConsultation(consultationManager,
+            "C012", "D201", "P017", LocalDate.of(2025, 3, 18), LocalTime.of(16, 30),
+            "Completed", "Ear infection", false, "Prescribed antibiotics"
+        );
+        addSampleConsultation(consultationManager,
+            "C013", "D204", "P008", LocalDate.of(2025, 3, 19), LocalTime.of(11, 0),
+            "Completed", "Allergy testing", false, "Identified pollen allergy"
+        );
+        addSampleConsultation(consultationManager,
+            "C014", "D204", "P018", LocalDate.of(2025, 3, 20), LocalTime.of(14, 0),
+            "Completed", "Asthma management", false, "Adjusted inhaler dosage"
+        );
+        addSampleConsultation(consultationManager,
+            "C015", "D204", "P009", LocalDate.of(2025, 3, 21), LocalTime.of(10, 0),
+            "Completed", "Nutrition counseling", false, "Diet plan provided"
+        );
+        addSampleConsultation(consultationManager,
+            "C016", "D204", "P019", LocalDate.of(2025, 3, 22), LocalTime.of(13, 30),
+            "Completed", "Skin rash", false, "Prescribed topical cream"
+        );
+
+        // Orthopedics Consultations (D301-D304)
+        addSampleConsultation(consultationManager,
+            "C017", "D302", "P010", LocalDate.of(2025, 3, 15), LocalTime.of(14, 0),
+            "Completed", "Knee pain evaluation", false, "Recommended physiotherapy"
+        );
+        addSampleConsultation(consultationManager,
+            "C018", "D302", "P020", LocalDate.of(2025, 3, 16), LocalTime.of(15, 30),
+            "Completed", "Sports injury", false, "Sprained ankle, advised rest"
+        );
+        addSampleConsultation(consultationManager,
+            "C019", "D304", "P011", LocalDate.of(2025, 3, 17), LocalTime.of(11, 0),
+            "Completed", "Back pain assessment", false, "Prescribed muscle relaxants"
+        );
+        addSampleConsultation(consultationManager,
+            "C020", "D304", "P021", LocalDate.of(2025, 3, 18), LocalTime.of(16, 0),
+            "Completed", "Joint stiffness", false, "Recommended mobility exercises"
+        );
+        addSampleConsultation(consultationManager,
+            "C021", "D304", "P012", LocalDate.of(2025, 3, 19), LocalTime.of(9, 30),
+            "Completed", "Fracture follow-up", true, "Healing properly, cast removed"
+        );
+        addSampleConsultation(consultationManager,
+            "C022", "D302", "P022", LocalDate.of(2025, 3, 20), LocalTime.of(14, 30),
+            "Completed", "Arthritis management", false, "Medication adjustment"
+        );
+        addSampleConsultation(consultationManager,
+            "C023", "D304", "P013", LocalDate.of(2025, 3, 21), LocalTime.of(10, 30),
+            "Completed", "Shoulder pain", false, "Recommended MRI scan"
+        );
+        addSampleConsultation(consultationManager,
+            "C024", "D304", "P023", LocalDate.of(2025, 3, 22), LocalTime.of(15, 0),
+            "Completed", "Osteoporosis screening", false, "Bone density test ordered"
+        );
+
+        // Neurology Consultations (D401-D404)
+        addSampleConsultation(consultationManager,
+            "C025", "D402", "P014", LocalDate.of(2025, 3, 15), LocalTime.of(11, 0),
+            "Completed", "Chronic headaches", false, "Prescribed preventive medication"
+        );
+        addSampleConsultation(consultationManager,
+            "C026", "D402", "P024", LocalDate.of(2025, 3, 16), LocalTime.of(14, 30),
+            "Completed", "Tremor evaluation", false, "Scheduled for EEG"
+        );
+        addSampleConsultation(consultationManager,
+            "C027", "D402", "P015", LocalDate.of(2025, 3, 17), LocalTime.of(10, 0),
+            "Completed", "Memory concerns", false, "Cognitive assessment normal"
+        );
+        addSampleConsultation(consultationManager,
+            "C028", "D402", "P025", LocalDate.of(2025, 3, 18), LocalTime.of(15, 30),
+            "Completed", "Numbness in extremities", false, "Ordered nerve conduction study"
+        );
+        addSampleConsultation(consultationManager,
+            "C029", "D404", "P016", LocalDate.of(2025, 3, 19), LocalTime.of(9, 0),
+            "Completed", "Migraine management", false, "New preventive regimen"
+        );
+        addSampleConsultation(consultationManager,
+            "C030", "D404", "P026", LocalDate.of(2025, 3, 20), LocalTime.of(13, 0),
+            "Completed", "Seizure follow-up", true, "Medication effective, no recent episodes"
+        );
+        addSampleConsultation(consultationManager,
+            "C031", "D404", "P017", LocalDate.of(2025, 3, 21), LocalTime.of(14, 0),
+            "Completed", "Sleep disorder evaluation", false, "Referred for sleep study"
+        );
+        addSampleConsultation(consultationManager,
+            "C032", "D404", "P027", LocalDate.of(2025, 3, 22), LocalTime.of(16, 30),
+            "Completed", "Balance issues", false, "Vestibular testing recommended"
+        );
+
+        // Oncology Consultations (D501-D504)
+        addSampleConsultation(consultationManager,
+            "C033", "D502", "P018", LocalDate.of(2025, 3, 15), LocalTime.of(10, 30),
+            "Completed", "Post-chemotherapy follow-up", true, "Blood counts improving"
+        );
+        addSampleConsultation(consultationManager,
+            "C034", "D502", "P028", LocalDate.of(2025, 3, 16), LocalTime.of(13, 30),
+            "Completed", "Abnormal scan results", false, "Biopsy scheduled"
+        );
+        addSampleConsultation(consultationManager,
+            "C035", "D502", "P019", LocalDate.of(2025, 3, 17), LocalTime.of(14, 30),
+            "Completed", "Genetic counseling", false, "Discussed family cancer risk"
+        );
+        addSampleConsultation(consultationManager,
+            "C036", "D502", "P029", LocalDate.of(2025, 3, 18), LocalTime.of(16, 0),
+            "Completed", "Pain management", false, "Adjusted pain medication regimen"
+        );
+        addSampleConsultation(consultationManager,
+            "C037", "D504", "P020", LocalDate.of(2025, 3, 19), LocalTime.of(9, 30),
+            "Completed", "Treatment planning", false, "Discussed radiation therapy options"
+        );
+        addSampleConsultation(consultationManager,
+            "C038", "D504", "P030", LocalDate.of(2025, 3, 20), LocalTime.of(11, 30),
+            "Completed", "Second opinion consultation", false, "Confirmed diagnosis and treatment plan"
+        );
+        addSampleConsultation(consultationManager,
+            "C039", "D504", "P021", LocalDate.of(2025, 3, 21), LocalTime.of(15, 0),
+            "Completed", "Side effect management", false, "Strategies for managing treatment side effects"
+        );
+        addSampleConsultation(consultationManager,
+            "C040", "D504", "P031", LocalDate.of(2025, 3, 22), LocalTime.of(10, 0),
+            "Completed", "Survivorship care plan", true, "Developed long-term follow-up plan"
+        );
+
+        // General Surgery Consultations (D601-D604)
+        addSampleConsultation(consultationManager,
+            "C041", "D602", "P022", LocalDate.of(2025, 3, 15), LocalTime.of(14, 0),
+            "Completed", "Pre-operative assessment", false, "Cleared for surgery next week"
+        );
+        addSampleConsultation(consultationManager,
+            "C042", "D602", "P032", LocalDate.of(2025, 3, 16), LocalTime.of(16, 30),
+            "Completed", "Post-operative follow-up", true, "Incision healing well"
+        );
+        addSampleConsultation(consultationManager,
+            "C043", "D602", "P023", LocalDate.of(2025, 3, 17), LocalTime.of(11, 30),
+            "Completed", "Lump evaluation", false, "Recommended excision biopsy"
+        );
+        addSampleConsultation(consultationManager,
+            "C044", "D602", "P033", LocalDate.of(2025, 3, 18), LocalTime.of(13, 0),
+            "Completed", "Hernia consultation", false, "Scheduled for repair surgery"
+        );
+        addSampleConsultation(consultationManager,
+            "C045", "D604", "P024", LocalDate.of(2025, 3, 19), LocalTime.of(10, 0),
+            "Completed", "Gallbladder issues", false, "Ultrasound ordered"
+        );
+        addSampleConsultation(consultationManager,
+            "C046", "D604", "P034", LocalDate.of(2025, 3, 20), LocalTime.of(14, 30),
+            "Completed", "Appendectomy follow-up", true, "Recovery complete"
+        );
+        addSampleConsultation(consultationManager,
+            "C047", "D604", "P025", LocalDate.of(2025, 3, 21), LocalTime.of(9, 0),
+            "Completed", "Colonoscopy consultation", false, "Procedure scheduled"
+        );
+        addSampleConsultation(consultationManager,
+            "C048", "D604", "P035", LocalDate.of(2025, 3, 22), LocalTime.of(15, 30),
+            "Completed", "Wound care", false, "Dressing changed, healing progressing"
+        );
+
+        // Dermatology Consultations (D701-D704)
+        addSampleConsultation(consultationManager,
+            "C049", "D702", "P026", LocalDate.of(2025, 3, 15), LocalTime.of(10, 30),
+            "Completed", "Acne treatment", false, "Prescribed topical medication"
+        );
+        addSampleConsultation(consultationManager,
+            "C050", "D702", "P036", LocalDate.of(2025, 3, 16), LocalTime.of(13, 30),
+            "Completed", "Psoriasis management", false, "New treatment plan initiated"
+        );
+        addSampleConsultation(consultationManager,
+            "C051", "D702", "P027", LocalDate.of(2025, 3, 17), LocalTime.of(14, 0),
+            "Completed", "Mole evaluation", false, "Benign, no action needed"
+        );
+        addSampleConsultation(consultationManager,
+            "C052", "D702", "P037", LocalDate.of(2025, 3, 18), LocalTime.of(16, 0),
+            "Completed", "Eczema flare-up", false, "Prescribed steroid cream"
+        );
+        addSampleConsultation(consultationManager,
+            "C053", "D704", "P028", LocalDate.of(2025, 3, 19), LocalTime.of(11, 0),
+            "Completed", "Skin biopsy results", false, "Basal cell carcinoma, discussed treatment options"
+        );
+        addSampleConsultation(consultationManager,
+            "C054", "D704", "P038", LocalDate.of(2025, 3, 20), LocalTime.of(15, 30),
+            "Completed", "Rosacea treatment", false, "Prescribed metronidazole gel"
+        );
+        addSampleConsultation(consultationManager,
+            "C055", "D704", "P029", LocalDate.of(2025, 3, 21), LocalTime.of(9, 30),
+            "Completed", "Hair loss consultation", false, "Recommended minoxidil treatment"
+        );
+        addSampleConsultation(consultationManager,
+            "C056", "D704", "P039", LocalDate.of(2025, 3, 22), LocalTime.of(14, 0),
+            "Completed", "Fungal infection", false, "Prescribed antifungal medication"
+        );
+
+        // Ophthalmology Consultations (D801-D804)
+        addSampleConsultation(consultationManager,
+            "C057", "D802", "P030", LocalDate.of(2025, 3, 15), LocalTime.of(11, 0),
+            "Completed", "Cataract evaluation", false, "Scheduled for surgery next month"
+        );
+        addSampleConsultation(consultationManager,
+            "C058", "D802", "P040", LocalDate.of(2025, 3, 16), LocalTime.of(14, 30),
+            "Completed", "Glaucoma screening", false, "Normal eye pressure"
+        );
+        addSampleConsultation(consultationManager,
+            "C059", "D802", "P031", LocalDate.of(2025, 3, 17), LocalTime.of(10, 0),
+            "Completed", "Dry eye treatment", false, "Prescribed artificial tears"
+        );
+        addSampleConsultation(consultationManager,
+            "C060", "D802", "P041", LocalDate.of(2025, 3, 18), LocalTime.of(15, 0),
+            "Completed", "Diabetic retinopathy screening", false, "No signs of retinopathy"
+        );
+        addSampleConsultation(consultationManager,
+            "C061", "D804", "P032", LocalDate.of(2025, 3, 19), LocalTime.of(9, 0),
+            "Completed", "LASIK consultation", false, "Good candidate for procedure"
+        );
+        addSampleConsultation(consultationManager,
+            "C062", "D804", "P042", LocalDate.of(2025, 3, 20), LocalTime.of(13, 30),
+            "Completed", "Macular degeneration", false, "Started vitamin therapy"
+        );
+        addSampleConsultation(consultationManager,
+            "C063", "D804", "P033", LocalDate.of(2025, 3, 21), LocalTime.of(14, 0),
+            "Completed", "Eye infection", false, "Prescribed antibiotic drops"
+        );
+        addSampleConsultation(consultationManager,
+            "C064", "D804", "P043", LocalDate.of(2025, 3, 22), LocalTime.of(16, 30),
+            "Completed", "Vision changes", false, "Updated glasses prescription"
+        );
+
+        // Emergency Medicine Consultations (D901-D904)
+        addSampleConsultation(consultationManager,
+            "C065", "D901", "P034", LocalDate.of(2025, 3, 15), LocalTime.of(8, 0),
+            "Completed", "Minor laceration", false, "Stitches applied, tetanus updated"
+        );
+        addSampleConsultation(consultationManager,
+            "C066", "D901", "P044", LocalDate.of(2025, 3, 15), LocalTime.of(20, 0),
+            "Completed", "Asthma attack", false, "Nebulizer treatment, discharged with inhaler"
+        );
+        addSampleConsultation(consultationManager,
+            "C067", "D901", "P035", LocalDate.of(2025, 3, 16), LocalTime.of(10, 0),
+            "Completed", "Sprained wrist", false, "X-ray negative, splint applied"
+        );
+        addSampleConsultation(consultationManager,
+            "C068", "D901", "P045", LocalDate.of(2025, 3, 16), LocalTime.of(22, 0),
+            "Completed", "Food poisoning", false, "IV fluids administered, discharged"
+        );
+        addSampleConsultation(consultationManager,
+            "C069", "D901", "P036", LocalDate.of(2025, 3, 17), LocalTime.of(14, 0),
+            "Completed", "Minor burn", false, "Treated and dressed, follow-up needed"
+        );
+        addSampleConsultation(consultationManager,
+            "C070", "D901", "P046", LocalDate.of(2025, 3, 17), LocalTime.of(3, 0),
+            "Completed", "Chest pain", false, "Ruled out cardiac event, referred to cardiologist"
+        );
+        addSampleConsultation(consultationManager,
+            "C071", "D904", "P037", LocalDate.of(2025, 3, 18), LocalTime.of(9, 0),
+            "Completed", "Allergic reaction", false, "Epinephrine administered, observed for 4 hours"
+        );
+        addSampleConsultation(consultationManager,
+            "C072", "D904", "P047", LocalDate.of(2025, 3, 18), LocalTime.of(18, 0),
+            "Completed", "High fever", false, "Tests performed, viral infection diagnosed"
+        );
+
+        // Psychiatry Consultations (DC01-DC04)
+        addSampleConsultation(consultationManager,
+            "C073", "DC02", "P038", LocalDate.of(2025, 3, 15), LocalTime.of(11, 0),
+            "Completed", "Depression evaluation", false, "Started antidepressant therapy"
+        );
+        addSampleConsultation(consultationManager,
+            "C074", "DC02", "P048", LocalDate.of(2025, 3, 16), LocalTime.of(14, 0),
+            "Completed", "Anxiety management", false, "Cognitive behavioral techniques discussed"
+        );
+        addSampleConsultation(consultationManager,
+            "C075", "DC02", "P039", LocalDate.of(2025, 3, 17), LocalTime.of(15, 0),
+            "Completed", "Sleep disorder", false, "Sleep hygiene education provided"
+        );
+        addSampleConsultation(consultationManager,
+            "C076", "DC02", "P049", LocalDate.of(2025, 3, 18), LocalTime.of(16, 30),
+            "Completed", "Stress management", false, "Relaxation techniques taught"
+        );
+        addSampleConsultation(consultationManager,
+            "C077", "DC04", "P040", LocalDate.of(2025, 3, 19), LocalTime.of(10, 0),
+            "Completed", "Medication adjustment", true, "Adjusted dosage for better efficacy"
+        );
+        addSampleConsultation(consultationManager,
+            "C078", "DC04", "P050", LocalDate.of(2025, 3, 20), LocalTime.of(13, 0),
+            "Completed", "Therapy session", false, "Discussed coping strategies"
+        );
+        addSampleConsultation(consultationManager,
+            "C079", "DC04", "P041", LocalDate.of(2025, 3, 21), LocalTime.of(14, 30),
+            "Completed", "PTSD evaluation", false, "Trauma-focused therapy initiated"
+        );
+        addSampleConsultation(consultationManager,
+            "C080", "DC04", "P042", LocalDate.of(2025, 3, 22), LocalTime.of(16, 0),
+            "Completed", "Bipolar disorder management", true, "Mood stabilizer effectiveness reviewed"
+        );
+
+        // Additional follow-up consultations
+        addSampleConsultation(consultationManager,
+            "C081", "D103", "P001", LocalDate.of(2025, 4, 5), LocalTime.of(11, 0),
+            "Scheduled", "Hypertension follow-up", true, "Blood pressure check"
+        );
+        addSampleConsultation(consultationManager,
+            "C082", "D201", "P006", LocalDate.of(2025, 4, 10), LocalTime.of(10, 0),
+            "Scheduled", "Vaccination follow-up", true, "Second dose of vaccine"
+        );
+        addSampleConsultation(consultationManager,
+            "C083", "D302", "P010", LocalDate.of(2025, 4, 12), LocalTime.of(14, 0),
+            "Scheduled", "Physiotherapy progress", true, "Evaluate knee recovery"
+        );
+        addSampleConsultation(consultationManager,
+            "C084", "D402", "P014", LocalDate.of(2025, 4, 15), LocalTime.of(9, 30),
+            "Scheduled", "Headache treatment review", true, "Assess medication effectiveness"
+        );
+
+        
+    } catch (Exception e) {
+        System.out.println("Error loading sample consultations: " + e.getMessage());
+    }
+ }
+    private static void addSampleConsultation
+        (ConsultationManager manager, 
+         String consultationId, 
+         String doctorId, 
+         String patientId, 
+        LocalDate date, LocalTime time, String status, String type, boolean followUp, String notes) {
+    
+    Consultation consultation = new Consultation(
+        consultationId, doctorId, patientId, date, time, status, type, followUp, notes
+    );
+    
+    manager.addConsultation(consultation);
+}
+        
+        
 }

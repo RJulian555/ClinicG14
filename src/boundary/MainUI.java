@@ -15,15 +15,19 @@ public class MainUI {
     private final DoctorManager doctorManager;
     private final PharmacyControl pharmacyControl;
     private final MedicalTreatmentControl medicalTreatmentControl;
+    private final PatientManager patientManager; 
+    private final ConsultationManager consultationManager;
     
      /**
      * The constructor now receives the necessary manager objects.
      * It no longer creates them itself.
      */
-    public MainUI(DoctorManager doctorManager, PharmacyControl pharmacyControl, MedicalTreatmentControl medicalTreatmentControl) {
+    public MainUI(DoctorManager doctorManager, PharmacyControl pharmacyControl, MedicalTreatmentControl medicalTreatmentControl, PatientManager patientManager, ConsultationManager consultationManager) {
         this.doctorManager = doctorManager;
         this.pharmacyControl = pharmacyControl;
         this.medicalTreatmentControl = medicalTreatmentControl; // Store the new control object
+        this.patientManager = patientManager;
+        this.consultationManager = consultationManager;
         this.scanner = new Scanner(System.in);
     }
     
@@ -43,15 +47,16 @@ public class MainUI {
                     pressEnterToContinue();
                     break;
                 case 2:
+                    new PatientUI(patientManager, consultationManager, doctorManager).displayMainMenu();
                     System.out.println("\nPatient Module UI would launch here");
-                    pressEnterToContinue();
                     break;
                 case 3:
+                    new ConsultationUI(consultationManager, doctorManager, patientManager).displayMainMenu();
                     System.out.println("\nConsultation Module UI would launch here");
                     pressEnterToContinue();
                     break;
                 case 4:
-                    MedicalTreatmentUI medicalTreatmentUI = new MedicalTreatmentUI(this.medicalTreatmentControl);
+                    MedicalTreatmentUI medicalTreatmentUI = new MedicalTreatmentUI(this.medicalTreatmentControl, this.scanner);
                     // 2. Call the correct method to start the module's loop.
                     medicalTreatmentUI.runModule();
                     System.out.println("\nMedical Records Module UI would launch here");
