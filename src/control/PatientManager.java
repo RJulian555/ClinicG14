@@ -301,6 +301,7 @@ public void enqueuePatient(Patient patient) {
 
 
 //-----------------------------------------------------------------------------------------------------------------//    
+//-----------------------------------------------------------------------------------------------------------------//    
 
 
 
@@ -325,49 +326,7 @@ public void processNextPatient() {
 
 }
 
-
-    
-//-----------------------------------------------------------------------------------------------------------------//
-
-    
-
-// Show where “currentPatient” stands and who is next.
-private void displayQueueStatus(Patient currentPatient) {
-    // 1) Print a simple header
-    System.out.println("\n========== QUEUE STATUS ==========");
-
-    // 2) Ask helper: “What spot is this patient in?”
-    int pos = getQueuePosition(currentPatient);
-
-    // 3) Tell the patient
-    System.out.println("Your position: " + pos);
-
-    // 4) Tell how many people are in front of them
-    System.out.println("Patients ahead: " + (pos - 1));
-
-    // 5) Small blank line, then title for the next list
-    System.out.println("\nNext 3 patients:");
-
-    // 6) Get (but do NOT remove from real queue) the next 3 patients
-    QueueInterface<Patient> next = getNextPatients(3);
-
-    // 7) Counter so we can show 1. 2. 3.
-    int n = 1;
-
-    // 8) Loop through those 3 patient objects
-    while (!next.isEmpty()) {
-        // 9) Take one out of the temporary queue
-        Patient p = next.dequeue();
-
-        // 10) Print their queue ID and name with the counter
-        System.out.println(n++ + ". " + p.getQueueID() + " - " + p.getName());
-    }
-
-    // 11) Print footer line
-    System.out.println("==================================");
-}
-    
-    
+ 
 //-----------------------------------------------------------------------------------------------------------------//    
     
 
@@ -762,67 +721,38 @@ public void handleSortPatients(PatientUI ui) {
         
         // Process the user's choice using a switch statement
         switch (choice) {
-            case 1 -> {  // Sort patients by name
-                // Prompt user for sort order (ascending/descending) for name
+            case 1 -> {
                 int order = ui.promptSortOrder("name");
-                
-                // Sort patients by name in the specified order (true for ascending)
-                sortPatientsByName(order == 1);
-                
-                // Show confirmation message with sort direction
-                ui.showMessage("Patients sorted by name " + (order == 1 ? "ascending" : "descending"));
-                
-                // Display all patients with the new sorting
-                displayAllPatients(ui);
+                QueueInterface<Patient> snapshot = getSortedCopyByName(order == 1);
+                displayPatients(snapshot, ui, "Sorted by Name");
             }
-            case 2 -> {  // Sort patients by age
-                // Prompt user for sort order (ascending/descending) for age
+            
+            case 2 -> {
                 int order = ui.promptSortOrder("age");
-                
-                // Sort patients by age in the specified order (true for ascending)
-                sortPatientsByAge(order == 1);
-                
-                // Show confirmation message with sort direction
-                ui.showMessage("Patients sorted by age " + (order == 1 ? "ascending" : "descending"));
-                
-                // Display all patients with the new sorting
-                displayAllPatients(ui);
+                QueueInterface<Patient> snapshot = getSortedCopyByAge(order == 1);
+                displayPatients(snapshot, ui, "Sorted by Age");
             }
-            case 3 -> {  // Sort patients by their position in queue
-                // Sort patients by their queue position (no order option needed)
-                sortPatientsByQueuePosition();
-                
-                // Show confirmation message
-                ui.showMessage("Patients sorted by queue position.");
-                
-                // Display all patients with the new sorting
-                displayAllPatients(ui);
+            
+            case 3 -> {
+                QueueInterface<Patient> snapshot = getSortedCopyByQueuePosition();
+                displayPatients(snapshot, ui, "Sorted by Queue Position");
             }
-            case 4 -> {  // Exit the sort menu and return to previous menu
-                return;
-            }
-            default -> {  // Handle invalid menu choices
-                ui.showMessage("Invalid option. Please try again.");
-            }
+            
+            case 4 -> { return; }
+            default -> ui.showMessage("Invalid option. Please try again.");
         }
+        
     }
+}
+
+
+private void displayPatients(QueueInterface<Patient> q, PatientUI ui, String title) {
+    displayFilteredPatients(q, ui, title);
 }
 
 
 //-----------------------------------------------------------------------------------------------------------------//
 
-/**
- * Sorts patients by name in either ascending (A-Z) or descending (Z-A) order based on the boolean parameter.
- * Uses a case-insensitive bubble sort algorithm.
- * 
- * When ascending=true: Sorts names A-Z (alphabetical order)
- * When ascending=false: Sorts names Z-A (reverse alphabetical order)
- * 
- * Features:
- * - Handles empty/single-element queues efficiently
- * - Converts queue to array for sorting
- * - Rebuilds the queue after sorting
- */
 
 
 public void sortPatientsByName(boolean ascending) {
@@ -1349,5 +1279,67 @@ public Consultation getLatestConsultation(ConsultationManager cm, Patient patien
 
 
 //-----------------------------------------------------------------------------------------------------------------//
+
+
+/* ======  NON-DESTRUCTIVE  SORT / COPY HELPERS  ====== */
+
+public QueueInterface<Patient> getSortedCopyByName(boolean ascending) {
+    if (allPatients.isEmpty()) return new LinkedQueue<>();
+    Patient[] arr = allPatients.toArray(new Patient[0]);
+    boolean swapped;
+    do {
+        swapped = false;
+        for (int i = 0; i < arr.length - 1; i++) {
+            int cmp = arr[i].getName().compareToIgnoreCase(arr[i+1].getName());
+            if ((ascending && cmp > 0) || (!ascending && cmp < 0)) {
+                Patient t = arr[i]; arr[i] = arr[i+1]; arr[i+1] = t;
+                swapped = true;
+            }
+        }
+    } while (swapped);
+    QueueInterface<Patient> result = new LinkedQueue<>();
+    for (Patient p : arr) result.enqueue(p);
+    return result;
+}
+
+public QueueInterface<Patient> getSortedCopyByAge(boolean ascending) {
+    if (allPatients.isEmpty()) return new LinkedQueue<>();
+    Patient[] arr = allPatients.toArray(new Patient[0]);
+    boolean swapped;
+    do {
+        swapped = false;
+        for (int i = 0; i < arr.length - 1; i++) {
+            int a1 = calculateAge(arr[i].getDateOfBirth());
+            int a2 = calculateAge(arr[i+1].getDateOfBirth());
+            if ((ascending && a1 > a2) || (!ascending && a1 < a2)) {
+                Patient t = arr[i]; arr[i] = arr[i+1]; arr[i+1] = t;
+                swapped = true;
+            }
+        }
+    } while (swapped);
+    QueueInterface<Patient> result = new LinkedQueue<>();
+    for (Patient p : arr) result.enqueue(p);
+    return result;
+}
+
+public QueueInterface<Patient> getSortedCopyByQueuePosition() {
+    if (allPatients.isEmpty()) return new LinkedQueue<>();
+    QueueInterface<Patient> inQueue = filterPatientsInQueue();
+    Patient[] arr = inQueue.toArray(new Patient[0]);
+    boolean swapped;
+    do {
+        swapped = false;
+        for (int i = 0; i < arr.length - 1; i++) {
+            int p1 = getQueuePosition(arr[i]);
+            int p2 = getQueuePosition(arr[i+1]);
+            if (p1 > p2) { Patient t = arr[i]; arr[i] = arr[i+1]; arr[i+1] = t; swapped = true; }
+        }
+    } while (swapped);
+    QueueInterface<Patient> result = new LinkedQueue<>();
+    for (Patient p : arr) result.enqueue(p);
+    return result;
+}
+
+
 
 }
