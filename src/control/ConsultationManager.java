@@ -55,8 +55,8 @@
 
         System.out.println("Total consultations: " + consultations.length);
         System.out.println("____________________________________________________________________________________________________________________________________________________________________________");
-        System.out.printf("%-5s %-15s %-15s %-12s %-8s %-10s %-15s %-10s %-20s%n",
-                "ID", "Doctor", "Patient", "Date", "Time", "Status", "Type", "Follow-up", "Notes");
+        System.out.printf("%-7s %-20s %-20s %-12s %-8s %-12s %-32s %-11s %-40s%n",
+        "ID", "Doctor", "Patient", "Date", "Time", "Status", "Type", "Follow-up", "Notes");
         System.out.println("____________________________________________________________________________________________________________________________________________________________________________");
 
         for (Consultation c : consultations) {
@@ -74,16 +74,18 @@
                 patientName = patient.getName();
             }
             
-            System.out.printf("%-5s %-15s %-15s %-12s %-8s %-10s %-15s %-10s %-20s%n",
-                    c.getConsultationId(),
-                    doctorName,
-                    patientName,
-                    c.getConsultationDate(),
-                    c.getConsultationTime(),
-                    c.getConsultationStatus(),
-                    c.getConsultationType(),
-                    (c.isFollowUpRequired() ? "Yes" : "No"),
-                    (c.getConsultationNotes().isEmpty() ? "None" : c.getConsultationNotes()));
+            System.out.printf("%-7s %-20s %-20s %-12s %-8s %-12s %-32s %-11s %-40s%n",
+              c.getConsultationId(),
+              doctorName.length() > 20 ? doctorName.substring(0, 20) : doctorName,
+              patientName.length() > 20 ? patientName.substring(0, 20) : patientName,
+              c.getConsultationDate(),
+              c.getConsultationTime(),
+              c.getConsultationStatus(),
+              c.getConsultationType(),
+             (c.isFollowUpRequired() ? "Yes" : "No"),
+             (c.getConsultationNotes().isEmpty() ? "None" :
+             (c.getConsultationNotes().length() > 40 ?
+             c.getConsultationNotes().substring(0, 30) : c.getConsultationNotes())));
         }
         System.out.println("____________________________________________________________________________________________________________________________________________________________________________");
     }
