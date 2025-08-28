@@ -75,7 +75,57 @@ public class ClinicInitializer {
             addSampleDoctor(manager, "DC03", "Dr. David", "Psychiatry", "+60109334455", 22, 240.00, new String[]{"2024-02-10"}, "8am-4pm");
             addSampleDoctor(manager, "DC04", "Dr. Zara", "Psychiatry", "+60119445566", 10, 180.00, new String[]{}, "10am-6pm");    
             
-            
+            // === EXTRA DUTY SHIFTS (Doctor + Schedule + Consultation) ===
+                manager.addDutyShift("D101", "08:00-16:00");
+                manager.addDutyShift("D102", "12:00-20:00");
+                manager.addDutyShift("D103", "07:00-15:00");
+                manager.addDutyShift("D104", "14:00-22:00");
+                
+                manager.addDutyShift("D201", "08:30-16:30");
+                manager.addDutyShift("D202", "10:00-18:00");
+                manager.addDutyShift("D203", "09:00-17:00");
+                manager.addDutyShift("D204", "16:00-00:00");
+                
+                manager.addDutyShift("D301", "07:30-15:30");
+                manager.addDutyShift("D302", "13:00-21:00");
+                manager.addDutyShift("D303", "06:00-14:00");
+                manager.addDutyShift("D304", "15:00-23:00");
+                
+                manager.addDutyShift("D401", "08:00-16:00");
+                manager.addDutyShift("D402", "12:00-20:00");
+                manager.addDutyShift("D403", "09:00-17:00");
+                manager.addDutyShift("D404", "14:00-22:00");
+                
+                manager.addDutyShift("D501", "07:00-15:00");
+                manager.addDutyShift("D502", "10:00-18:00");
+                manager.addDutyShift("D503", "08:00-16:00");
+                manager.addDutyShift("D504", "15:00-23:00");
+                
+                manager.addDutyShift("D601", "08:30-16:30");
+                manager.addDutyShift("D602", "12:00-20:00");
+                manager.addDutyShift("D603", "09:00-17:00");
+                manager.addDutyShift("D604", "16:00-00:00");
+                
+                manager.addDutyShift("D701", "07:00-15:00");
+                manager.addDutyShift("D702", "10:00-18:00");
+                manager.addDutyShift("D703", "08:00-16:00");
+                manager.addDutyShift("D704", "15:00-23:00");
+                
+                manager.addDutyShift("D801", "08:30-16:30");
+                manager.addDutyShift("D802", "12:00-20:00");
+                manager.addDutyShift("D803", "09:00-17:00");
+                manager.addDutyShift("D804", "14:00-22:00");
+                
+                manager.addDutyShift("D901", "06:00-14:00");
+                manager.addDutyShift("D902", "14:00-22:00");
+                manager.addDutyShift("D903", "22:00-06:00");
+                manager.addDutyShift("D904", "08:00-16:00");
+                
+                manager.addDutyShift("DC01", "08:00-16:00");
+                manager.addDutyShift("DC02", "16:00-00:00");
+                manager.addDutyShift("DC03", "08:00-16:00");
+                manager.addDutyShift("DC04", "12:00-20:00");
+                
         } catch (Exception e) {
             System.out.println("Error loading sample data: " + e.getMessage());
         }
@@ -87,7 +137,8 @@ public class ClinicInitializer {
             String specialization, String contact, int experience, double fee, 
             String[] leaveDates, String hours) {
         
-        Doctor doctor = new Doctor(id, name, specialization);
+        Doctor doctor = new Doctor(id, name, specialization, contact, experience, fee, 
+                leaveDates.length == 0, leaveDates.length > 0);
         doctor.setContactNumber(contact);
         doctor.setYearsOfExperience(experience);
         doctor.setConsultationFee(fee);
@@ -98,6 +149,7 @@ public class ClinicInitializer {
         
         manager.addDoctor(doctor);
     }
+    
     
     
     public static void initializeSamplePharmacyStock(PharmacyControl pharmacyControl) {
@@ -252,234 +304,153 @@ public class ClinicInitializer {
         }
     }
     
-    public static void initializeSamplePatients(PatientManager patientManager) {
-        try {
-            // Patients in queue
-            addSamplePatient(patientManager, "Ali Bin Abu", "990101014321", "0123456789", "01/01/1999", 
-                "M", "A+", "Peanuts", 70.5, 170.0, true, "15/03/2024");
-            addSamplePatient(patientManager, "Siti Aminah", "000202023456", "0139876543", "02/02/2000", 
-                "F", "O-", "", 55.0, 160.0, true, "18/03/2024");
-            addSamplePatient(patientManager, "John Tan", "981010104321", "0112233445", "10/10/1998", 
-                "M", "B+", "Seafood", 68.0, 175.0, true, "20/03/2024");
-            addSamplePatient(patientManager, "Nur Izzati", "010303035432", "0199988776", "03/03/2001", 
-                "F", "AB-", "", 60.0, 162.0, true, "22/03/2024");
-            addSamplePatient(patientManager, "Raj Kumar", "970707074321", "0105678901", "07/07/1997", 
-                "M", "O+", "Dust", 72.3, 180.0, true, "25/03/2024");
-            
-            // Patients not in queue
-            addSamplePatient(patientManager, "Lim Mei Ling", "960606062222", "0143322110", "06/06/1996", 
-                "F", "A-", "Lactose", 50.0, 155.0, false, "05/01/2024");
-            addSamplePatient(patientManager, "Ahmad Fauzi", "950505051234", "0176543210", "05/05/1995", 
-                "M", "B-", "Penicillin", 80.0, 178.0, false, "10/01/2024");
-            addSamplePatient(patientManager, "Sarah Chong", "940404043210", "0167890123", "04/04/1994", 
-                "F", "AB+", "", 58.0, 165.0, false, "15/01/2024");
-            addSamplePatient(patientManager, "Mohd Razak", "930303032345", "0156789012", "03/03/1993", 
-                "M", "A+", "Shellfish", 75.0, 172.0, false, "20/01/2024");
-            addSamplePatient(patientManager, "Tan Wei Ling", "920202021234", "0198765432", "02/02/1992", 
-                "F", "O+", "Nuts", 52.0, 158.0, false, "25/01/2024");
-            
-            // More patients
-            addSamplePatient(patientManager, "Kumar Selvam", "910101013456", "0134567890", "01/01/1991", 
-                "M", "B+", "", 82.0, 182.0, false, "01/02/2024");
-            addSamplePatient(patientManager, "Fatimah Binti Abdullah", "891212123456", "0123456780", "12/12/1989", 
-                "F", "O-", "Eggs", 65.0, 168.0, false, "05/02/2024");
-            addSamplePatient(patientManager, "Lee Chong Wei", "881010102345", "0112345678", "10/10/1988", 
-                "M", "A-", "", 70.0, 175.0, true, "10/02/2024");
-            addSamplePatient(patientManager, "Nurul Syafiqah", "870707073210", "0190123456", "07/07/1987", 
-                "F", "AB-", "Soy", 54.0, 160.0, false, "15/02/2024");
-            addSamplePatient(patientManager, "Ramesh Naidu", "860606062345", "0178901234", "06/06/1986", 
-                "M", "O+", "", 78.0, 180.0, true, "20/02/2024");
-            
-            // Additional patients
-            addSamplePatient(patientManager, "Wong Mei Chen", "850505051234", "0167890123", "05/05/1985", 
-                "F", "B+", "Dairy", 56.0, 163.0, false, "01/03/2024");
-            addSamplePatient(patientManager, "Ahmad Hakimi", "840404043456", "0156789012", "04/04/1984", 
-                "M", "A+", "", 85.0, 185.0, false, "05/03/2024");
-            addSamplePatient(patientManager, "Norhayati Binti Osman", "830303032345", "0145678901", "03/03/1983", 
-                "F", "O-", "Wheat", 62.0, 170.0, true, "10/03/2024");
-            addSamplePatient(patientManager, "Chan Kok Leong", "820202021234", "0134567890", "02/02/1982", 
-                "M", "AB+", "", 76.0, 178.0, false, "15/03/2024");
-            addSamplePatient(patientManager, "Siti Nurhaliza", "810101013456", "0123456789", "01/01/1981", 
-                "F", "B-", "Peanuts", 60.0, 165.0, false, "20/03/2024");
-            
-            // More diverse patients
-            addSamplePatient(patientManager, "Muthu Samy", "791212123456", "0198765432", "12/12/1979", 
-                "M", "O+", "", 90.0, 182.0, true, "01/04/2024");
-            addSamplePatient(patientManager, "Lim Siew Ling", "781010102345", "0187654321", "10/10/1978", 
-                "F", "A+", "Shellfish", 58.0, 162.0, false, "05/04/2024");
-            addSamplePatient(patientManager, "Abdul Rahman", "770707073210", "0176543210", "07/07/1977", 
-                "M", "B+", "", 82.0, 178.0, false, "10/04/2024");
-            addSamplePatient(patientManager, "Tan Bee Lian", "760606062345", "0165432109", "06/06/1976", 
-                "F", "AB-", "Latex", 63.0, 168.0, true, "15/04/2024");
-            addSamplePatient(patientManager, "Krishnan A/L Muthu", "750505051234", "0154321098", "05/05/1975", 
-                "M", "O-", "Eggs", 88.0, 183.0, false, "20/04/2024");
-            
-            // Older patients
-            addSamplePatient(patientManager, "Ong Swee Lin", "740404043456", "0143210987", "04/04/1974", 
-                "F", "A-", "", 65.0, 170.0, false, "01/05/2024");
-            addSamplePatient(patientManager, "Mohd Faisal", "730303032345", "0132109876", "03/03/1973", 
-                "M", "B-", "Penicillin", 92.0, 185.0, true, "05/05/2024");
-            addSamplePatient(patientManager, "Yusuf Bin Ismail", "720202021234", "0121098765", "02/02/1972", 
-                "M", "AB+", "", 84.0, 180.0, false, "10/05/2024");
-            addSamplePatient(patientManager, "Noraini Binti Ali", "710101013456", "0110987654", "01/01/1971", 
-                "F", "O+", "Nuts", 70.0, 175.0, false, "15/05/2024");
-            addSamplePatient(patientManager, "Robert Chan", "691212123456", "0198765432", "12/12/1969", 
-                "M", "A+", "", 95.0, 188.0, true, "20/05/2024");
-            
-            // Senior patients
-            addSamplePatient(patientManager, "Maimunah Binti Ahmad", "681010102345", "0187654321", "10/10/1968", 
-                "F", "B+", "Dairy", 68.0, 172.0, false, "01/06/2024");
-            addSamplePatient(patientManager, "Ravi Shankar", "670707073210", "0176543210", "07/07/1967", 
-                "M", "O-", "", 87.0, 182.0, false, "05/06/2024");
-            addSamplePatient(patientManager, "Lily Wong", "660606062345", "0165432109", "06/06/1966", 
-                "F", "AB+", "Wheat", 72.0, 178.0, true, "10/06/2024");
-            addSamplePatient(patientManager, "Hassan Bin Omar", "650505051234", "0154321098", "05/05/1965", 
-                "M", "A-", "", 90.0, 185.0, false, "15/06/2024");
-            addSamplePatient(patientManager, "Susila Devi", "640404043456", "0143210987", "04/04/1964", 
-                "F", "B-", "Peanuts", 75.0, 180.0, false, "20/06/2024");
-            
-            // More senior patients
-            addSamplePatient(patientManager, "Goh Peng Lim", "630303032345", "0132109876", "03/03/1963", 
-                "M", "O+", "Shellfish", 92.0, 188.0, true, "01/07/2024");
-            addSamplePatient(patientManager, "Zainab Binti Yusof", "620202021234", "0121098765", "02/02/1962", 
-                "F", "AB-", "", 78.0, 175.0, false, "05/07/2024");
-            addSamplePatient(patientManager, "Arunachalam Muthu", "610101013456", "0110987654", "01/01/1961", 
-                "M", "A+", "Latex", 85.0, 182.0, false, "10/07/2024");
-            addSamplePatient(patientManager, "Lim Siew Hong", "591212123456", "0198765432", "12/12/1959", 
-                "F", "B+", "Eggs", 80.0, 178.0, true, "15/07/2024");
-            addSamplePatient(patientManager, "Ismail Bin Ahmad", "581010102345", "0187654321", "10/10/1958", 
-                "M", "O-", "", 95.0, 185.0, false, "20/07/2024");
-            
-            // Elderly patients
-            addSamplePatient(patientManager, "Chong Mei Fong", "570707073210", "0176543210", "07/07/1957", 
-                "F", "AB+", "", 82.0, 180.0, false, "01/08/2024");
-            addSamplePatient(patientManager, "Muthu Palanisamy", "560606062345", "0165432109", "06/06/1956", 
-                "M", "A-", "Penicillin", 98.0, 188.0, true, "05/08/2024");
-            addSamplePatient(patientManager, "Aishah Binti Mohd", "550505051234", "0154321098", "05/05/1955", 
-                "F", "B-", "Nuts", 85.0, 175.0, false, "10/08/2024");
-            addSamplePatient(patientManager, "Tan Kok Wai", "540404043456", "0143210987", "04/04/1954", 
-                "M", "O+", "", 100.0, 185.0, false, "15/08/2024");
-            addSamplePatient(patientManager, "Norhayati Binti Ali", "530303032345", "0132109876", "03/03/1953", 
-                "F", "AB-", "Dairy", 88.0, 178.0, true, "20/08/2024");
-            
-            // Final set of patients
-            addSamplePatient(patientManager, "Raja Kumar", "520202021234", "0121098765", "02/02/1952", 
-                "M", "A+", "", 92.0, 182.0, false, "01/09/2024");
-            addSamplePatient(patientManager, "Lim Siew Chin", "510101013456", "0110987654", "01/01/1951", 
-                "F", "B+", "Wheat", 78.0, 175.0, false, "05/09/2024");
-            addSamplePatient(patientManager, "Ahmad Bin Hassan", "491212123456", "0198765432", "12/12/1949", 
-                "M", "O-", "Peanuts", 102.0, 188.0, true, "10/09/2024");
-            addSamplePatient(patientManager, "Wong Mei Yee", "481010102345", "0187654321", "10/10/1948", 
-                "F", "AB+", "", 85.0, 180.0, false, "15/09/2024");
-            addSamplePatient(patientManager, "Muthu Samynathan", "470707073210", "0176543210", "07/07/1947", 
-                "M", "A-", "Shellfish", 95.0, 185.0, false, "20/09/2024");
-            
-            // Additional patients - Group 1
-            addSamplePatient(patientManager, "Chen Wei Liang", "961111115678", "0144556677", "11/11/1996", 
-            "M", "B+", "Pollen", 72.0, 176.0, true, "22/03/2024");
-            addSamplePatient(patientManager, "Nur Syakirah", "970909094321", "0133445566", "09/09/1997", 
-            "F", "A-", "Shellfish", 58.5, 163.0, false, "12/02/2024");
-            addSamplePatient(patientManager, "David Ng", "950808083456", "0122334455", "08/08/1995", 
-            "M", "O+", "", 81.0, 179.0, true, "18/04/2024");
-            addSamplePatient(patientManager, "Aisyah Binti Mohd", "980707072345", "0199887766", "07/07/1998", 
-            "F", "AB+", "Dust mites", 62.0, 167.0, false, "05/03/2024");
-            addSamplePatient(patientManager, "Karthik Murugan", "940606061234", "0188776655", "06/06/1994", 
-            "M", "B-", "Penicillin", 76.0, 177.0, true, "28/04/2024");
-
-// Additional patients - Group 2
-            addSamplePatient(patientManager, "Lim Jia Hui", "990505054321", "0177665544", "05/05/1999", 
-            "F", "O-", "Nuts", 54.0, 161.0, false, "15/01/2024");
-            addSamplePatient(patientManager, "Amirul Hafiz", "930404043210", "0166554433", "04/04/1993", 
-            "M", "A+", "", 83.5, 181.0, true, "02/05/2024");
-            addSamplePatient(patientManager, "Priya Devi", "910303032345", "0155443322", "03/03/1991", 
-            "F", "B+", "Latex", 59.0, 164.0, false, "22/02/2024");
-            addSamplePatient(patientManager, "Tan Kok Ming", "900202021456", "0144332211", "02/02/1990", 
-            "M", "AB-", "Eggs", 77.0, 178.0, true, "08/05/2024");
-            addSamplePatient(patientManager, "Siti Aishah", "880101013456", "0133221100", "01/01/1988", 
-            "F", "O+", "Soy", 63.5, 169.0, false, "18/01/2024");
-
-// Additional patients - Group 3
-            addSamplePatient(patientManager, "Rahman Bin Ali", "871212123210", "0122110099", "12/12/1987", 
-            "M", "A-", "", 85.0, 182.0, true, "12/05/2024");
-            addSamplePatient(patientManager, "Chong Mei Ling", "861010102345", "0111009988", "10/10/1986", 
-            "F", "B-", "Dairy", 60.0, 165.0, false, "25/02/2024");
-            addSamplePatient(patientManager, "Manoj Kumar", "850909093456", "0199887766", "09/09/1985", 
-            "M", "AB+", "Peanuts", 79.0, 180.0, true, "15/05/2024");
-            addSamplePatient(patientManager, "Nor Azlina", "840808082345", "0188776655", "08/08/1984", 
-            "F", "O-", "", 64.0, 168.0, false, "08/03/2024");
-            addSamplePatient(patientManager, "Goh Seng Choon", "830707071234", "0177665544", "07/07/1983", 
-            "M", "A+", "Wheat", 87.0, 183.0, true, "18/05/2024");
-
-// Additional patients - Group 4
-            addSamplePatient(patientManager, "Yap Mei Fong", "820606062345", "0166554433", "06/06/1982", 
-            "F", "B+", "Shellfish", 61.5, 166.0, false, "15/03/2024");
-            addSamplePatient(patientManager, "Hafiz Bin Osman", "810505051456", "0155443322", "05/05/1981", 
-            "M", "AB-", "", 90.0, 184.0, true, "22/05/2024");
-            addSamplePatient(patientManager, "Lai Yee Ling", "800404043210", "0144332211", "04/04/1980", 
-            "F", "O+", "Pollen", 66.0, 170.0, false, "22/03/2024");
-            addSamplePatient(patientManager, "Rajendran A/L Muthu", "790303032345", "0133221100", "03/03/1979", 
-            "M", "A-", "Penicillin", 92.5, 185.0, true, "25/05/2024");
-            addSamplePatient(patientManager, "Wong Siew Peng", "780202021234", "0122110099", "02/02/1978", 
-            "F", "B-", "", 68.0, 172.0, false, "28/03/2024");
-
-// Additional patients - Group 5
-            addSamplePatient(patientManager, "Ahmad Firdaus", "771111113456", "0111009988", "11/11/1977", 
-            "M", "AB+", "Dust", 94.0, 186.0, true, "28/05/2024");
-            addSamplePatient(patientManager, "Norlela Binti Samad", "761010102345", "0199887766", "10/10/1976", 
-            "F", "O-", "Latex", 70.5, 173.0, false, "05/04/2024");
-            addSamplePatient(patientManager, "Lim Chee Beng", "750909091234", "0188776655", "09/09/1975", 
-            "M", "A+", "", 96.0, 187.0, true, "01/06/2024");
-            addSamplePatient(patientManager, "Saraswathy Devi", "740808082345", "0177665544", "08/08/1974", 
-            "F", "B+", "Eggs", 72.0, 174.0, false, "12/04/2024");
-            addSamplePatient(patientManager, "Omar Bin Hussain", "730707073210", "0166554433", "07/07/1973", 
-            "M", "AB-", "Soy", 98.0, 188.0, true, "05/06/2024");
-
-// Additional patients - Group 6
-            addSamplePatient(patientManager, "Tan Bee Choo", "720606061234", "0155443322", "06/06/1972", 
-            "F", "O+", "", 74.0, 175.0, false, "18/04/2024");
-            addSamplePatient(patientManager, "Krishnan A/L Palani", "710505053456", "0144332211", "05/05/1971", 
-            "M", "A-", "Nuts", 100.0, 189.0, true, "08/06/2024");
-           addSamplePatient(patientManager, "Chan Mei Yee", "700404042345", "0133221100", "04/04/1970", 
-           "F", "B-", "Dairy", 76.0, 176.0, false, "25/04/2024");
-           addSamplePatient(patientManager, "Ismail Bin Ibrahim", "691212123210", "0122110099", "12/12/1969", 
-           "M", "AB+", "", 102.0, 190.0, true, "12/06/2024");
-           addSamplePatient(patientManager, "Lim Siew Mei", "681010101234", "0111009988", "10/10/1968", 
-           "F", "O-", "Wheat", 78.0, 177.0, false, "02/05/2024");
-
-        } catch (Exception e) {
-            System.out.println("Error loading sample patients: " + e.getMessage());
-        }
-    }
-    
-    private static void addSamplePatient(PatientManager patientManager, String name, String ic, 
-    String contact, String dob, String gender, String bloodType, String allergies, 
-    double weight, double height, boolean inQueue, String registrationDateStr) {
-    
+       public static void initializeSamplePatients(PatientManager patientManager) {
     try {
-        String patientID = patientManager.generatePatientID();
-        String queueID = inQueue ? patientManager.generateQueueID() : null;
+        // ================= PATIENTS IN QUEUE (10 patients) =================
+        addHardcodedQueuedPatient(patientManager, "Ali Bin Abu", "990101014321", "0123456789", "01/01/1999", "M", "A+", "Peanuts", 70.5, 170.0, 
+                                "P001", "Q001", "01/01/2023");
+        addHardcodedQueuedPatient(patientManager, "Siti Aminah", "000202023456", "0139876543", "02/02/2000", "F", "O-", "", 55.0, 160.0, 
+                                "P002", "Q002", "02/01/2025");
+        addHardcodedQueuedPatient(patientManager, "John Tan", "981010104321", "0112233445", "10/10/1998", "M", "B+", "Seafood", 68.0, 175.0, 
+                                "P003", "Q003", "03/01/2025");
+        addHardcodedQueuedPatient(patientManager, "Nur Izzati", "010303035432", "0199988776", "03/03/2001", "F", "AB-", "", 60.0, 162.0, 
+                                "P004", "Q004", "04/01/2025");
+        addHardcodedQueuedPatient(patientManager, "Raj Kumar", "970707074321", "0105678901", "07/07/1997", "M", "O+", "Dust", 72.3, 180.0, 
+                                "P005", "Q005", "05/01/2025");
+        addHardcodedQueuedPatient(patientManager, "Lim Mei Ling", "960606062222", "0143322110", "06/06/1996", "F", "A-", "Lactose", 50.0, 155.0, 
+                                "P006", "Q006", "06/01/2025");
+        addHardcodedQueuedPatient(patientManager, "Ahmad Fauzi", "950505051234", "0176543210", "05/05/1995", "M", "B-", "Penicillin", 80.0, 178.0, 
+                                "P007", "Q007", "07/01/2025");
+        addHardcodedQueuedPatient(patientManager, "Sarah Chong", "940404043210", "0167890123", "04/04/1994", "F", "AB+", "", 58.0, 165.0, 
+                                "P008", "Q008", "08/01/2025");
+        addHardcodedQueuedPatient(patientManager, "Mohd Razak", "930303032345", "0156789012", "03/03/1993", "M", "A+", "Shellfish", 75.0, 172.0, 
+                                "P009", "Q009", "09/01/2025");
+        addHardcodedQueuedPatient(patientManager, "Tan Wei Ling", "920202021234", "0198765432", "02/02/1992", "F", "O+", "Nuts", 52.0, 158.0, 
+                                "P010", "Q010", "10/01/2025");
+
+        // ================= PATIENTS NOT IN QUEUE (40 patients) =================
+        addHardcodedNonQueuedPatient(patientManager, "Kumar Selvam", "910101013456", "0134567890", "01/01/1991", "M", "B+", "", 82.0, 182.0, 
+                                   "P011", "11/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Fatimah Binti Abdullah", "891212123456", "0123456780", "12/12/1989", "F", "O-", "Eggs", 65.0, 168.0, 
+                                   "P012", "12/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Lee Chong Wei", "881010102345", "0112345678", "10/10/1988", "M", "A-", "", 70.0, 175.0, 
+                                   "P013", "13/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Nurul Syafiqah", "870707073210", "0190123456", "07/07/1987", "F", "AB-", "Soy", 54.0, 160.0, 
+                                   "P014", "14/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Ramesh Naidu", "860606062345", "0178901234", "06/06/1986", "M", "O+", "", 78.0, 180.0, 
+                                   "P015", "15/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Wong Mei Chen", "850505051234", "0167890123", "05/05/1985", "F", "B+", "Dairy", 56.0, 163.0, 
+                                   "P016", "16/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Ahmad Hakimi", "840404043456", "0156789012", "04/04/1984", "M", "A+", "", 85.0, 185.0, 
+                                   "P017", "17/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Norhayati Binti Osman", "830303032345", "0145678901", "03/03/1983", "F", "O-", "Wheat", 62.0, 170.0, 
+                                   "P018", "18/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Chan Kok Leong", "820202021234", "0134567890", "02/02/1982", "M", "AB+", "", 76.0, 178.0, 
+                                   "P019", "19/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Siti Nurhaliza", "810101013456", "0123456789", "01/01/1981", "F", "B-", "Peanuts", 60.0, 165.0, 
+                                   "P020", "20/01/2025");
         
-        Patient patient = new Patient(
-            patientID,
-            name, 
-            ic, 
-            contact, 
-            dob, 
-            gender, 
-            bloodType, 
-            allergies, 
-            weight, 
-            height, 
-            queueID,
-            registrationDateStr
-        );
+        addHardcodedNonQueuedPatient(patientManager, "Muthu Samy", "791212123456", "0198765432", "12/12/1979", "M", "O+", "", 90.0, 182.0, 
+                                   "P021", "21/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Lim Siew Ling", "781010102345", "0187654321", "10/10/1978", "F", "A+", "Shellfish", 58.0, 162.0, 
+                                   "P022", "22/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Abdul Rahman", "770707073210", "0176543210", "07/07/1977", "M", "B+", "", 82.0, 178.0, 
+                                   "P023", "23/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Tan Bee Lian", "760606062345", "0165432109", "06/06/1976", "F", "AB-", "Latex", 63.0, 168.0, 
+                                   "P024", "24/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Krishnan A/L Muthu", "750505051234", "0154321098", "05/05/1975", "M", "O-", "Eggs", 88.0, 183.0, 
+                                   "P025", "25/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Ong Swee Lin", "740404043456", "0143210987", "04/04/1974", "F", "A-", "", 65.0, 170.0, 
+                                   "P026", "26/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Mohd Faisal", "730303032345", "0132109876", "03/03/1973", "M", "B-", "Penicillin", 92.0, 185.0, 
+                                   "P027", "27/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Yusuf Bin Ismail", "720202021234", "0121098765", "02/02/1972", "M", "AB+", "", 84.0, 180.0, 
+                                   "P028", "28/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Noraini Binti Ali", "710101013456", "0110987654", "01/01/1971", "F", "O+", "Nuts", 70.0, 175.0, 
+                                   "P029", "29/01/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Robert Chan", "691212123456", "0198765432", "12/12/1969", "M", "A+", "", 95.0, 188.0, 
+                                   "P030", "30/01/2025");
         
-        patientManager.addSamplePatient(patient, inQueue);
-    } catch (IllegalArgumentException e) {
-        System.err.println("Failed to add patient " + name + ": " + e.getMessage());
-        // Don't increment counters for failed additions
-        patientManager.rollbackCounters();
+        addHardcodedNonQueuedPatient(patientManager, "Maimunah Binti Ahmad", "681010102345", "0187654321", "10/10/1968", "F", "B+", "Dairy", 68.0, 172.0, 
+                                   "P031", "01/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Ravi Shankar", "670707073210", "0176543210", "07/07/1967", "M", "O-", "", 87.0, 182.0, 
+                                   "P032", "02/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Lily Wong", "660606062345", "0165432109", "06/06/1966", "F", "AB+", "Wheat", 72.0, 178.0, 
+                                   "P033", "03/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Hassan Bin Omar", "650505051234", "0154321098", "05/05/1965", "M", "A-", "", 90.0, 185.0, 
+                                   "P034", "04/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Susila Devi", "640404043456", "0143210987", "04/04/1964", "F", "B-", "Peanuts", 75.0, 180.0, 
+                                   "P035", "05/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Goh Peng Lim", "630303032345", "0132109876", "03/03/1963", "M", "O+", "Shellfish", 92.0, 188.0, 
+                                   "P036", "06/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Zainab Binti Yusof", "620202021234", "0121098765", "02/02/1962", "F", "AB-", "", 78.0, 175.0, 
+                                   "P037", "07/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Arunachalam Muthu", "610101013456", "0110987654", "01/01/1961", "M", "A+", "Latex", 85.0, 182.0, 
+                                   "P038", "08/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Lim Siew Hong", "591212123456", "0198765432", "12/12/1959", "F", "B+", "Eggs", 80.0, 178.0, 
+                                   "P039", "09/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Ismail Bin Ahmad", "581010102345", "0187654321", "10/10/1958", "M", "O-", "", 95.0, 185.0, 
+                                   "P040", "10/02/2025");
+        
+        addHardcodedNonQueuedPatient(patientManager, "Chong Mei Fong", "570707073210", "0176543210", "07/07/1957", "F", "AB+", "", 82.0, 180.0, 
+                                   "P041", "11/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Muthu Palanisamy", "560606062345", "0165432109", "06/06/1956", "M", "A-", "Penicillin", 98.0, 188.0, 
+                                   "P042", "12/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Aishah Binti Mohd", "550505051234", "0154321098", "05/05/1955", "F", "B-", "Nuts", 85.0, 175.0, 
+                                   "P043", "13/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Tan Kok Wai", "540404043456", "0143210987", "04/04/1954", "M", "O+", "", 100.0, 185.0, 
+                                   "P044", "14/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Norhayati Binti Ali", "530303032345", "0132109876", "03/03/1953", "F", "AB-", "Dairy", 88.0, 178.0, 
+                                   "P045", "15/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Raja Kumar", "520202021234", "0121098765", "02/02/1952", "M", "A+", "", 92.0, 182.0, 
+                                   "P046", "16/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Lim Siew Chin", "510101013456", "0110987654", "01/01/1951", "F", "B+", "Wheat", 78.0, 175.0, 
+                                   "P047", "17/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Ahmad Bin Hassan", "491212123456", "0198765432", "12/12/1949", "M", "O-", "Peanuts", 102.0, 188.0, 
+                                   "P048", "18/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Wong Mei Yee", "481010102345", "0187654321", "10/10/1948", "F", "AB+", "", 85.0, 180.0, 
+                                   "P049", "19/02/2025");
+        addHardcodedNonQueuedPatient(patientManager, "Muthu Samynathan", "470707073210", "0176543210", "07/07/1947", "M", "A-", "Shellfish", 95.0, 185.0, 
+                                   "P050", "20/02/2025");
+
+        // Set counters to continue from where we left off
+        patientManager.setPatientCounter(51); // Next ID would be P051
+        patientManager.setQueueCounter(11);   // Next queue would be Q011
+        
+    } catch (Exception e) {
+        System.out.println("Error loading sample patients: " + e.getMessage());
     }
+}
+
+    
+    private static void addHardcodedQueuedPatient(PatientManager manager, String name, String ic, 
+        String contact, String dob, String gender, String bloodType, 
+        String allergies, double weight, double height,
+        String patientId, String queueId, String regDate) {
+    
+    Patient patient = new Patient(
+        patientId, name, ic, contact, dob, gender, 
+        bloodType, allergies, weight, height, 
+        queueId, regDate
+    );
+    
+    manager.addSamplePatient(patient, true);
+}
+    
+    private static void addHardcodedNonQueuedPatient(PatientManager manager, String name, String ic, 
+        String contact, String dob, String gender, String bloodType, 
+        String allergies, double weight, double height,
+        String patientId, String regDate) {
+    
+    Patient patient = new Patient(
+        patientId, name, ic, contact, dob, gender, 
+        bloodType, allergies, weight, height, 
+        null, regDate  // null queueId for non-queued patients
+    );
+    
+    manager.addSamplePatient(patient, false);
+
+
 }
     // Main sample consultation initializer
     public static void initializeSampleConsultations(
@@ -488,125 +459,383 @@ public class ClinicInitializer {
     PatientManager patientManager) {
 
     try {
-        // ===== 1. HARDCODE REQUIRED PATIENTS (P001-P008) =====
-        // (If they don't exist, this creates them on the spot)
-        addSamplePatient(patientManager, "Ali Bin Abu", "990101014321", "0123456789",
-            "01/01/1999", "M", "A+", "Peanuts", 70.5, 170.0, true, "01/01/2023");
+        
 
-        addSamplePatient(patientManager, "Siti Aminah", "000202023456", "0139876543",
-            "02/02/2000", "F", "O-", "", 55.0, 160.0, true, "02/01/2023");
+        // ===== 2. ADD CONSULTATIONS =====
+        // Cardiology Consultations (D101-D104)
+        addSampleConsultation(consultationManager,
+            "C001", "D103", "P001", LocalDate.of(2025, 3, 15), LocalTime.of(10, 0),
+            "Completed", "Chest pain evaluation", false, "Prescribed medication for hypertension"
+        );
+        addSampleConsultation(consultationManager,
+            "C002", "D103", "P005", LocalDate.of(2025, 3, 16), LocalTime.of(11, 0),
+            "Completed", "Heart palpitations", false, "Recommended ECG and follow-up"
+        );
+        addSampleConsultation(consultationManager,
+            "C003", "D103", "P002", LocalDate.of(2025, 3, 17), LocalTime.of(14, 0),
+            "Completed", "High blood pressure check", false, "Advised lifestyle changes"
+        );
+        addSampleConsultation(consultationManager,
+            "C004", "D103", "P010", LocalDate.of(2025, 3, 18), LocalTime.of(15, 30),
+            "Completed", "Shortness of breath", false, "Ordered chest X-ray"
+        );
+        addSampleConsultation(consultationManager,
+            "C005", "D103", "P003", LocalDate.of(2025, 3, 19), LocalTime.of(9, 30),
+            "Completed", "Annual cardiac checkup", false, "All parameters normal"
+        );
+        addSampleConsultation(consultationManager,
+            "C006", "D103", "P015", LocalDate.of(2025, 3, 20), LocalTime.of(10, 45),
+            "Completed", "Post-surgery follow-up", true, "Recovery progressing well"
+        );
+        addSampleConsultation(consultationManager,
+            "C007", "D103", "P004", LocalDate.of(2025, 3, 21), LocalTime.of(16, 0),
+            "Completed", "Irregular heartbeat", false, "Scheduled for Holter monitor"
+        );
+        addSampleConsultation(consultationManager,
+            "C008", "D103", "P020", LocalDate.of(2025, 3, 22), LocalTime.of(14, 30),
+            "Completed", "Family history of heart disease", false, "Preventive care initiated"
+        );
 
-        addSamplePatient(patientManager, "John Tan", "981010104321", "0112233445",
-            "10/10/1998", "M", "B+", "Seafood", 68.0, 175.0, true, "03/01/2023");
+        // Pediatrics Consultations (D201-D204)
+        addSampleConsultation(consultationManager,
+            "C009", "D201", "P006", LocalDate.of(2025, 3, 15), LocalTime.of(9, 0),
+            "Completed", "Childhood vaccination", false, "Administered MMR vaccine"
+        );
+        addSampleConsultation(consultationManager,
+            "C010", "D201", "P016", LocalDate.of(2025, 3, 16), LocalTime.of(10, 30),
+            "Completed", "Fever and cough", false, "Diagnosed with common cold"
+        );
+        addSampleConsultation(consultationManager,
+            "C011", "D201", "P007", LocalDate.of(2025, 3, 17), LocalTime.of(15, 0),
+            "Completed", "Developmental assessment", false, "Normal development for age"
+        );
+        addSampleConsultation(consultationManager,
+            "C012", "D201", "P017", LocalDate.of(2025, 3, 18), LocalTime.of(16, 30),
+            "Completed", "Ear infection", false, "Prescribed antibiotics"
+        );
+        addSampleConsultation(consultationManager,
+            "C013", "D204", "P008", LocalDate.of(2025, 3, 19), LocalTime.of(11, 0),
+            "Completed", "Allergy testing", false, "Identified pollen allergy"
+        );
+        addSampleConsultation(consultationManager,
+            "C014", "D204", "P018", LocalDate.of(2025, 3, 20), LocalTime.of(14, 0),
+            "Completed", "Asthma management", false, "Adjusted inhaler dosage"
+        );
+        addSampleConsultation(consultationManager,
+            "C015", "D204", "P009", LocalDate.of(2025, 3, 21), LocalTime.of(10, 0),
+            "Completed", "Nutrition counseling", false, "Diet plan provided"
+        );
+        addSampleConsultation(consultationManager,
+            "C016", "D204", "P019", LocalDate.of(2025, 3, 22), LocalTime.of(13, 30),
+            "Completed", "Skin rash", false, "Prescribed topical cream"
+        );
 
-        addSamplePatient(patientManager, "Nur Izzati", "010303035432", "0199988776",
-            "03/03/2001", "F", "AB-", "", 60.0, 162.0, true, "04/01/2023");
+        // Orthopedics Consultations (D301-D304)
+        addSampleConsultation(consultationManager,
+            "C017", "D302", "P010", LocalDate.of(2025, 3, 15), LocalTime.of(14, 0),
+            "Completed", "Knee pain evaluation", false, "Recommended physiotherapy"
+        );
+        addSampleConsultation(consultationManager,
+            "C018", "D302", "P020", LocalDate.of(2025, 3, 16), LocalTime.of(15, 30),
+            "Completed", "Sports injury", false, "Sprained ankle, advised rest"
+        );
+        addSampleConsultation(consultationManager,
+            "C019", "D304", "P011", LocalDate.of(2025, 3, 17), LocalTime.of(11, 0),
+            "Completed", "Back pain assessment", false, "Prescribed muscle relaxants"
+        );
+        addSampleConsultation(consultationManager,
+            "C020", "D304", "P021", LocalDate.of(2025, 3, 18), LocalTime.of(16, 0),
+            "Completed", "Joint stiffness", false, "Recommended mobility exercises"
+        );
+        addSampleConsultation(consultationManager,
+            "C021", "D304", "P012", LocalDate.of(2025, 3, 19), LocalTime.of(9, 30),
+            "Completed", "Fracture follow-up", true, "Healing properly, cast removed"
+        );
+        addSampleConsultation(consultationManager,
+            "C022", "D302", "P022", LocalDate.of(2025, 3, 20), LocalTime.of(14, 30),
+            "Completed", "Arthritis management", false, "Medication adjustment"
+        );
+        addSampleConsultation(consultationManager,
+            "C023", "D304", "P013", LocalDate.of(2025, 3, 21), LocalTime.of(10, 30),
+            "Completed", "Shoulder pain", false, "Recommended MRI scan"
+        );
+        addSampleConsultation(consultationManager,
+            "C024", "D304", "P023", LocalDate.of(2025, 3, 22), LocalTime.of(15, 0),
+            "Completed", "Osteoporosis screening", false, "Bone density test ordered"
+        );
 
-        addSamplePatient(patientManager, "Raj Kumar", "970707074321", "0105678901",
-            "07/07/1997", "M", "O+", "Dust", 72.3, 180.0, true, "05/01/2023");
+        // Neurology Consultations (D401-D404)
+        addSampleConsultation(consultationManager,
+            "C025", "D402", "P014", LocalDate.of(2025, 3, 15), LocalTime.of(11, 0),
+            "Completed", "Chronic headaches", false, "Prescribed preventive medication"
+        );
+        addSampleConsultation(consultationManager,
+            "C026", "D402", "P024", LocalDate.of(2025, 3, 16), LocalTime.of(14, 30),
+            "Completed", "Tremor evaluation", false, "Scheduled for EEG"
+        );
+        addSampleConsultation(consultationManager,
+            "C027", "D402", "P015", LocalDate.of(2025, 3, 17), LocalTime.of(10, 0),
+            "Completed", "Memory concerns", false, "Cognitive assessment normal"
+        );
+        addSampleConsultation(consultationManager,
+            "C028", "D402", "P025", LocalDate.of(2025, 3, 18), LocalTime.of(15, 30),
+            "Completed", "Numbness in extremities", false, "Ordered nerve conduction study"
+        );
+        addSampleConsultation(consultationManager,
+            "C029", "D404", "P016", LocalDate.of(2025, 3, 19), LocalTime.of(9, 0),
+            "Completed", "Migraine management", false, "New preventive regimen"
+        );
+        addSampleConsultation(consultationManager,
+            "C030", "D404", "P026", LocalDate.of(2025, 3, 20), LocalTime.of(13, 0),
+            "Completed", "Seizure follow-up", true, "Medication effective, no recent episodes"
+        );
+        addSampleConsultation(consultationManager,
+            "C031", "D404", "P017", LocalDate.of(2025, 3, 21), LocalTime.of(14, 0),
+            "Completed", "Sleep disorder evaluation", false, "Referred for sleep study"
+        );
+        addSampleConsultation(consultationManager,
+            "C032", "D404", "P027", LocalDate.of(2025, 3, 22), LocalTime.of(16, 30),
+            "Completed", "Balance issues", false, "Vestibular testing recommended"
+        );
 
-        addSamplePatient(patientManager, "Lim Mei Ling", "960606062222", "0143322110",
-            "06/06/1996", "F", "A-", "Lactose", 50.0, 155.0, true, "06/01/2023");
+        // Oncology Consultations (D501-D504)
+        addSampleConsultation(consultationManager,
+            "C033", "D502", "P018", LocalDate.of(2025, 3, 15), LocalTime.of(10, 30),
+            "Completed", "Post-chemotherapy follow-up", true, "Blood counts improving"
+        );
+        addSampleConsultation(consultationManager,
+            "C034", "D502", "P028", LocalDate.of(2025, 3, 16), LocalTime.of(13, 30),
+            "Completed", "Abnormal scan results", false, "Biopsy scheduled"
+        );
+        addSampleConsultation(consultationManager,
+            "C035", "D502", "P019", LocalDate.of(2025, 3, 17), LocalTime.of(14, 30),
+            "Completed", "Genetic counseling", false, "Discussed family cancer risk"
+        );
+        addSampleConsultation(consultationManager,
+            "C036", "D502", "P029", LocalDate.of(2025, 3, 18), LocalTime.of(16, 0),
+            "Completed", "Pain management", false, "Adjusted pain medication regimen"
+        );
+        addSampleConsultation(consultationManager,
+            "C037", "D504", "P020", LocalDate.of(2025, 3, 19), LocalTime.of(9, 30),
+            "Completed", "Treatment planning", false, "Discussed radiation therapy options"
+        );
+        addSampleConsultation(consultationManager,
+            "C038", "D504", "P030", LocalDate.of(2025, 3, 20), LocalTime.of(11, 30),
+            "Completed", "Second opinion consultation", false, "Confirmed diagnosis and treatment plan"
+        );
+        addSampleConsultation(consultationManager,
+            "C039", "D504", "P021", LocalDate.of(2025, 3, 21), LocalTime.of(15, 0),
+            "Completed", "Side effect management", false, "Strategies for managing treatment side effects"
+        );
+        addSampleConsultation(consultationManager,
+            "C040", "D504", "P031", LocalDate.of(2025, 3, 22), LocalTime.of(10, 0),
+            "Completed", "Survivorship care plan", true, "Developed long-term follow-up plan"
+        );
 
-        addSamplePatient(patientManager, "Ahmad Fauzi", "950505051234", "0176543210",
-            "05/05/1995", "M", "B-", "Penicillin", 80.0, 178.0, true, "07/01/2023");
+        // General Surgery Consultations (D601-D604)
+        addSampleConsultation(consultationManager,
+            "C041", "D602", "P022", LocalDate.of(2025, 3, 15), LocalTime.of(14, 0),
+            "Completed", "Pre-operative assessment", false, "Cleared for surgery next week"
+        );
+        addSampleConsultation(consultationManager,
+            "C042", "D602", "P032", LocalDate.of(2025, 3, 16), LocalTime.of(16, 30),
+            "Completed", "Post-operative follow-up", true, "Incision healing well"
+        );
+        addSampleConsultation(consultationManager,
+            "C043", "D602", "P023", LocalDate.of(2025, 3, 17), LocalTime.of(11, 30),
+            "Completed", "Lump evaluation", false, "Recommended excision biopsy"
+        );
+        addSampleConsultation(consultationManager,
+            "C044", "D602", "P033", LocalDate.of(2025, 3, 18), LocalTime.of(13, 0),
+            "Completed", "Hernia consultation", false, "Scheduled for repair surgery"
+        );
+        addSampleConsultation(consultationManager,
+            "C045", "D604", "P024", LocalDate.of(2025, 3, 19), LocalTime.of(10, 0),
+            "Completed", "Gallbladder issues", false, "Ultrasound ordered"
+        );
+        addSampleConsultation(consultationManager,
+            "C046", "D604", "P034", LocalDate.of(2025, 3, 20), LocalTime.of(14, 30),
+            "Completed", "Appendectomy follow-up", true, "Recovery complete"
+        );
+        addSampleConsultation(consultationManager,
+            "C047", "D604", "P025", LocalDate.of(2025, 3, 21), LocalTime.of(9, 0),
+            "Completed", "Colonoscopy consultation", false, "Procedure scheduled"
+        );
+        addSampleConsultation(consultationManager,
+            "C048", "D604", "P035", LocalDate.of(2025, 3, 22), LocalTime.of(15, 30),
+            "Completed", "Wound care", false, "Dressing changed, healing progressing"
+        );
 
-        addSamplePatient(patientManager, "Sarah Chong", "940404043210", "0167890123",
-            "04/04/1994", "F", "AB+", "", 58.0, 165.0, true, "08/01/2023");
+        // Dermatology Consultations (D701-D704)
+        addSampleConsultation(consultationManager,
+            "C049", "D702", "P026", LocalDate.of(2025, 3, 15), LocalTime.of(10, 30),
+            "Completed", "Acne treatment", false, "Prescribed topical medication"
+        );
+        addSampleConsultation(consultationManager,
+            "C050", "D702", "P036", LocalDate.of(2025, 3, 16), LocalTime.of(13, 30),
+            "Completed", "Psoriasis management", false, "New treatment plan initiated"
+        );
+        addSampleConsultation(consultationManager,
+            "C051", "D702", "P027", LocalDate.of(2025, 3, 17), LocalTime.of(14, 0),
+            "Completed", "Mole evaluation", false, "Benign, no action needed"
+        );
+        addSampleConsultation(consultationManager,
+            "C052", "D702", "P037", LocalDate.of(2025, 3, 18), LocalTime.of(16, 0),
+            "Completed", "Eczema flare-up", false, "Prescribed steroid cream"
+        );
+        addSampleConsultation(consultationManager,
+            "C053", "D704", "P028", LocalDate.of(2025, 3, 19), LocalTime.of(11, 0),
+            "Completed", "Skin biopsy results", false, "Basal cell carcinoma, discussed treatment options"
+        );
+        addSampleConsultation(consultationManager,
+            "C054", "D704", "P038", LocalDate.of(2025, 3, 20), LocalTime.of(15, 30),
+            "Completed", "Rosacea treatment", false, "Prescribed metronidazole gel"
+        );
+        addSampleConsultation(consultationManager,
+            "C055", "D704", "P029", LocalDate.of(2025, 3, 21), LocalTime.of(9, 30),
+            "Completed", "Hair loss consultation", false, "Recommended minoxidil treatment"
+        );
+        addSampleConsultation(consultationManager,
+            "C056", "D704", "P039", LocalDate.of(2025, 3, 22), LocalTime.of(14, 0),
+            "Completed", "Fungal infection", false, "Prescribed antifungal medication"
+        );
 
-        addSamplePatient(patientManager, "Hafiz Rahman", "930303033333", "0121112233",
-            "03/03/1993", "M", "O+", "Shellfish", 74.0, 176.0, true, "09/01/2023");
+        // Ophthalmology Consultations (D801-D804)
+        addSampleConsultation(consultationManager,
+            "C057", "D802", "P030", LocalDate.of(2025, 3, 15), LocalTime.of(11, 0),
+            "Completed", "Cataract evaluation", false, "Scheduled for surgery next month"
+        );
+        addSampleConsultation(consultationManager,
+            "C058", "D802", "P040", LocalDate.of(2025, 3, 16), LocalTime.of(14, 30),
+            "Completed", "Glaucoma screening", false, "Normal eye pressure"
+        );
+        addSampleConsultation(consultationManager,
+            "C059", "D802", "P031", LocalDate.of(2025, 3, 17), LocalTime.of(10, 0),
+            "Completed", "Dry eye treatment", false, "Prescribed artificial tears"
+        );
+        addSampleConsultation(consultationManager,
+            "C060", "D802", "P041", LocalDate.of(2025, 3, 18), LocalTime.of(15, 0),
+            "Completed", "Diabetic retinopathy screening", false, "No signs of retinopathy"
+        );
+        addSampleConsultation(consultationManager,
+            "C061", "D804", "P032", LocalDate.of(2025, 3, 19), LocalTime.of(9, 0),
+            "Completed", "LASIK consultation", false, "Good candidate for procedure"
+        );
+        addSampleConsultation(consultationManager,
+            "C062", "D804", "P042", LocalDate.of(2025, 3, 20), LocalTime.of(13, 30),
+            "Completed", "Macular degeneration", false, "Started vitamin therapy"
+        );
+        addSampleConsultation(consultationManager,
+            "C063", "D804", "P033", LocalDate.of(2025, 3, 21), LocalTime.of(14, 0),
+            "Completed", "Eye infection", false, "Prescribed antibiotic drops"
+        );
+        addSampleConsultation(consultationManager,
+            "C064", "D804", "P043", LocalDate.of(2025, 3, 22), LocalTime.of(16, 30),
+            "Completed", "Vision changes", false, "Updated glasses prescription"
+        );
 
-        addSamplePatient(patientManager, "Chong Wei", "920202022222", "0185556677",
-            "02/02/1992", "M", "A+", "", 65.0, 170.0, true, "10/01/2023");
+        // Emergency Medicine Consultations (D901-D904)
+        addSampleConsultation(consultationManager,
+            "C065", "D901", "P034", LocalDate.of(2025, 3, 15), LocalTime.of(8, 0),
+            "Completed", "Minor laceration", false, "Stitches applied, tetanus updated"
+        );
+        addSampleConsultation(consultationManager,
+            "C066", "D901", "P044", LocalDate.of(2025, 3, 15), LocalTime.of(20, 0),
+            "Completed", "Asthma attack", false, "Nebulizer treatment, discharged with inhaler"
+        );
+        addSampleConsultation(consultationManager,
+            "C067", "D901", "P035", LocalDate.of(2025, 3, 16), LocalTime.of(10, 0),
+            "Completed", "Sprained wrist", false, "X-ray negative, splint applied"
+        );
+        addSampleConsultation(consultationManager,
+            "C068", "D901", "P045", LocalDate.of(2025, 3, 16), LocalTime.of(22, 0),
+            "Completed", "Food poisoning", false, "IV fluids administered, discharged"
+        );
+        addSampleConsultation(consultationManager,
+            "C069", "D901", "P036", LocalDate.of(2025, 3, 17), LocalTime.of(14, 0),
+            "Completed", "Minor burn", false, "Treated and dressed, follow-up needed"
+        );
+        addSampleConsultation(consultationManager,
+            "C070", "D901", "P046", LocalDate.of(2025, 3, 17), LocalTime.of(3, 0),
+            "Completed", "Chest pain", false, "Ruled out cardiac event, referred to cardiologist"
+        );
+        addSampleConsultation(consultationManager,
+            "C071", "D904", "P037", LocalDate.of(2025, 3, 18), LocalTime.of(9, 0),
+            "Completed", "Allergic reaction", false, "Epinephrine administered, observed for 4 hours"
+        );
+        addSampleConsultation(consultationManager,
+            "C072", "D904", "P047", LocalDate.of(2025, 3, 18), LocalTime.of(18, 0),
+            "Completed", "High fever", false, "Tests performed, viral infection diagnosed"
+        );
 
-        addSamplePatient(patientManager, "Amira Yusuf", "910101011111", "0178889990",
-            "01/01/1991", "F", "B-", "Gluten", 59.0, 162.0, true, "11/01/2023");
+        // Psychiatry Consultations (DC01-DC04)
+        addSampleConsultation(consultationManager,
+            "C073", "DC02", "P038", LocalDate.of(2025, 3, 15), LocalTime.of(11, 0),
+            "Completed", "Depression evaluation", false, "Started antidepressant therapy"
+        );
+        addSampleConsultation(consultationManager,
+            "C074", "DC02", "P048", LocalDate.of(2025, 3, 16), LocalTime.of(14, 0),
+            "Completed", "Anxiety management", false, "Cognitive behavioral techniques discussed"
+        );
+        addSampleConsultation(consultationManager,
+            "C075", "DC02", "P039", LocalDate.of(2025, 3, 17), LocalTime.of(15, 0),
+            "Completed", "Sleep disorder", false, "Sleep hygiene education provided"
+        );
+        addSampleConsultation(consultationManager,
+            "C076", "DC02", "P049", LocalDate.of(2025, 3, 18), LocalTime.of(16, 30),
+            "Completed", "Stress management", false, "Relaxation techniques taught"
+        );
+        addSampleConsultation(consultationManager,
+            "C077", "DC04", "P040", LocalDate.of(2025, 3, 19), LocalTime.of(10, 0),
+            "Completed", "Medication adjustment", true, "Adjusted dosage for better efficacy"
+        );
+        addSampleConsultation(consultationManager,
+            "C078", "DC04", "P050", LocalDate.of(2025, 3, 20), LocalTime.of(13, 0),
+            "Completed", "Therapy session", false, "Discussed coping strategies"
+        );
+        addSampleConsultation(consultationManager,
+            "C079", "DC04", "P041", LocalDate.of(2025, 3, 21), LocalTime.of(14, 30),
+            "Completed", "PTSD evaluation", false, "Trauma-focused therapy initiated"
+        );
+        addSampleConsultation(consultationManager,
+            "C080", "DC04", "P042", LocalDate.of(2025, 3, 22), LocalTime.of(16, 0),
+            "Completed", "Bipolar disorder management", true, "Mood stabilizer effectiveness reviewed"
+        );
 
-        addSamplePatient(patientManager, "Michael Lee", "890909099876", "0134445566",
-            "09/09/1989", "M", "AB+", "", 82.0, 185.0, true, "12/01/2023");
+        // Additional follow-up consultations
+        addSampleConsultation(consultationManager,
+            "C081", "D103", "P001", LocalDate.of(2025, 4, 5), LocalTime.of(11, 0),
+            "Scheduled", "Hypertension follow-up", true, "Blood pressure check"
+        );
+        addSampleConsultation(consultationManager,
+            "C082", "D201", "P006", LocalDate.of(2025, 4, 10), LocalTime.of(10, 0),
+            "Scheduled", "Vaccination follow-up", true, "Second dose of vaccine"
+        );
+        addSampleConsultation(consultationManager,
+            "C083", "D302", "P010", LocalDate.of(2025, 4, 12), LocalTime.of(14, 0),
+            "Scheduled", "Physiotherapy progress", true, "Evaluate knee recovery"
+        );
+        addSampleConsultation(consultationManager,
+            "C084", "D402", "P014", LocalDate.of(2025, 4, 15), LocalTime.of(9, 30),
+            "Scheduled", "Headache treatment review", true, "Assess medication effectiveness"
+        );
 
-        addSamplePatient(patientManager, "Farah Zain", "880808088765", "0192233445",
-            "08/08/1988", "F", "O-", "Nuts", 52.0, 158.0, true, "13/01/2023");
-
-        addSamplePatient(patientManager, "Daniel Wong", "870707077654", "0123344556",
-            "07/07/1987", "M", "A-", "", 75.0, 172.0, true, "14/01/2023");
-
-        addSamplePatient(patientManager, "Aisyah Karim", "860606066543", "0166677788",
-            "06/06/1986", "F", "B+", "Eggs", 54.0, 160.0, true, "15/01/2023");
-
-        // ===== 2. ADD CONSULTATIONS (FORCE ALL 8) =====
-        // Cardiology
-        consultationManager.addConsultation(new Consultation(
-            "C001", "D101", "P001", LocalDate.of(2025, 3, 15), LocalTime.of(10, 0),
-            "Scheduled", "General", false, ""
-        ));
-        consultationManager.addConsultation(new Consultation(
-            "C002", "D102", "P002", LocalDate.of(2025, 3, 18), LocalTime.of(14, 0),
-            "Scheduled", "General", false, ""
-        ));
-        consultationManager.addConsultation(new Consultation(
-            "C003", "D103", "P003", LocalDate.of(2025, 3, 20), LocalTime.of(11, 30),
-            "Scheduled", "General", false, ""
-        ));
-        consultationManager.addConsultation(new Consultation(
-            "C004", "D104", "P004", LocalDate.of(2025, 3, 22), LocalTime.of(15, 0),
-            "Scheduled", "General", false, ""
-        ));
-
-        // Pediatrics
-        consultationManager.addConsultation(new Consultation(
-            "C005", "D201", "P005", LocalDate.of(2025, 3, 25), LocalTime.of(9, 30),
-            "Scheduled", "General", false, ""
-        ));
-        consultationManager.addConsultation(new Consultation(
-            "C006", "D202", "P006", LocalDate.of(2025, 3, 26), LocalTime.of(13, 0),
-            "Scheduled", "General", false, ""
-        ));
-        consultationManager.addConsultation(new Consultation(
-            "C007", "D203", "P007", LocalDate.of(2025, 3, 27), LocalTime.of(10, 30),
-            "Scheduled", "General", false, ""
-        ));
-        consultationManager.addConsultation(new Consultation(
-            "C008", "D204", "P008", LocalDate.of(2025, 3, 28), LocalTime.of(14, 0),
-            "Scheduled", "General", false, ""
-        ));
-                
-        consultationManager.addConsultation(new Consultation(
-                "C009", "D301", "P009", LocalDate.of(2025, 3, 29), LocalTime.of(11, 0),
-                "Scheduled", "Skin Check", false, ""
-        ));
-        consultationManager.addConsultation(new Consultation(
-                "C010", "D302", "P010", LocalDate.of(2025, 3, 30), LocalTime.of(15, 30),
-                "Scheduled", "Skin Check", false, ""
-        ));
-
-        consultationManager.addConsultation(new Consultation(
-                "C011", "D401", "P011", LocalDate.of(2025, 4, 1), LocalTime.of(9, 0),
-                "Scheduled", "Bone/Joint", false, ""
-        ));
-        consultationManager.addConsultation(new Consultation(
-                "C012", "D402", "P012", LocalDate.of(2025, 4, 2), LocalTime.of(14, 30),
-                "Scheduled", "Bone/Joint", false, ""
-        ));
-
-        consultationManager.addConsultation(new Consultation(
-                "C013", "D501", "P013", LocalDate.of(2025, 4, 3), LocalTime.of(10, 15),
-                "Scheduled", "Neuro", false, ""
-        ));
-        consultationManager.addConsultation(new Consultation(
-                "C014", "D502", "P014", LocalDate.of(2025, 4, 4), LocalTime.of(13, 45),
-                "Scheduled", "Neuro", false, ""
-        ));
-
-        consultationManager.addConsultation(new Consultation(
-                "C015", "D103", "P015", LocalDate.of(2025, 4, 5), LocalTime.of(11, 30),
-                "Scheduled", "General Follow-up", true, "Follow-up for routine check" // General follow-up
-        ));
-
-       
+        
     } catch (Exception e) {
-        System.out.println("CRITICAL ERROR: " + e.getMessage());
-     }
+        System.out.println("Error loading sample consultations: " + e.getMessage());
     }
+ }
+    private static void addSampleConsultation
+        (ConsultationManager manager, 
+         String consultationId, 
+         String doctorId, 
+         String patientId, 
+        LocalDate date, LocalTime time, String status, String type, boolean followUp, String notes) {
+    
+    Consultation consultation = new Consultation(
+        consultationId, doctorId, patientId, date, time, status, type, followUp, notes
+    );
+    
+    manager.addConsultation(consultation);
+}
 }
