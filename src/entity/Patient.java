@@ -12,7 +12,7 @@ package entity;
 
 import java.time.LocalDateTime;
 import java.time.Duration;
-
+import adt.LinkedQueue;
 
 
 public class Patient {
@@ -35,6 +35,8 @@ public class Patient {
     private LocalDateTime processingEndTime;
     
     
+    //Docotr
+    private String assignedDoctorID;
 
     public Patient(String patientID, String name, String identificationNo, String contactInfo,
                    String dateOfBirth, String gender, String bloodType, String allergies,
@@ -236,6 +238,12 @@ public class Patient {
     public double calculateBMI() {
     return weight / ((height/100) * (height/100));
     }
+    
+    public void setAssignedDoctorID(String doctorID) {
+        this.assignedDoctorID = doctorID;
+    }
+    
+    
 
 
     @Override
