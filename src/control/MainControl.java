@@ -42,7 +42,6 @@ public class MainControl {
 
 // 3. Create the main UI, passing the control objects to it
         MainUI mainUI = new MainUI(doctorManager, pharmacyControl, medicalTreatmentControl, patientManager, consultationManager);
-
         // 4. Launch the main user interface loop
         mainUI.launch();
     }
