@@ -33,9 +33,9 @@
             this.consultationQueue = new LinkedQueue<>();
         } 
         
-    public QueueInterface<Consultation> getAllConsultationsQueue() {
+        public QueueInterface<Consultation> getAllConsultationsQueue() {
         return consultationQueue;
-    }     
+    }
     //DISPLAY===================================================================    
     public void displayConsultations() {
 

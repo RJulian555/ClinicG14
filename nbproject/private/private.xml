@@ -17,18 +17,21 @@
             <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/control/PatientManager.java</file>
         </group>
         <group>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/adt/QueueInterface.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/adt/LinkedQueue.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/entity/Doctor.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/boundary/DoctorUI.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/control/DoctorManager.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/dao/ClinicInitializer.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/boundary/MainUI.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/adt/README_ADT.txt</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/entity/Pharmacy.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/control/MainControl.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/control/ConsultationManager.java</file>
-            <file>file:/C:/Users/user/Documents/NetBeansProjects/ClinicManagementSystemG14/src/control/PatientManager.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/entity/Patient.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/dao/ClinicInitializer.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/control/MainControl.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/control/MedicalTreatmentControl.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/entity/MedicalTreatment.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/entity/DiagnosisTemplate.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/adt/LinkedQueue.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/boundary/ConsultationUI.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/entity/Consultation.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/boundary/MainUI.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/entity/Doctor.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/adt/QueueInterface.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/control/PatientManager.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/control/ConsultationManager.java</file>
+            <file>file:/C:/Users/natalie/OneDrive/Documents/GitHub/ClinicG14/src/boundary/PatientUI.java</file>
         </group>
     </open-files>
 </project-private>
