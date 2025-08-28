@@ -32,11 +32,6 @@ public class MainControl {
         ClinicInitializer.initializeSamplePatients(patientManager);
         ClinicInitializer.initializeSampleConsultations(consultationManager,doctorManager,patientManager);
         System.out.println("All sample data loaded successfully!");
-<<<<<<< HEAD
-      
-      
-        // 3. Create the main UI, passing the control objects to it
-=======
         
         // … after all ClinicInitializer calls …
         doctorManager.setSharedQueues(
@@ -46,7 +41,6 @@ public class MainControl {
 
 
 // 3. Create the main UI, passing the control objects to it
->>>>>>> 93ed186f0bb04ef2f00033157df5552c8a2bb78e
         MainUI mainUI = new MainUI(doctorManager, pharmacyControl, medicalTreatmentControl, patientManager, consultationManager);
 
         // 4. Launch the main user interface loop

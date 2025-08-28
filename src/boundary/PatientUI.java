@@ -11,10 +11,7 @@ package boundary;
 
 
 import adt.LinkedQueue;
-import adt.QueueInterface;
 import control.PatientManager;
-import entity.Consultation;
-import entity.Doctor;
 import entity.Patient;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -22,22 +19,10 @@ import java.util.regex.Pattern;
 public class PatientUI {
     private final PatientManager controller;
     private final Scanner scanner;
-    private control.ConsultationManager consultationManager;
-    private control.DoctorManager doctorManager;
-    
 
     public PatientUI(PatientManager manager) {
         this.controller = manager;
         this.scanner = new Scanner(System.in);
-        
-    }
-    
-    public PatientUI(PatientManager pm,
-                     control.ConsultationManager cm,
-                     control.DoctorManager dm) {
-        this(pm);                 // reuse old constructor
-        this.consultationManager = cm;
-        this.doctorManager = dm;
     }
 
     public void displayMainMenu() {
@@ -46,7 +31,7 @@ public class PatientUI {
             System.out.flush();
             
             System.out.println("\n|-------------------------------------|");
-            System.out.println("|        PATIENT MANAGEMENT MENU      |");
+            System.out.println("|        PATIENT MANAGEMENT MENU       |");
             System.out.println("|-------------------------------------|");
             System.out.println("| 1. Register New Patient             |");
             System.out.println("| 2. Add Patient to Queue             |");
@@ -54,8 +39,8 @@ public class PatientUI {
             System.out.println("| 4. View Queue Status                |");
             System.out.println("| 5. Find/Manage Patient              |");
             System.out.println("| 6. View All Patients                |");
-            System.out.println("| 7. Patient Visit Summary            |");
-            System.out.println("| 8. Patient Monthly Visit Log        |");
+            System.out.println("| 7. Generate Health Report          |");
+            System.out.println("| 8. Generate Queue Report            |");
             System.out.println("| 9. Exit to Main Menu                |");
             System.out.println("|-------------------------------------|");
             System.out.print("Choose an option: ");
@@ -75,11 +60,11 @@ public class PatientUI {
                     handlePatientDatabaseOperationsUI();
                 }
                 case 7 -> {
-                    controller.generatePatientVisitSummary(this, consultationManager, doctorManager);
+                    controller.generatePatientHealthReport();
                     pressEnterToContinue();
                 }
                 case 8 -> {
-                    controller.generateMonthlyConsultationCalendar(consultationManager);
+                    controller.generateDailyQueueReport();
                     pressEnterToContinue();
                 }
                 case 9 -> { return; }
@@ -255,10 +240,10 @@ public class PatientUI {
 
     public void showRegistrationSummary(Patient patient) {
         System.out.println("\n========== REGISTRATION SUCCESS ==========");
-        System.out.println("| Name: " + padRight(patient.getName(), 40) + "");
-        System.out.println("| Patient ID: " + padRight(patient.getPatientID(), 35) + "");
-        System.out.println("| Queue ID: " + padRight(patient.getQueueID(), 36) + "");
-        System.out.println("| Registration Date: " + padRight(patient.getRegistrationDate(), 28) + "");
+        System.out.println("| Name: " + padRight(patient.getName(), 40) + "|");
+        System.out.println("| Patient ID: " + padRight(patient.getPatientID(), 35) + "|");
+        System.out.println("| Queue ID: " + padRight(patient.getQueueID(), 36) + "|");
+        System.out.println("| Registration Date: " + padRight(patient.getRegistrationDate(), 28) + "|");
         System.out.println("==========================================");
     }
 
@@ -267,44 +252,27 @@ public class PatientUI {
     }
 
     private void displayPatientDetails(Patient p) {
-    // Calculate values first
-    int age = controller.calculateAge(p.getDateOfBirth());
-    double bmi = p.calculateBMI();
-    String bmiStatus = interpretBMI(bmi);
-    
-    System.out.println("\n=====================================================");
-    System.out.println("                  PATIENT DETAILS");
-    System.out.println("=====================================================");
-    System.out.printf("%-20s: %s%n", "Patient ID", p.getPatientID());
-    System.out.printf("%-20s: %s%n", "Queue ID", (p.getQueueID() != null ? p.getQueueID() : "Not in queue"));
-    System.out.println("-----------------------------------------------------");
-    System.out.printf("%-20s: %s%n", "Name", p.getName());
-    System.out.printf("%-20s: %s%n", "IC Number", p.getIdentificationNo());
-    System.out.printf("%-20s: %s%n", "Contact", p.getContactInfo());
-    System.out.println("-----------------------------------------------------");
-    System.out.printf("%-20s: %s%n", "Date of Birth", p.getDateOfBirth());
-    System.out.printf("%-20s: %d%n", "Age", age);
-    System.out.printf("%-20s: %s%n", "Gender", p.getGender());
-    System.out.printf("%-20s: %s%n", "Blood Type", p.getBloodType());
-    System.out.printf("%-20s: %s%n", "Allergies", (p.getAllergies().isEmpty() ? "None" : p.getAllergies()));
-    System.out.println("-----------------------------------------------------");
-    System.out.printf("%-20s: %.1f kg%n", "Weight", p.getWeight());
-    System.out.printf("%-20s: %.1f cm%n", "Height", p.getHeight());
-    System.out.printf("%-20s: %.1f (%s)%n", "BMI", bmi, bmiStatus);
-    System.out.println("-----------------------------------------------------");
-    System.out.printf("%-20s: %s%n", "Registration Date", p.getRegistrationDate());
-    System.out.println("=====================================================");
-    
-    if (p.getQueueID() != null) {
-        System.out.println("\n-----------------------------------------------------");
-        System.out.println("                  QUEUE STATUS");
-        System.out.println("-----------------------------------------------------");
-        System.out.printf("%-20s: %d minutes%n", "Time in queue", p.getTimeInQueueMinutes());
-        System.out.println("-----------------------------------------------------");
+        System.out.println("\n=== PATIENT DETAILS ===");
+        System.out.println("Patient ID: " + p.getPatientID());
+        System.out.println("Queue ID: " + (p.getQueueID() != null ? p.getQueueID() : "Not in queue"));
+        System.out.println("Name: " + p.getName());
+        System.out.println("IC Number: " + p.getIdentificationNo());
+        System.out.println("Contact: " + p.getContactInfo());
+        System.out.println("Date of Birth: " + p.getDateOfBirth());
+        System.out.println("Age: " + controller.calculateAge(p.getDateOfBirth()));
+        System.out.println("Gender: " + p.getGender());
+        System.out.println("Blood Type: " + p.getBloodType());
+        System.out.println("Allergies: " + (p.getAllergies().isEmpty() ? "None" : p.getAllergies()));
+        System.out.println("Weight: " + p.getWeight() + " kg");
+        System.out.println("Height: " + p.getHeight() + " cm");
+        System.out.println("BMI: " + String.format("%.1f", p.calculateBMI()) + " (" + interpretBMI(p.calculateBMI()) + ")");
+        System.out.println("Registration Date: " + p.getRegistrationDate());
+        
+        if (p.getQueueID() != null) {
+            System.out.println("\n=== QUEUE STATUS ===");
+            System.out.println("Time in queue: " + p.getTimeInQueueMinutes() + " minutes");
+        }
     }
-    
-    displayLatestConsultation(p);
-}
 
     private String interpretBMI(double bmi) {
         if (bmi < 18.5) return "Underweight";
@@ -376,7 +344,7 @@ public void showSortOptions() {
     System.out.print("Select option: ");
 }
 
-public void displayQueueStatus(int position, QueueInterface<Patient> nextPatients) {
+public void displayQueueStatus(int position, LinkedQueue<Patient> nextPatients) {
     System.out.println("\n========== QUEUE STATUS ==========");
     System.out.println("Your position: " + position);
     System.out.println("Patients ahead: " + (position - 1));
@@ -578,40 +546,4 @@ public String handleAddToQueue(String ic, PatientUI ui) {
         public patientQueue() {
         }
     }
-    
-    
-
-
-// === ASCII-BOX VERSION ===
-private void displayLatestConsultation(Patient p) {
-    if (consultationManager == null || doctorManager == null) return;
-
-    Consultation last = controller.getLatestConsultation(consultationManager, p);
-    if (last == null) {
-        System.out.println("\n+--------------------------+");
-        System.out.println("|  NO CONSULTATIONS FOUND  |");
-        System.out.println("+--------------------------+");
-        return;
-    }
-
-    Doctor doc = doctorManager.getDoctorByID(last.getDoctorId());
-    String doctorName = (doc == null) ? "N/A" : doc.getName();
-
-    System.out.println("\n+----------------------------------------------+");
-    System.out.println("|          LATEST CONSULTATION                 |");
-    System.out.println("+----------------------------------------------+");
-    System.out.printf("| ID: %-41s |%n", last.getConsultationId());
-    System.out.printf("| Date: %-39s |%n", last.getConsultationDate());
-    System.out.printf("| Time: %-39s |%n", last.getConsultationTime());
-    System.out.printf("| Doctor: %-37s |%n", doctorName);
-    System.out.printf("| Type: %-39s |%n", last.getConsultationType());
-    System.out.printf("| Status: %-37s |%n", last.getConsultationStatus());
-    System.out.printf("| Follow-up: %-36s |%n", last.isFollowUpRequired() ? "Yes" : "No");
-    if (last.getConsultationNotes() != null && !last.getConsultationNotes().isBlank()) {
-        System.out.printf("| Notes: %-40s |%n", last.getConsultationNotes());
-    }
-    System.out.println("+----------------------------------------------+");
 }
-
-}
-    
