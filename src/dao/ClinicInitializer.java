@@ -687,6 +687,8 @@ public class ClinicInitializer {
     PatientManager patientManager) {
 
     try {
+        // ===== 1. HARDCODE REQUIRED PATIENTS =====
+        
 
         // ===== 2. ADD CONSULTATIONS =====
         // Cardiology Consultations (D101-D104)

@@ -20,7 +20,8 @@ public class Consultation {
     private LocalTime consultationTime;
     private LocalDate consultationDate;
     private boolean followUpRequired;
-    
+    private Doctor doctor;
+    private Patient patient;
     // Constructor
     public Consultation(String consultationId, String doctorId, String patientId, LocalDate consultationDate, LocalTime consultationTime, String consultationStatus, String consultationType, boolean followUpRequired, String consultationNotes) {
     this.consultationId = consultationId;
