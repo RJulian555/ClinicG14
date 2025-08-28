@@ -21,7 +21,7 @@ public class MainControl {
         PharmacyControl pharmacyControl = new PharmacyControl();
         MedicalTreatmentControl medicalTreatmentControl = new MedicalTreatmentControl(pharmacyControl);
         PatientManager patientManager = new PatientManager();
-        ConsultationManager consultationManager = new ConsultationManager();
+        ConsultationManager consultationManager = new ConsultationManager(doctorManager, patientManager);
         // As you add more modules, you would create their control objects here.
 
         // 2. Initialize all system data using the DAO Initializer
