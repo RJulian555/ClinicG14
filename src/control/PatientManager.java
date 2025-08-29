@@ -672,83 +672,6 @@ public QueueInterface<Patient> filterPatientsNotInQueue() {
 //-----------------------------------------------------------------------------------------------------------------//
 
 
-// Handle patient filtering based on user-selected criteria
-public void handleFilterPatients(PatientUI ui) {
-    while (true) {
-        ui.showFilterOptions();
-        int choice = ui.getIntInput();
-
-        switch (choice) {
-            case 1 -> {
-                ui.showMessage("Enter gender to filter (F/M): ");
-                String gender = ui.getStringInput();
-                QueueInterface<Patient> filtered = filterPatientsByGender(gender);
-                displayFilteredPatients(filtered, ui, "Gender: " + gender);
-            }
-            case 2 -> {
-                String bloodType = ui.promptBloodType();
-                QueueInterface<Patient> filtered = filterPatientsByBloodType(bloodType);
-                displayFilteredPatients(filtered, ui, "Blood Type: " + bloodType);
-            }
-            case 3 -> {
-                QueueInterface<Patient> filtered = filterPatientsInQueue();
-                displayFilteredPatients(filtered, ui, "Patients in Queue");
-            }
-            case 4 -> {
-                QueueInterface<Patient> filtered = filterPatientsNotInQueue();
-                displayFilteredPatients(filtered, ui, "Patients Not in Queue");
-            }
-            case 5 -> {
-                return;
-            }
-            default -> ui.showMessage("Invalid option. Please try again.");
-        }
-    }
-}
-
-
-//-----------------------------------------------------------------------------------------------------------------//
-
-// This method handles the sorting of patients based on different criteria selected by the user
-public void handleSortPatients(PatientUI ui) {
-    // Loop continuously until the user chooses to exit
-    while (true) {
-        // Display the sorting options sub-menu to the user
-        ui.showSortOptions();  // Show sort sub-menu
-        
-        // Get the user's choice as an integer input
-        int choice = ui.getIntInput();
-        
-        // Process the user's choice using a switch statement
-        switch (choice) {
-            case 1 -> {
-                int order = ui.promptSortOrder("name");
-                QueueInterface<Patient> snapshot = getSortedCopyByName(order == 1);
-                displayPatients(snapshot, ui, "Sorted by Name");
-            }
-            
-            case 2 -> {
-                int order = ui.promptSortOrder("age");
-                QueueInterface<Patient> snapshot = getSortedCopyByAge(order == 1);
-                displayPatients(snapshot, ui, "Sorted by Age");
-            }
-            
-            case 3 -> {
-                QueueInterface<Patient> snapshot = getSortedCopyByQueuePosition();
-                displayPatients(snapshot, ui, "Sorted by Queue Position");
-            }
-            
-            case 4 -> { return; }
-            default -> ui.showMessage("Invalid option. Please try again.");
-        }
-        
-    }
-}
-
-
-private void displayPatients(QueueInterface<Patient> q, PatientUI ui, String title) {
-    displayFilteredPatients(q, ui, title);
-}
 
 
 //-----------------------------------------------------------------------------------------------------------------//
@@ -862,45 +785,58 @@ public void sortPatientsByAge(boolean ascending) {
 
 //-----------------------------------------------------------------------------------------------------------------//
 
-
-public void displayFilteredPatients(QueueInterface<Patient> filtered,
-                                    PatientUI ui,
-                                    String filterTitle) {
-
-    if (filtered.isEmpty()) {
-        ui.showMessage("No patients match the filter: " + filterTitle);
+public void displayFilteredPatients(QueueInterface<Patient> q, String title, PatientUI ui) {
+    ui.clearScreen();
+    System.out.println("\n=== Filter Results: " + title + " ===");
+    
+    if (q == null || q.isEmpty()) {
+        System.out.println("No patients match the criteria.");
+        ui.pressEnterToContinue();
         return;
     }
 
-    ui.showMessage("");   // blank line
-    ui.showMessage("+----+------------+------------------------+--------------+------------+");
-    ui.showMessage("| No | PatientID  | Name                   | IC Number    | Queue Status |");
-    ui.showMessage("+----+------------+------------------------+--------------+------------+");
+    QueueInterface<Patient> temp = new LinkedQueue<>();
+    
+    // Table header
+    System.out.println("");
+    System.out.println("+----+------------+------------------------+--------------+------+-----+-------+---------------+");
+    System.out.println("| No | PatientID  | Name                   | IC Number    | Sex  | Age | BMI   | Status        |");
+    System.out.println("+----+------------+------------------------+--------------+------+-----+-------+---------------+");
 
     int count = 1;
-    QueueInterface<Patient> temp = new LinkedQueue<>();
-    while (!filtered.isEmpty()) {
-        Patient p = filtered.dequeue();
+    while (!q.isEmpty()) {
+        Patient p = q.dequeue();
         temp.enqueue(p);
 
-        String queueStatus = p.getQueueID() != null ? "In Queue" : "Not in Queue";
-        ui.showMessage(String.format("| %-2d | %-10s | %-22s | %-12s | %-10s |",
+        double bmi = p.calculateBMI();
+        String bmiStatus = interpretBMI(bmi);
+        String queueStatus = p.getQueueID() != null ? "In Queue" : "";
+
+        System.out.printf("| %-2d | %-10s | %-22s | %-12s | %-4s | %-3d | %-5.1f | %-13s |\n",
                 count++,
                 p.getPatientID(),
                 p.getName().length() > 22 ? p.getName().substring(0, 20) + ".." : p.getName(),
                 p.getIdentificationNo(),
-                queueStatus));
+                p.getGender(),
+                calculateAge(p.getDateOfBirth()),
+                bmi,
+                bmiStatus);
     }
 
-    ui.showMessage("+----+------------+------------------------+--------------+------------+");
+    System.out.println("+----+------------+------------------------+--------------+------+-----+-------+---------------+");
+    
+    // restore original queue
     while (!temp.isEmpty()) {
-        filtered.enqueue(temp.dequeue());
+        q.enqueue(temp.dequeue());
     }
-
+    
     ui.pressEnterToContinue();
 }
 
-
+public void displayPatients(QueueInterface<Patient> q, String title, PatientUI ui) {
+    // Reuse the same table format
+    displayFilteredPatients(q, title, ui);
+}
 //-----------------------------------------------------------------------------------------------------------------//
 
 public void sortPatientsByQueuePosition() {
