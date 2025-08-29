@@ -19,7 +19,7 @@
      */
     public class ConsultationManager {
 
-        private QueueInterface<Consultation> consultationQueue;
+        private final QueueInterface<Consultation> consultationQueue = new LinkedQueue<>();
         private int consultationCounter = 0;
         private DoctorManager doctorManager;
         private PatientManager patientManager;
@@ -34,7 +34,6 @@
     return consultationQueue.toArray(array);
 }
         public ConsultationManager(DoctorManager doctorManager, PatientManager patientManager) {
-             this.consultationQueue = new LinkedQueue<>();
              this.doctorManager = doctorManager;
              this.patientManager = patientManager;
              this.consultationCounter = 0;
